@@ -1,0 +1,24 @@
+.square {
+    width: 50;
+    height: 50;
+    display: inline-block;
+    vertical-align: top;
+    text-align: center;
+    margin: 2 0;
+}
+
+.light.square {
+    background-color: lightgrey;
+}
+
+.dark.square {
+    background-color: lightblue;
+}
+
+.square.move.marked {
+    background-color: green !important;
+}
+
+.square.attack.marked {
+    background-color: red !important;
+}
