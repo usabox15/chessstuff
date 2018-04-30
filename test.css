@@ -22,3 +22,7 @@
 .square.attack.marked {
     background-color: red !important;
 }
+
+.square.xray.marked {
+    background-color: #aa42f4 !important;
+}

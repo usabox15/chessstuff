@@ -12,92 +12,97 @@ class Action {
     constructor(color, kind) {
         this.color = color;
         this.items = kind == "queen" ? ["rook", "bishop"] : [kind];
+        this.squares = [];
     }
 
-    nextSquareAction(squares, occupiedSquares, nextSquare) {
+    nextSquareAction(occupiedSquares, nextSquare, isXray=false) {
         let strSquare = this.getSquare(nextSquare);
-        if (occupiedSquares[strSquare]) {
-            if (occupiedSquares[strSquare].color != this.color) {
-                squares["attack"].push(strSquare);
-            }
-            return false;
+        if (isXray) {
+            this.squares["xray"].push(strSquare);
+            return true;
         }
-        squares["move"].push(strSquare);
-        return true;
+        else if (occupiedSquares[strSquare]) {
+            if (occupiedSquares[strSquare].color != this.color) {
+                this.squares["attack"].push(strSquare);
+            }
+            return true;
+        }
+        this.squares["move"].push(strSquare);
+        return false;
     }
 
-    rook(squares, occupiedSquares, square) {
+    rook(occupiedSquares, square) {
         for (let j = 0; j <= 1; j++) {
             let k = Math.abs(j - 1);
             // up & right
+            let isXray = false;
             for (let i = square[k] + 1; i <= 7; i++) {
                 let s = []; s[k] = i; s[j] = square[j];
-                let isEmptySquare = this.nextSquareAction(squares, occupiedSquares, s);
-                if (!isEmptySquare) break;
+                isXray = this.nextSquareAction(occupiedSquares, s, isXray);
             }
             // down & left
+            isXray = false;
             for (let i = square[k] - 1; i >= 0; i--) {
                 let s = []; s[k] = i; s[j] = square[j];
-                let isEmptySquare = this.nextSquareAction(squares, occupiedSquares, s);
-                if (!isEmptySquare) break;
+                isXray = this.nextSquareAction(occupiedSquares, s, isXray);
             }
         }
     }
 
-    bishop(squares, occupiedSquares, square) {
+    bishop(occupiedSquares, square) {
         // downleft
         let [i, j] = [square[0] - 1, square[1] - 1];
+        let isXray = false;
         while (i >= 0 && j >= 0) {
-            let isEmptySquare = this.nextSquareAction(squares, occupiedSquares, [i, j]);
-            if (!isEmptySquare) break;
+            isXray = this.nextSquareAction(occupiedSquares, [i, j], isXray);
             i--; j--;
         }
         // downright
         [i, j] = [square[0] + 1, square[1] - 1];
+        isXray = false;
         while (i <= 7 && j >= 0) {
-            let isEmptySquare = this.nextSquareAction(squares, occupiedSquares, [i, j]);
-            if (!isEmptySquare) break;
+            isXray = this.nextSquareAction(occupiedSquares, [i, j], isXray);
             i++; j--;
         }
         // upleft
         [i, j] = [square[0] - 1, square[1] + 1];
+        isXray = false;
         while (i >= 0 && j <= 7) {
-            let isEmptySquare = this.nextSquareAction(squares, occupiedSquares, [i, j]);
-            if (!isEmptySquare) break;
+            isXray = this.nextSquareAction(occupiedSquares, [i, j], isXray);
             i--; j++;
         }
         // upright
         [i, j] = [square[0] + 1, square[1] + 1];
+        isXray = false;
         while (i <= 7 && j <= 7) {
-            let isEmptySquare = this.nextSquareAction(squares, occupiedSquares, [i, j]);
-            if (!isEmptySquare) break;
+            isXray = this.nextSquareAction(occupiedSquares, [i, j], isXray);
             i++; j++;
         }
     }
 
-    knight(squares, occupiedSquares, square) {
+    knight(occupiedSquares, square) {
         let ofsets = [[-2, -1], [-1, -2], [1, -2], [2, -1], [2, 1], [1, 2], [-1, 2], [-2, 1]];
         for (let ofset of ofsets) {
             let x = square[0] + ofset[0];
             let y = square[1] + ofset[1];
             if (x < 0 || x > 7 || y < 0 || y > 7) continue;
 
-            this.nextSquareAction(squares, occupiedSquares, [x, y]);
+            this.nextSquareAction(occupiedSquares, [x, y]);
         }
     }
 
-    king(squares, occupiedSquares, square) {
+    king(occupiedSquares, square) {
         let ofsets = [[-1, 0], [-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1]];
         for (let ofset of ofsets) {
             let x = square[0] + ofset[0];
             let y = square[1] + ofset[1];
             if (x < 0 || x > 7 || y < 0 || y > 7) continue;
 
-            this.nextSquareAction(squares, occupiedSquares, [x, y]);
+            this.nextSquareAction(occupiedSquares, [x, y]);
         }
     }
 
-    pawn(squares, occupiedSquares, square) {
+    pawn(occupiedSquares, square) {
         let moveSquares = [];
         let attackSquares = [];
         if (this.color == "white") {
@@ -127,22 +132,21 @@ class Action {
 
         for (let sqr of moveSquares) {
             if (occupiedSquares[sqr]) break;
-            squares["move"].push(sqr);
+            this.squares["move"].push(sqr);
         }
 
         for (let sqr of attackSquares) {
             if (occupiedSquares[sqr] && occupiedSquares[sqr].color != this.color) {
-                squares["attack"].push(sqr);
+                this.squares["attack"].push(sqr);
             }
         }
     }
 
     getSquares(occupiedSquares, square) {
-        let squares = {"move": [], "attack": []};
+        this.squares = {"move": [], "attack": [], "xray": []};
         for (let item of this.items) {
-            this[item](squares, occupiedSquares, square);
+            this[item](occupiedSquares, square);
         }
-        return squares;
     }
 
     getSquare(numSquare) {
@@ -158,11 +162,10 @@ class Pice {
         this.kind = kind;
         this.square = square;
         this.action = new Action(color, kind);
-        this.squares = [];
     }
 
     getSquares(occupiedSquares) {
-        this.squares = this.action.getSquares(occupiedSquares, this.square)
+        this.action.getSquares(occupiedSquares, this.square)
     }
 }
 

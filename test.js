@@ -19,12 +19,29 @@ var symbols = {
 
 var board = new Board;
 
-board.placePice("black", "pawn", "g2");
+board.placePice("black", "rook", "a8");
+board.placePice("black", "king", "c8");
+board.placePice("black", "rook", "h8");
+board.placePice("black", "pawn", "a7");
+board.placePice("black", "pawn", "b7");
+board.placePice("black", "pawn", "c7");
+board.placePice("black", "pawn", "h7");
 board.placePice("black", "knight", "e5");
-board.placePice("black", "bishop", "d7");
-board.placePice("black", "rook", "c4");
-board.placePice("black", "queen", "f6");
-board.placePice("black", "king", "b2");
+board.placePice("black", "queen", "f5");
+board.placePice("black", "bishop", "h3");
+board.placePice("black", "pawn", "g2");
+
+board.placePice("white", "bishop", "g5");
+board.placePice("white", "pawn", "d4");
+board.placePice("white", "pawn", "h4");
+board.placePice("white", "queen", "c3");
+board.placePice("white", "pawn", "a2");
+board.placePice("white", "pawn", "b2");
+board.placePice("white", "pawn", "c2");
+board.placePice("white", "knight", "e2");
+board.placePice("white", "king", "b1");
+board.placePice("white", "rook", "d1");
+board.placePice("white", "rook", "g1");
 
 board.refreshAllSquares();
 
@@ -36,24 +53,29 @@ for (let square in board.occupiedSquares) {
 }
 
 
+function markingSquares(pice) {
+    for (let actionKind of ["move", "attack", "xray"]){
+        for (let sqr of pice.action.squares[actionKind]) {
+            $(".square[x=" + sqr[0] + "][y=" + sqr[1] + "]").addClass(actionKind + " marked");
+        }
+    }
+}
+
+function unMarkingSquares() {
+    $(".square").removeClass("move attack xray marked");
+}
+
+
 $(".square")
 .mouseenter(function() {
-    let square = $(this).attr("x") + $(this).attr("y");
-    let pice = board.occupiedSquares[square];
-
+    let pice = board.occupiedSquares[$(this).attr("x") + $(this).attr("y")];
     if (pice) {
-        for (let actionKind of ["move", "attack"]){
-            for (let sqr of pice.squares[actionKind]) {
-                $(".square[x=" + sqr[0] + "][y=" + sqr[1] + "]").addClass(actionKind + " marked");
-            }
-        }
+        markingSquares(pice);
     }
 })
 .mouseleave(function() {
-    $(".square").removeClass("attack move marked");
+    unMarkingSquares();
 });
-
-
 
 
 // // Test action squares
@@ -63,15 +85,10 @@ $(".square")
 // $(".square")
 // .mouseenter(function() {
 //     let square = $(this).attr("x") + $(this).attr("y");
-//     let pice = new Pice("black", "pawn", board.getSquare(square));
+//     let pice = new Pice("white", "queen", board.getSquare(square));
 //     pice.getSquares(board.occupiedSquares);
-
-//     for (let actionKind of ["move", "attack"]){
-//         for (let sqr of pice.squares[actionKind]) {
-//             $(".square[x=" + sqr[0] + "][y=" + sqr[1] + "]").addClass(actionKind + " marked");
-//         }
-//     }
+//     markingSquares(pice);
 // })
 // .mouseleave(function() {
-//     $(".square").removeClass("attack move marked");
+//     unMarkingSquares();
 // });
