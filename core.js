@@ -7,6 +7,8 @@ var allKinds = [
     "king",
 ];
 
+var allColors = ["white", "black"];
+
 
 class Action {
     constructor(color, kind) {
@@ -188,6 +190,14 @@ class Board {
         delete this.occupiedSquares[strSquare];
     }
 
+    replacePice(from, to) {
+        let pice = this.occupiedSquares[from];
+        this.removePice(from);
+        this.occupiedSquares[to] = pice;
+        pice.square = this.getSquare(to);
+        this.refreshAllSquares();
+    }
+
     refreshSquares(strSquare) {
         this.occupiedSquares[strSquare].getSquares(this.occupiedSquares);
     }
@@ -196,5 +206,65 @@ class Board {
         for (let pice of Object.values(this.occupiedSquares)) {
             pice.getSquares(this.occupiedSquares);
         }
+    }
+}
+
+
+class Game {
+    constructor() {
+        this.board = new Board;
+        this.getInitialPosition();
+        this.board.refreshAllSquares();
+        this.priority = 0;
+    }
+
+    get turnOf() {
+        return allColors[this.priority];
+    }
+
+    changePriority() {
+        this.priority = Math.abs(this.priority - 1);
+    }
+
+    getInitialPosition() {
+        for (let sqr of ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]) {
+            this.board.placePice("black", "pawn", sqr);
+        }
+        for (let sqr of ["b8", "g8"]) {
+            this.board.placePice("black", "knight", sqr);
+        }
+        for (let sqr of ["c8", "f8"]) {
+            this.board.placePice("black", "bishop", sqr);
+        }
+        for (let sqr of ["a8", "h8"]) {
+            this.board.placePice("black", "rook", sqr);
+        }
+        this.board.placePice("black", "queen", "d8");
+        this.board.placePice("black", "king", "e8");
+
+        for (let sqr of ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"]) {
+            this.board.placePice("white", "pawn", sqr);
+        }
+        for (let sqr of ["b1", "g1"]) {
+            this.board.placePice("white", "knight", sqr);
+        }
+        for (let sqr of ["c1", "f1"]) {
+            this.board.placePice("white", "bishop", sqr);
+        }
+        for (let sqr of ["a1", "h1"]) {
+            this.board.placePice("white", "rook", sqr);
+        }
+        this.board.placePice("white", "queen", "d1");
+        this.board.placePice("white", "king", "e1");
+    }
+
+    move(from, to) {
+        let pice = this.board.occupiedSquares[from];
+        if (!pice || pice.color != this.turnOf || !pice.action.squares["move"].includes(to) && !pice.action.squares["attack"].includes(to)) {
+            return false;
+        }
+        this.board.replacePice(from, to);
+        this.changePriority();
+        return true;
     }
 }
