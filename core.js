@@ -216,6 +216,10 @@ class Game {
         this.getInitialPosition();
         this.board.refreshAllSquares();
         this.priority = 0;
+        this.castleRights = {
+            "white": {"short": true, "long": true},
+            "black": {"short": true, "long": true},
+        }
     }
 
     get turnOf() {
@@ -258,11 +262,61 @@ class Game {
         this.board.placePice("white", "king", "e1");
     }
 
+    getCastleKind(pice, from, to) {
+        console.log(pice.kind);
+        if (pice.kind != "king") return null;
+        let rank = this.turnOf == "white" ? "1" : "8";
+        console.log(rank);
+        if (from == "e" + rank) {
+            if (to == "c" + rank && this.freeCastleRoad(["b" + rank, "c" + rank, "d" + rank])) {
+                return "long";
+            }
+            if (to == "g" + rank && this.freeCastleRoad(["f" + rank, "g" + rank])) {
+                return "short";
+            }
+        }
+        return null;
+    }
+
+    freeCastleRoad(squares) {
+        for (let sqr of squares) {
+            if (this.board.occupiedSquares[sqr]) return false;
+        }
+        return true;
+    }
+
+    castleReplacePice(kind, kingFrom, kingTo) {
+        let rank = this.turnOf == "white" ? "1" : "8";
+        if (kind == "long") {
+            var rookFrom = "a" + rank;
+            var rookTo = "d" + rank;
+        }
+        else {
+            var rookFrom = "h" + rank;
+            var rookTo = "f" + rank;
+        }
+        this.board.replacePice(kingFrom, kingTo);
+        this.board.replacePice(rookFrom, rookTo);
+    }
+
     move(from, to) {
         let pice = this.board.occupiedSquares[from];
-        if (!pice || pice.color != this.turnOf || !pice.action.squares["move"].includes(to) && !pice.action.squares["attack"].includes(to)) {
+        if (!pice || pice.color != this.turnOf) {
             return false;
         }
+
+        let castleKind = this.getCastleKind(pice, from, to);
+        console.log(castleKind);
+        if (castleKind && this.castleRights[this.turnOf][castleKind]) {
+            this.castleReplacePice(castleKind, from, to);
+            this.changePriority();
+            return true;
+        }
+
+        if (!pice.action.squares["move"].includes(to) && !pice.action.squares["attack"].includes(to)) {
+            return false;
+        }
+
         this.board.replacePice(from, to);
         this.changePriority();
         return true;
