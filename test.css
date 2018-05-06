@@ -2,6 +2,40 @@
     font-size: 0;
 }
 
+.rowMark {
+    width: 20;
+    height: 50;
+    display: inline-block;
+    vertical-align: top;
+    text-align: center;
+    margin: 2;
+    font-size: initial;
+}
+
+.rowMarkText {
+    font-size: 24;
+    margin: 0;
+    padding: 10 0;
+    text-align: center;
+}
+
+.columnMark {
+    width: 50;
+    height: 30;
+    display: inline-block;
+    vertical-align: top;
+    text-align: center;
+    margin: 2;
+    font-size: initial;
+}
+
+.columnMarkText {
+    font-size: 24;
+    margin: 0;
+    padding: 5 0;
+    text-align: center;
+}
+
 .square {
     width: 50;
     height: 50;
