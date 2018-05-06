@@ -1,10 +1,15 @@
+.row {
+    font-size: 0;
+}
+
 .square {
     width: 50;
     height: 50;
     display: inline-block;
     vertical-align: top;
     text-align: center;
-    margin: 2 0;
+    margin: 2;
+    font-size: initial;
 }
 
 .light.square {

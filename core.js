@@ -263,15 +263,13 @@ class Game {
     }
 
     getCastleKind(pice, from, to) {
-        console.log(pice.kind);
         if (pice.kind != "king") return null;
-        let rank = this.turnOf == "white" ? "1" : "8";
-        console.log(rank);
-        if (from == "e" + rank) {
-            if (to == "c" + rank && this.freeCastleRoad(["b" + rank, "c" + rank, "d" + rank])) {
+        let r = this.turnOf == "white" ? "1" : "8";
+        if (from == "e" + r) {
+            if (to == "c" + r && this.freeCastleRoad(["b" + r, "c" + r, "d" + r]) && this.safeCastleRoad(["c" + r, "d" + r])) {
                 return "long";
             }
-            if (to == "g" + rank && this.freeCastleRoad(["f" + rank, "g" + rank])) {
+            if (to == "g" + r && this.freeCastleRoad(["f" + r, "g" + r]) && this.safeCastleRoad(["f" + r, "g" + r])) {
                 return "short";
             }
         }
@@ -281,6 +279,16 @@ class Game {
     freeCastleRoad(squares) {
         for (let sqr of squares) {
             if (this.board.occupiedSquares[sqr]) return false;
+        }
+        return true;
+    }
+
+    safeCastleRoad(squares) {
+        let oppColor = this.turnOf == "white" ? "black" : "white";
+        for (let pice of Object.values(this.board.occupiedSquares)) {
+            for (let sqr of squares) {
+                if (pice.color == oppColor && pice.action.squares["move"].includes(sqr)) return false;
+            }
         }
         return true;
     }
@@ -306,7 +314,6 @@ class Game {
         }
 
         let castleKind = this.getCastleKind(pice, from, to);
-        console.log(castleKind);
         if (castleKind && this.castleRights[this.turnOf][castleKind]) {
             this.castleReplacePice(castleKind, from, to);
             this.changePriority();
