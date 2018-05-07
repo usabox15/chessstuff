@@ -15,6 +15,7 @@ class Action {
         this.color = color;
         this.items = kind == "queen" ? ["rook", "bishop"] : [kind];
         this.squares = [];
+        this.check = false;
     }
 
     nextSquareAction(occupiedSquares, nextSquare, isXray=false) {
@@ -26,7 +27,11 @@ class Action {
         else if (occupiedSquares[strSquare]) {
             if (occupiedSquares[strSquare].color != this.color) {
                 this.squares["attack"].push(strSquare);
+                if (occupiedSquares[strSquare].kind == "king") {
+                    this.check = true;
+                }
             }
+
             return true;
         }
         this.squares["move"].push(strSquare);
@@ -140,12 +145,16 @@ class Action {
         for (let sqr of attackSquares) {
             if (occupiedSquares[sqr] && occupiedSquares[sqr].color != this.color) {
                 this.squares["attack"].push(sqr);
+                if (occupiedSquares[sqr].kind == "king") {
+                    this.check = true;
+                }
             }
         }
     }
 
     getSquares(occupiedSquares, square) {
         this.squares = {"move": [], "attack": [], "xray": []};
+        this.check = false;
         for (let item of this.items) {
             this[item](occupiedSquares, square);
         }
@@ -284,10 +293,9 @@ class Game {
     }
 
     safeCastleRoad(squares) {
-        let oppColor = this.turnOf == "white" ? "black" : "white";
         for (let pice of Object.values(this.board.occupiedSquares)) {
             for (let sqr of squares) {
-                if (pice.color == oppColor && pice.action.squares["move"].includes(sqr)) return false;
+                if (pice.color != this.turnOf && pice.action.squares["move"].includes(sqr)) return false;
             }
         }
         return true;
@@ -324,7 +332,15 @@ class Game {
             return false;
         }
 
+        let occupiedSquaresClone = Object.assign({}, this.board.occupiedSquares);
         this.board.replacePice(from, to);
+        for (let pice of Object.values(this.board.occupiedSquares)) {
+            if (pice.color != this.turnOf && pice.action.check) {
+                this.board.occupiedSquares = occupiedSquaresClone;
+                return false;
+            }
+        }
+
         this.changePriority();
         return true;
     }
