@@ -31,6 +31,9 @@ class Action {
                     this.check = true;
                 }
             }
+            else {
+                this.squares["cover"].push(strSquare);
+            }
 
             return true;
         }
@@ -153,7 +156,7 @@ class Action {
     }
 
     getSquares(occupiedSquares, square) {
-        this.squares = {"move": [], "attack": [], "xray": []};
+        this.squares = {"move": [], "attack": [], "xray": [], "cover": []};
         this.check = false;
         for (let item of this.items) {
             this[item](occupiedSquares, square);
@@ -229,6 +232,7 @@ class Game {
             "white": {"short": true, "long": true},
             "black": {"short": true, "long": true},
         }
+        this.kingsPlaces = {"white": "e1", "black": "e8"}
     }
 
     get turnOf() {
@@ -315,6 +319,73 @@ class Game {
         this.board.replacePice(rookFrom, rookTo);
     }
 
+    checkMate(checkersSquares) {
+        if (checkersSquares.length != 0) {
+            let oppColor = this.turnOf == "white" ? "black" : "white";
+            let oppKing = this.board.occupiedSquares[this.kingsPlaces[oppColor]];
+            let escapeSquares = oppKing.action.squares["move"].concat(oppKing.action.squares["attack"]);
+            let notEscapeSquares = [];
+            for (let sqr of escapeSquares) {
+                for (let p of Object.values(this.board.occupiedSquares)) {
+                    if (p.color != this.turnOf && (p.action.squares["move"].includes(sqr) || p.action.squares["cover"].includes(sqr))) {
+                        notEscapeSquares.push(sqr);
+                        break;
+                    }
+                }
+            }
+            for (let sqr of notEscapeSquares) {
+                escapeSquares.splice(escapeSquares.indexOf(sqr), 1);
+            }
+            if (escapeSquares.length != 0) {
+                return false;
+            }
+
+            if (checkersSquares.length == 1) {
+                let sqr = checkersSquares[0];
+
+                let checker = this.board.occupiedSquares[sqr];
+                let betweenSquares = [];
+                let getNumSquare = (new Board).getSquare;
+                let getStrSquare = (new Action).getSquare;
+                if (["queen", "rook", "bishop"].includes(checker.kind)) {
+                    let numKingSquare = getNumSquare(this.kingsPlaces[oppColor]);
+                    let numCheckerSquare = this.board.getSquare(sqr);
+                    let dif = [0, 0];
+                    for (let i in dif) {
+                        if (numKingSquare[i] > numCheckerSquare[i]) {
+                            dif[i] = -1;
+                        }
+                        else if (numKingSquare[i] < numCheckerSquare[i]) {
+                            dif[i] = 1;
+                        }
+                    }
+                    let distance = Math.max(Math.abs(numKingSquare[0] - numCheckerSquare[0]), Math.abs(numKingSquare[1] - numCheckerSquare[1]));
+                    if (distance > 1) {
+                        for (let i = 1; i < distance; i++) {
+                            betweenSquares.push(getStrSquare([numKingSquare[0] + i * dif[0], numKingSquare[1] + i * dif[1]]));
+                        }
+                    }
+                }
+
+                for (let p of Object.values(this.board.occupiedSquares)) {
+                    if (p.color == this.turnOf && p.kind != "king") {
+                        if (p.action.squares["attack"].includes(sqr)) {
+                            return false;
+                        }
+                        for (let bsqr of betweenSquares) {
+                            if (p.action.squares["move"].includes(bsqr)) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+
     move(from, to) {
         let pice = this.board.occupiedSquares[from];
         if (!pice || pice.color != this.turnOf) {
@@ -333,13 +404,27 @@ class Game {
         }
 
         let occupiedSquaresClone = Object.assign({}, this.board.occupiedSquares);
+        let checkersSquares = [];
         this.board.replacePice(from, to);
-        for (let pice of Object.values(this.board.occupiedSquares)) {
-            if (pice.color != this.turnOf && pice.action.check) {
-                this.board.occupiedSquares = occupiedSquaresClone;
-                return false;
+        for (let sqr in this.board.occupiedSquares) {
+            let p = this.board.occupiedSquares[sqr];
+            if (p.action.check) {
+                if (p.color == this.turnOf) {
+                    checkersSquares.push(sqr);
+                }
+                else {
+                    this.board.occupiedSquares = occupiedSquaresClone;
+                    return false;
+                }
             }
         }
+
+        if (pice.kind == "king") {
+            this.kingsPlaces[this.turnOf] = to;
+        }
+
+        let isMate = this.checkMate(checkersSquares);
+        console.log("MATE", isMate);
 
         this.changePriority();
         return true;
