@@ -319,6 +319,48 @@ class Game {
         this.board.replacePice(rookFrom, rookTo);
     }
 
+    getNumCheckerAndKingSquares(checkerSquare, kingSquare) {
+        let getNumSquare = (new Board).getSquare;
+        return [getNumSquare(checkerSquare), getNumSquare(kingSquare)];
+    }
+
+    getLinedCheckerDirection(numCheckerSquare, numKingSquare) {
+        let dif = [0, 0];
+        for (let i in dif) {
+            if (numKingSquare[i] > numCheckerSquare[i]) {
+                dif[i] = -1;
+            }
+            else if (numKingSquare[i] < numCheckerSquare[i]) {
+                dif[i] = 1;
+            }
+        }
+        return dif;
+    }
+
+    linedXray(escapeSquare, checkersSquares, kingSquare) {
+        for (let sqr of checkersSquares) {
+            let checker = this.board.occupiedSquares[sqr];
+            if (checker.action.squares["xray"].includes(escapeSquare)) {
+                if (checker.kind == "queen") {
+                    let [numCheckerSquare, numKingSquare] = this.getNumCheckerAndKingSquares(sqr, kingSquare);
+                    let dif = this.getLinedCheckerDirection(numCheckerSquare, numKingSquare);
+                    let extLineSqr = [numKingSquare[0] - dif[0], numKingSquare[1] - dif[1]];
+                    if (extLineSqr[0] < 0 || extLineSqr[0] > 7 || extLineSqr[1] < 0 || extLineSqr[1] > 7) {
+                        continue
+                    }
+                    let getStrSquare = (new Action).getSquare;
+                    if (getStrSquare(extLineSqr) == escapeSquare) {
+                        return true;
+                    }
+                }
+                else {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     checkMate(checkersSquares) {
         if (checkersSquares.length != 0) {
             let oppColor = this.turnOf == "white" ? "black" : "white";
@@ -327,7 +369,7 @@ class Game {
             let notEscapeSquares = [];
             for (let sqr of escapeSquares) {
                 for (let p of Object.values(this.board.occupiedSquares)) {
-                    if (p.color != this.turnOf && (p.action.squares["move"].includes(sqr) || p.action.squares["cover"].includes(sqr))) {
+                    if (p.color == this.turnOf && (p.action.squares["move"].includes(sqr) || p.action.squares["cover"].includes(sqr)) || this.linedXray(sqr, checkersSquares, this.kingsPlaces[oppColor])) {
                         notEscapeSquares.push(sqr);
                         break;
                     }
@@ -337,6 +379,8 @@ class Game {
                 escapeSquares.splice(escapeSquares.indexOf(sqr), 1);
             }
             if (escapeSquares.length != 0) {
+                console.log("escapeSquares.length != 0");
+                console.log("escapeSquares", escapeSquares);
                 return false;
             }
 
@@ -345,22 +389,12 @@ class Game {
 
                 let checker = this.board.occupiedSquares[sqr];
                 let betweenSquares = [];
-                let getNumSquare = (new Board).getSquare;
-                let getStrSquare = (new Action).getSquare;
                 if (["queen", "rook", "bishop"].includes(checker.kind)) {
-                    let numKingSquare = getNumSquare(this.kingsPlaces[oppColor]);
-                    let numCheckerSquare = this.board.getSquare(sqr);
-                    let dif = [0, 0];
-                    for (let i in dif) {
-                        if (numKingSquare[i] > numCheckerSquare[i]) {
-                            dif[i] = -1;
-                        }
-                        else if (numKingSquare[i] < numCheckerSquare[i]) {
-                            dif[i] = 1;
-                        }
-                    }
+                    let [numCheckerSquare, numKingSquare] = this.getNumCheckerAndKingSquares(sqr, this.kingsPlaces[oppColor]);
+                    let dif = this.getLinedCheckerDirection(numCheckerSquare, numKingSquare);
                     let distance = Math.max(Math.abs(numKingSquare[0] - numCheckerSquare[0]), Math.abs(numKingSquare[1] - numCheckerSquare[1]));
                     if (distance > 1) {
+                        let getStrSquare = (new Action).getSquare;
                         for (let i = 1; i < distance; i++) {
                             betweenSquares.push(getStrSquare([numKingSquare[0] + i * dif[0], numKingSquare[1] + i * dif[1]]));
                         }
@@ -368,18 +402,25 @@ class Game {
                 }
 
                 for (let p of Object.values(this.board.occupiedSquares)) {
-                    if (p.color == this.turnOf && p.kind != "king") {
+                    if (p.color != this.turnOf && p.kind != "king") {
                         if (p.action.squares["attack"].includes(sqr)) {
+                            console.log("p.action.squares['attack'].includes(sqr)");
+                            console.log("bsqr", sqr);
+                            console.log("p.kind", p.kind);
                             return false;
                         }
                         for (let bsqr of betweenSquares) {
                             if (p.action.squares["move"].includes(bsqr)) {
+                                console.log("p.action.squares['move'].includes(bsqr)");
+                                console.log("bsqr", bsqr);
+                                console.log("p.kind", p.kind);
                                 return false;
                             }
                         }
                     }
                 }
             }
+
             return true;
         }
 
