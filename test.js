@@ -18,7 +18,7 @@ var symbols = {
 };
 
 function markingSquares(pice) {
-    for (let actionKind of ["move", "attack", "xray"]){
+    for (let actionKind of ["move", "attack", "xray", "cover"]){
         for (let sqr of pice.action.squares[actionKind]) {
             $(".square[x=" + sqr[0] + "][y=" + sqr[1] + "]").addClass(actionKind + " marked");
         }
@@ -26,7 +26,7 @@ function markingSquares(pice) {
 }
 
 function unMarkingSquares() {
-    $(".square").removeClass("move attack xray marked");
+    $(".square").removeClass("move attack xray cover marked");
 }
 
 function refreshBoard(brd) {
@@ -132,3 +132,14 @@ $(".square").on("click", function() {
         aimedSquare = $(this).attr("x") + $(this).attr("y");
     }
 })
+
+$(".square")
+.mouseenter(function() {
+    let pice = game.board.occupiedSquares[$(this).attr("x") + $(this).attr("y")];
+    if (pice) {
+        markingSquares(pice);
+    }
+})
+.mouseleave(function() {
+    unMarkingSquares();
+});

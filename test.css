@@ -58,6 +58,10 @@
     background-color: green !important;
 }
 
+.square.cover.marked {
+    background-color: blue !important;
+}
+
 .square.attack.marked {
     background-color: red !important;
 }

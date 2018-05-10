@@ -14,47 +14,61 @@ class Action {
     constructor(color, kind) {
         this.color = color;
         this.items = kind == "queen" ? ["rook", "bishop"] : [kind];
-        this.squares = [];
-        this.check = false;
+        this.getInitState();
     }
 
-    nextSquareAction(occupiedSquares, nextSquare, isXray=false) {
+    getInitState() {
+        this.squares = {"move": [], "attack": [], "xray": [], "cover": []};
+        this.isXray = false;
+        this.endOfALine = false;
+    }
+
+    nextSquareAction(occupiedSquares, square, nextSquare, linear=false) {
         let strSquare = this.getSquare(nextSquare);
-        if (isXray) {
+        if (this.isXray) {
             this.squares["xray"].push(strSquare);
-            return true;
+            if (occupiedSquares[strSquare]) {
+                if (occupiedSquares[strSquare].color != this.color && occupiedSquares[strSquare].kind == "king" && this.squares["attack"].length > 0) {
+                    occupiedSquares[this.squares["attack"][this.squares["attack"].length - 1]].binned = true;
+                }
+                this.endOfALine = true;
+            }
         }
         else if (occupiedSquares[strSquare]) {
             if (occupiedSquares[strSquare].color != this.color) {
                 this.squares["attack"].push(strSquare);
                 if (occupiedSquares[strSquare].kind == "king") {
-                    this.check = true;
+                    occupiedSquares[strSquare].checkersSquares.push(this.getSquare(square));
                 }
             }
             else {
                 this.squares["cover"].push(strSquare);
             }
-
-            return true;
+            if (linear) this.isXray = true;
         }
-        this.squares["move"].push(strSquare);
-        return false;
+        else {
+            this.squares["move"].push(strSquare);
+        }
     }
 
     rook(occupiedSquares, square) {
         for (let j = 0; j <= 1; j++) {
             let k = Math.abs(j - 1);
             // up & right
-            let isXray = false;
+            this.isXray = false;
+            this.endOfALine = false;
             for (let i = square[k] + 1; i <= 7; i++) {
                 let s = []; s[k] = i; s[j] = square[j];
-                isXray = this.nextSquareAction(occupiedSquares, s, isXray);
+                this.nextSquareAction(occupiedSquares, square, s, true);
+                if (this.endOfALine) break;
             }
             // down & left
-            isXray = false;
+            this.isXray = false;
+            this.endOfALine = false;
             for (let i = square[k] - 1; i >= 0; i--) {
                 let s = []; s[k] = i; s[j] = square[j];
-                isXray = this.nextSquareAction(occupiedSquares, s, isXray);
+                this.nextSquareAction(occupiedSquares, square, s, true);
+                if (this.endOfALine) break;
             }
         }
     }
@@ -62,30 +76,38 @@ class Action {
     bishop(occupiedSquares, square) {
         // downleft
         let [i, j] = [square[0] - 1, square[1] - 1];
-        let isXray = false;
+        this.isXray = false;
+        this.endOfALine = false;
         while (i >= 0 && j >= 0) {
-            isXray = this.nextSquareAction(occupiedSquares, [i, j], isXray);
+            this.nextSquareAction(occupiedSquares, square, [i, j], true);
+            if (this.endOfALine) break;
             i--; j--;
         }
         // downright
         [i, j] = [square[0] + 1, square[1] - 1];
-        isXray = false;
+        this.isXray = false;
+        this.endOfALine = false;
         while (i <= 7 && j >= 0) {
-            isXray = this.nextSquareAction(occupiedSquares, [i, j], isXray);
+            this.nextSquareAction(occupiedSquares, square, [i, j], true);
+            if (this.endOfALine) break;
             i++; j--;
         }
         // upleft
         [i, j] = [square[0] - 1, square[1] + 1];
-        isXray = false;
+        this.isXray = false;
+        this.endOfALine = false;
         while (i >= 0 && j <= 7) {
-            isXray = this.nextSquareAction(occupiedSquares, [i, j], isXray);
+            this.nextSquareAction(occupiedSquares, square, [i, j], true);
+            if (this.endOfALine) break;
             i--; j++;
         }
         // upright
         [i, j] = [square[0] + 1, square[1] + 1];
-        isXray = false;
+        this.isXray = false;
+        this.endOfALine = false;
         while (i <= 7 && j <= 7) {
-            isXray = this.nextSquareAction(occupiedSquares, [i, j], isXray);
+            this.nextSquareAction(occupiedSquares, square, [i, j], true);
+            if (this.endOfALine) break;
             i++; j++;
         }
     }
@@ -97,7 +119,7 @@ class Action {
             let y = square[1] + ofset[1];
             if (x < 0 || x > 7 || y < 0 || y > 7) continue;
 
-            this.nextSquareAction(occupiedSquares, [x, y]);
+            this.nextSquareAction(occupiedSquares, square, [x, y]);
         }
     }
 
@@ -108,7 +130,7 @@ class Action {
             let y = square[1] + ofset[1];
             if (x < 0 || x > 7 || y < 0 || y > 7) continue;
 
-            this.nextSquareAction(occupiedSquares, [x, y]);
+            this.nextSquareAction(occupiedSquares, square, [x, y]);
         }
     }
 
@@ -149,15 +171,14 @@ class Action {
             if (occupiedSquares[sqr] && occupiedSquares[sqr].color != this.color) {
                 this.squares["attack"].push(sqr);
                 if (occupiedSquares[sqr].kind == "king") {
-                    this.check = true;
+                    occupiedSquares[sqr].checkersSquares.push(this.getSquare(square));
                 }
             }
         }
     }
 
     getSquares(occupiedSquares, square) {
-        this.squares = {"move": [], "attack": [], "xray": [], "cover": []};
-        this.check = false;
+        this.getInitState();
         for (let item of this.items) {
             this[item](occupiedSquares, square);
         }
@@ -176,6 +197,16 @@ class Pice {
         this.kind = kind;
         this.square = square;
         this.action = new Action(color, kind);
+        this.getInitState();
+    }
+
+    getInitState() {
+        if (this.kind == "king") {
+            this.checkersSquares = [];
+        }
+        else {
+            this.binned = false;
+        }
     }
 
     getSquares(occupiedSquares) {
@@ -215,6 +246,9 @@ class Board {
     }
 
     refreshAllSquares() {
+        for (let pice of Object.values(this.occupiedSquares)) {
+            pice.getInitState();
+        }
         for (let pice of Object.values(this.occupiedSquares)) {
             pice.getSquares(this.occupiedSquares);
         }
@@ -337,41 +371,47 @@ class Game {
         return dif;
     }
 
-    linedXray(escapeSquare, checkersSquares, kingSquare) {
-        for (let sqr of checkersSquares) {
-            let checker = this.board.occupiedSquares[sqr];
-            if (checker.action.squares["xray"].includes(escapeSquare)) {
-                if (checker.kind == "queen") {
-                    let [numCheckerSquare, numKingSquare] = this.getNumCheckerAndKingSquares(sqr, kingSquare);
-                    let dif = this.getLinedCheckerDirection(numCheckerSquare, numKingSquare);
-                    let extLineSqr = [numKingSquare[0] - dif[0], numKingSquare[1] - dif[1]];
-                    if (extLineSqr[0] < 0 || extLineSqr[0] > 7 || extLineSqr[1] < 0 || extLineSqr[1] > 7) {
-                        continue
-                    }
-                    let getStrSquare = (new Action).getSquare;
-                    if (getStrSquare(extLineSqr) == escapeSquare) {
-                        return true;
-                    }
+    linedXray(escapeSquare, checkerSquare, kingSquare) {
+        let checker = this.board.occupiedSquares[checkerSquare];
+        if (checker.action.squares["xray"].includes(escapeSquare)) {
+            if (checker.kind == "queen") {
+                let [numCheckerSquare, numKingSquare] = this.getNumCheckerAndKingSquares(checkerSquare, kingSquare);
+                let dif = this.getLinedCheckerDirection(numCheckerSquare, numKingSquare);
+                let extLineSqr = [numKingSquare[0] - dif[0], numKingSquare[1] - dif[1]];
+                if (extLineSqr[0] < 0 || extLineSqr[0] > 7 || extLineSqr[1] < 0 || extLineSqr[1] > 7) {
+                    return false;
                 }
-                else {
+                let getStrSquare = (new Action).getSquare;
+                if (getStrSquare(extLineSqr) == escapeSquare) {
                     return true;
                 }
+            }
+            else {
+                return true;
             }
         }
         return false;
     }
 
-    checkMate(checkersSquares) {
-        if (checkersSquares.length != 0) {
-            let oppColor = this.turnOf == "white" ? "black" : "white";
-            let oppKing = this.board.occupiedSquares[this.kingsPlaces[oppColor]];
+    checkMate() {
+        let oppColor = this.turnOf == "white" ? "black" : "white";
+        let oppKing = this.board.occupiedSquares[this.kingsPlaces[oppColor]];
+        if (oppKing.checkersSquares.length != 0) {
             let escapeSquares = oppKing.action.squares["move"].concat(oppKing.action.squares["attack"]);
             let notEscapeSquares = [];
             for (let sqr of escapeSquares) {
                 for (let p of Object.values(this.board.occupiedSquares)) {
-                    if (p.color == this.turnOf && (p.action.squares["move"].includes(sqr) || p.action.squares["cover"].includes(sqr)) || this.linedXray(sqr, checkersSquares, this.kingsPlaces[oppColor])) {
+                    if (p.color == this.turnOf && (p.action.squares["move"].includes(sqr) || p.action.squares["cover"].includes(sqr))) {
                         notEscapeSquares.push(sqr);
                         break;
+                    }
+                }
+                if (!notEscapeSquares.includes(sqr)) {
+                    for (let checkerSquare of oppKing.checkersSquares) {
+                        if (this.linedXray(sqr, checkerSquare, this.kingsPlaces[oppColor])) {
+                            notEscapeSquares.push(sqr);
+                            break;
+                        }
                     }
                 }
             }
@@ -379,13 +419,11 @@ class Game {
                 escapeSquares.splice(escapeSquares.indexOf(sqr), 1);
             }
             if (escapeSquares.length != 0) {
-                console.log("escapeSquares.length != 0");
-                console.log("escapeSquares", escapeSquares);
                 return false;
             }
 
-            if (checkersSquares.length == 1) {
-                let sqr = checkersSquares[0];
+            if (oppKing.checkersSquares.length == 1) {
+                let sqr = oppKing.checkersSquares[0];
 
                 let checker = this.board.occupiedSquares[sqr];
                 let betweenSquares = [];
@@ -402,18 +440,12 @@ class Game {
                 }
 
                 for (let p of Object.values(this.board.occupiedSquares)) {
-                    if (p.color != this.turnOf && p.kind != "king") {
+                    if (p.color != this.turnOf && p.kind != "king" && !p.binned) {
                         if (p.action.squares["attack"].includes(sqr)) {
-                            console.log("p.action.squares['attack'].includes(sqr)");
-                            console.log("bsqr", sqr);
-                            console.log("p.kind", p.kind);
                             return false;
                         }
                         for (let bsqr of betweenSquares) {
                             if (p.action.squares["move"].includes(bsqr)) {
-                                console.log("p.action.squares['move'].includes(bsqr)");
-                                console.log("bsqr", bsqr);
-                                console.log("p.kind", p.kind);
                                 return false;
                             }
                         }
@@ -445,27 +477,18 @@ class Game {
         }
 
         let occupiedSquaresClone = Object.assign({}, this.board.occupiedSquares);
-        let checkersSquares = [];
         this.board.replacePice(from, to);
-        for (let sqr in this.board.occupiedSquares) {
-            let p = this.board.occupiedSquares[sqr];
-            if (p.action.check) {
-                if (p.color == this.turnOf) {
-                    checkersSquares.push(sqr);
-                }
-                else {
-                    this.board.occupiedSquares = occupiedSquaresClone;
-                    return false;
-                }
-            }
+        let kingPlace = pice.kind == "king" ? to : this.kingsPlaces[this.turnOf];
+        if (this.board.occupiedSquares[kingPlace].checkersSquares.length > 0) {
+            this.board.occupiedSquares = occupiedSquaresClone;
+            return false;
         }
 
         if (pice.kind == "king") {
             this.kingsPlaces[this.turnOf] = to;
         }
 
-        let isMate = this.checkMate(checkersSquares);
-        console.log("MATE", isMate);
+        let isMate = this.checkMate();
 
         this.changePriority();
         return true;
