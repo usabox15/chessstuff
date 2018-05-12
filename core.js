@@ -130,6 +130,46 @@ class Action {
 
             this.nextSquareAction(occupiedSquares, square, [x, y]);
         }
+
+        let thisKing = occupiedSquares[this.getSquare(square)]
+        for (let [kingAction, conterAction] of [["move", "move"], ["attack", "cover"]]) {
+            let wrongSquares = [];
+            for (let sqr of this.squares[kingAction]) {
+                let isWrongSquare = false;
+                for (let p of Object.values(occupiedSquares)) {
+                    if (p.color != thisKing.color && p.action.squares[conterAction].includes(sqr)) {
+                        isWrongSquare = true;
+                        wrongSquares.push(sqr);
+                        break;
+                    }
+                }
+                if (isWrongSquare) continue;
+                for (let checkerSquare of thisKing.checkersSquares) {
+                    let linedXray = false;
+                    let checker = occupiedSquares[checkerSquare];
+                    if (checker.action.squares["xray"].includes(sqr)) {
+                        if (checker.kind == "queen") {
+                            let [numCheckerSquare, numKingSquare] = (new Game).getNumCheckerAndKingSquares(checkerSquare, this.getSquare(square));
+                            let dif = (new Game).getLinedCheckerDirection(numCheckerSquare, numKingSquare);
+                            let extLineSqr = [numKingSquare[0] - dif[0], numKingSquare[1] - dif[1]];
+                            if (!(extLineSqr[0] < 0 || extLineSqr[0] > 7 || extLineSqr[1] < 0 || extLineSqr[1] > 7) && (new Action).getSquare(extLineSqr) == escapeSquare) {
+                                linedXray = true;
+                            }
+                        }
+                        else {
+                            linedXray = true;
+                        }
+                    }
+                    if (linedXray) {
+                        wrongSquares.push(sqr);
+                        break;
+                    }
+                }
+            }
+            for (let wsqr of wrongSquares) {
+                this.squares[kingAction].splice(this.squares[kingAction].indexOf(wsqr), 1);
+            }
+        }
     }
 
     pawn(occupiedSquares, square) {
