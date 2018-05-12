@@ -17,19 +17,23 @@ class Action {
         this.getInitState();
     }
 
+    refreshSquareFinder() {
+        this.sqrBeforeXray = null;
+        this.endOfALine = false;
+    }
+
     getInitState() {
         this.squares = {"move": [], "attack": [], "xray": [], "cover": []};
-        this.isXray = false;
-        this.endOfALine = false;
+        this.refreshSquareFinder();
     }
 
     nextSquareAction(occupiedSquares, square, nextSquare, linear=false) {
         let strSquare = this.getSquare(nextSquare);
-        if (this.isXray) {
+        if (this.sqrBeforeXray) {
             this.squares["xray"].push(strSquare);
             if (occupiedSquares[strSquare]) {
                 if (occupiedSquares[strSquare].color != this.color && occupiedSquares[strSquare].kind == "king" && this.squares["attack"].length > 0) {
-                    occupiedSquares[this.squares["attack"][this.squares["attack"].length - 1]].binned = true;
+                    occupiedSquares[this.sqrBeforeXray].binnersSquares.push(this.getSquare(square));
                 }
                 this.endOfALine = true;
             }
@@ -44,7 +48,7 @@ class Action {
             else {
                 this.squares["cover"].push(strSquare);
             }
-            if (linear) this.isXray = true;
+            if (linear) this.sqrBeforeXray = strSquare;
         }
         else {
             this.squares["move"].push(strSquare);
@@ -55,16 +59,14 @@ class Action {
         for (let j = 0; j <= 1; j++) {
             let k = Math.abs(j - 1);
             // up & right
-            this.isXray = false;
-            this.endOfALine = false;
+            this.refreshSquareFinder();
             for (let i = square[k] + 1; i <= 7; i++) {
                 let s = []; s[k] = i; s[j] = square[j];
                 this.nextSquareAction(occupiedSquares, square, s, true);
                 if (this.endOfALine) break;
             }
             // down & left
-            this.isXray = false;
-            this.endOfALine = false;
+            this.refreshSquareFinder();
             for (let i = square[k] - 1; i >= 0; i--) {
                 let s = []; s[k] = i; s[j] = square[j];
                 this.nextSquareAction(occupiedSquares, square, s, true);
@@ -76,8 +78,7 @@ class Action {
     bishop(occupiedSquares, square) {
         // downleft
         let [i, j] = [square[0] - 1, square[1] - 1];
-        this.isXray = false;
-        this.endOfALine = false;
+        this.refreshSquareFinder();
         while (i >= 0 && j >= 0) {
             this.nextSquareAction(occupiedSquares, square, [i, j], true);
             if (this.endOfALine) break;
@@ -85,8 +86,7 @@ class Action {
         }
         // downright
         [i, j] = [square[0] + 1, square[1] - 1];
-        this.isXray = false;
-        this.endOfALine = false;
+        this.refreshSquareFinder();
         while (i <= 7 && j >= 0) {
             this.nextSquareAction(occupiedSquares, square, [i, j], true);
             if (this.endOfALine) break;
@@ -94,8 +94,7 @@ class Action {
         }
         // upleft
         [i, j] = [square[0] - 1, square[1] + 1];
-        this.isXray = false;
-        this.endOfALine = false;
+        this.refreshSquareFinder();
         while (i >= 0 && j <= 7) {
             this.nextSquareAction(occupiedSquares, square, [i, j], true);
             if (this.endOfALine) break;
@@ -103,8 +102,7 @@ class Action {
         }
         // upright
         [i, j] = [square[0] + 1, square[1] + 1];
-        this.isXray = false;
-        this.endOfALine = false;
+        this.refreshSquareFinder();
         while (i <= 7 && j <= 7) {
             this.nextSquareAction(occupiedSquares, square, [i, j], true);
             if (this.endOfALine) break;
@@ -201,12 +199,7 @@ class Pice {
     }
 
     getInitState() {
-        if (this.kind == "king") {
-            this.checkersSquares = [];
-        }
-        else {
-            this.binned = false;
-        }
+        this[this.kind == "king" ? "checkersSquares" : "binnersSquares"] = [];
     }
 
     getSquares(occupiedSquares) {
@@ -260,7 +253,6 @@ class Game {
     constructor() {
         this.board = new Board;
         this.getInitialPosition();
-        this.board.refreshAllSquares();
         this.priority = 0;
         this.castleRights = {
             "white": {"short": true, "long": true},
@@ -307,6 +299,7 @@ class Game {
         }
         this.board.placePice("white", "queen", "d1");
         this.board.placePice("white", "king", "e1");
+        this.board.refreshAllSquares();
     }
 
     getCastleKind(pice, from, to) {
@@ -440,7 +433,7 @@ class Game {
                 }
 
                 for (let p of Object.values(this.board.occupiedSquares)) {
-                    if (p.color != this.turnOf && p.kind != "king" && !p.binned) {
+                    if (p.color != this.turnOf && p.kind != "king" && p.binnersSquares.length == 0) {
                         if (p.action.squares["attack"].includes(sqr)) {
                             return false;
                         }
