@@ -1,13 +1,35 @@
-var allKinds = [
-    "pawn",
-    "knight",
-    "bishop",
-    "rook",
-    "queen",
-    "king",
-];
-
+var allKinds = ["pawn", "knight", "bishop", "rook", "queen", "king"];
 var allColors = ["white", "black"];
+var symbolToNumber = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7};
+var numberToSymbol= {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"};
+
+
+function strToNum(square) {
+    return [symbolToNumber[square[0]], +square[1] - 1];
+}
+
+
+function numToStr(square) {
+    return numberToSymbol[square[0]] + (square[1] + 1);
+}
+
+
+function getBetweenSquares(numSquare1, numSquare2, include=false) {
+    let dx = Math.abs(numSquare2[0] - numSquare1[0]);
+    let dy = Math.abs(numSquare2[1] - numSquare1[1]);
+    if (dx != dy && (dx != 0 || dy != 0)) {
+        return [];
+    }
+    let betweenSquares = [];
+    let dif = (new Game).getLinedCheckerDirection(numSquare1, numSquare2);
+    let distance = Math.max(dx, dy);
+    let start = include ? 0 : 1;
+    let end = distance - start;
+    for (let i = start; i <= end; i++) {
+        betweenSquares.push(numToStr([numSquare2[0] + i * dif[0], numSquare2[1] + i * dif[1]]));
+    }
+    return betweenSquares;
+}
 
 
 class Action {
@@ -28,12 +50,12 @@ class Action {
     }
 
     nextSquareAction(occupiedSquares, square, nextSquare, linear=false) {
-        let strSquare = this.getSquare(nextSquare);
+        let strSquare = numToStr(nextSquare);
         if (this.sqrBeforeXray) {
             this.squares["xray"].push(strSquare);
             if (occupiedSquares[strSquare]) {
-                if (occupiedSquares[strSquare].color != this.color && occupiedSquares[strSquare].kind == "king" && this.squares["attack"].length > 0) {
-                    occupiedSquares[this.sqrBeforeXray].binnersSquares.push(this.getSquare(square));
+                if (occupiedSquares[strSquare].color != this.color && occupiedSquares[strSquare].kind == "king" && occupiedSquares[this.sqrBeforeXray].color != this.color) {
+                    occupiedSquares[this.sqrBeforeXray].binderSquare = square;
                 }
                 this.endOfALine = true;
             }
@@ -42,7 +64,7 @@ class Action {
             if (occupiedSquares[strSquare].color != this.color) {
                 this.squares["attack"].push(strSquare);
                 if (occupiedSquares[strSquare].kind == "king") {
-                    occupiedSquares[strSquare].checkersSquares.push(this.getSquare(square));
+                    occupiedSquares[strSquare].checkersSquares.push(numToStr(square));
                 }
             }
             else {
@@ -133,7 +155,7 @@ class Action {
             this.nextSquareAction(occupiedSquares, square, [x, y]);
         }
 
-        let thisKing = occupiedSquares[this.getSquare(square)]
+        let thisKing = occupiedSquares[numToStr(square)]
         for (let kingAction of ["move", "attack"]) {
             let wrongSquares = [];
             for (let sqr of this.squares[kingAction]) {
@@ -151,10 +173,10 @@ class Action {
                     let checker = occupiedSquares[checkerSquare];
                     if (checker.action.squares["xray"].includes(sqr)) {
                         if (checker.kind == "queen") {
-                            let [numCheckerSquare, numKingSquare] = (new Game).getNumCheckerAndKingSquares(checkerSquare, this.getSquare(square));
+                            let [numCheckerSquare, numKingSquare] = (new Game).getNumCheckerAndKingSquares(checkerSquare, numToStr(square));
                             let dif = (new Game).getLinedCheckerDirection(numCheckerSquare, numKingSquare);
                             let extLineSqr = [numKingSquare[0] - dif[0], numKingSquare[1] - dif[1]];
-                            if (!(extLineSqr[0] < 0 || extLineSqr[0] > 7 || extLineSqr[1] < 0 || extLineSqr[1] > 7) && (new Action).getSquare(extLineSqr) == escapeSquare) {
+                            if (!(extLineSqr[0] < 0 || extLineSqr[0] > 7 || extLineSqr[1] < 0 || extLineSqr[1] > 7) && numToStr(extLineSqr) == escapeSquare) {
                                 linedXray = true;
                             }
                         }
@@ -178,27 +200,27 @@ class Action {
         let moveSquares = [];
         let attackSquares = [];
         if (this.color == "white") {
-            moveSquares.push(this.getSquare([square[0], square[1] + 1]));
+            moveSquares.push(numToStr([square[0], square[1] + 1]));
             if (square[1] == 1) {
-                moveSquares.push(this.getSquare([square[0], square[1] + 2]));
+                moveSquares.push(numToStr([square[0], square[1] + 2]));
             }
             if (square[0] - 1 >= 0) {
-                attackSquares.push(this.getSquare([square[0] - 1, square[1] + 1]))
+                attackSquares.push(numToStr([square[0] - 1, square[1] + 1]))
             }
             if (square[0] + 1 <= 7) {
-                attackSquares.push(this.getSquare([square[0] + 1, square[1] + 1]))
+                attackSquares.push(numToStr([square[0] + 1, square[1] + 1]))
             }
         }
         else {
-            moveSquares.push(this.getSquare([square[0], square[1] - 1]));
+            moveSquares.push(numToStr([square[0], square[1] - 1]));
             if (square[1] == 6) {
-                moveSquares.push(this.getSquare([square[0], square[1] - 2]));
+                moveSquares.push(numToStr([square[0], square[1] - 2]));
             }
             if (square[0] - 1 >= 0) {
-                attackSquares.push(this.getSquare([square[0] - 1, square[1] - 1]))
+                attackSquares.push(numToStr([square[0] - 1, square[1] - 1]))
             }
             if (square[0] + 1 <= 7) {
-                attackSquares.push(this.getSquare([square[0] + 1, square[1] - 1]))
+                attackSquares.push(numToStr([square[0] + 1, square[1] - 1]))
             }
         }
 
@@ -217,7 +239,7 @@ class Action {
                 else {
                     this.squares["attack"].push(sqr);
                     if (occupiedSquares[sqr].kind == "king") {
-                        occupiedSquares[sqr].checkersSquares.push(this.getSquare(square));
+                        occupiedSquares[sqr].checkersSquares.push(numToStr(square));
                     }
                 }
             }
@@ -230,11 +252,6 @@ class Action {
             this[item](occupiedSquares, square);
         }
     }
-
-    getSquare(numSquare) {
-        let numberToSymbol= {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"};
-        return numberToSymbol[numSquare[0]] + (numSquare[1] + 1);
-    }
 }
 
 
@@ -242,17 +259,49 @@ class Pice {
     constructor(color, kind, square) {
         this.color = color;
         this.kind = kind;
-        this.square = square;
+        this.getPlace(square);
         this.action = new Action(color, kind);
         this.getInitState();
     }
 
     getInitState() {
-        this[this.kind == "king" ? "checkersSquares" : "binnersSquares"] = [];
+        if (this.kind == "king") {
+            this.checkersSquares = [];
+        }
+        else {
+            this.binderSquare = null;
+        }
+    }
+
+    getPlace(square) {
+        this.strSquare = square;
+        this.numSquare = strToNum(square);
     }
 
     getSquares(occupiedSquares) {
-        this.action.getSquares(occupiedSquares, this.square)
+        this.action.getSquares(occupiedSquares, this.numSquare)
+    }
+
+    getBind(occupiedSquares, kingSquare) {
+        if (this.kind == "knight") {
+            for (let actonKind of ["move", "attack", "cover"]) {
+                this.action.squares[actonKind] = [];
+            }
+        }
+        else {
+            let betweenSquares = getBetweenSquares(this.binderSquare, strToNum(kingSquare), true);
+            for (let actonKind of ["move", "attack", "cover"]) {
+                let wrongSquares = [];
+                for (let sqr of this.action.squares[actonKind]) {
+                    if (!betweenSquares.includes(sqr)) {
+                        wrongSquares.push(sqr);
+                    }
+                }
+                for (let wsqr of wrongSquares) {
+                    this.action.squares[actonKind].splice(this.action.squares[actonKind].indexOf(wsqr), 1);
+                }
+            }
+        }
     }
 }
 
@@ -260,15 +309,11 @@ class Pice {
 class Board {
     constructor() {
         this.occupiedSquares = {};
-    }
-
-    getSquare(strSquare) {
-        let symbolToNumber = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7};
-        return [symbolToNumber[strSquare[0]], +strSquare[1] - 1];
+        this.kingsPlaces = {"white": "e1", "black": "e8"};
     }
 
     placePice(color, kind, strSquare) {
-        this.occupiedSquares[strSquare] = new Pice(color, kind, this.getSquare(strSquare));
+        this.occupiedSquares[strSquare] = new Pice(color, kind, strSquare);
     }
 
     removePice(strSquare) {
@@ -279,12 +324,11 @@ class Board {
         let pice = this.occupiedSquares[from];
         this.removePice(from);
         this.occupiedSquares[to] = pice;
-        pice.square = this.getSquare(to);
+        pice.getPlace(to);
+        if (pice.kind == "king") {
+            this.kingsPlaces[pice.color] = to;
+        }
         this.refreshAllSquares();
-    }
-
-    refreshSquares(strSquare) {
-        this.occupiedSquares[strSquare].getSquares(this.occupiedSquares);
     }
 
     refreshAllSquares() {
@@ -292,7 +336,19 @@ class Board {
             pice.getInitState();
         }
         for (let pice of Object.values(this.occupiedSquares)) {
-            pice.getSquares(this.occupiedSquares);
+            if (pice.kind != "king") {
+                pice.getSquares(this.occupiedSquares);
+            }
+        }
+        for (let pice of Object.values(this.occupiedSquares)) {
+            if (pice.kind == "king") {
+                pice.getSquares(this.occupiedSquares);
+            }
+        }
+        for (let pice of Object.values(this.occupiedSquares)) {
+            if (pice.binderSquare) {
+                pice.getBind(this.occupiedSquares, this.kingsPlaces[pice.color]);
+            }
         }
     }
 }
@@ -306,8 +362,8 @@ class Game {
         this.castleRights = {
             "white": {"short": true, "long": true},
             "black": {"short": true, "long": true},
-        }
-        this.kingsPlaces = {"white": "e1", "black": "e8"}
+        };
+        this.kingsPlaces = {"white": "e1", "black": "e8"};
     }
 
     get turnOf() {
@@ -396,8 +452,7 @@ class Game {
     }
 
     getNumCheckerAndKingSquares(checkerSquare, kingSquare) {
-        let getNumSquare = (new Board).getSquare;
-        return [getNumSquare(checkerSquare), getNumSquare(kingSquare)];
+        return [strToNum(checkerSquare), strToNum(kingSquare)];
     }
 
     getLinedCheckerDirection(numCheckerSquare, numKingSquare) {
@@ -423,8 +478,7 @@ class Game {
                 if (extLineSqr[0] < 0 || extLineSqr[0] > 7 || extLineSqr[1] < 0 || extLineSqr[1] > 7) {
                     return false;
                 }
-                let getStrSquare = (new Action).getSquare;
-                if (getStrSquare(extLineSqr) == escapeSquare) {
+                if (numToStr(extLineSqr) == escapeSquare) {
                     return true;
                 }
             }
@@ -471,18 +525,11 @@ class Game {
                 let betweenSquares = [];
                 if (["queen", "rook", "bishop"].includes(checker.kind)) {
                     let [numCheckerSquare, numKingSquare] = this.getNumCheckerAndKingSquares(sqr, this.kingsPlaces[oppColor]);
-                    let dif = this.getLinedCheckerDirection(numCheckerSquare, numKingSquare);
-                    let distance = Math.max(Math.abs(numKingSquare[0] - numCheckerSquare[0]), Math.abs(numKingSquare[1] - numCheckerSquare[1]));
-                    if (distance > 1) {
-                        let getStrSquare = (new Action).getSquare;
-                        for (let i = 1; i < distance; i++) {
-                            betweenSquares.push(getStrSquare([numKingSquare[0] + i * dif[0], numKingSquare[1] + i * dif[1]]));
-                        }
-                    }
+                    betweenSquares = getBetweenSquares(numCheckerSquare, numKingSquare);
                 }
 
                 for (let p of Object.values(this.board.occupiedSquares)) {
-                    if (p.color != this.turnOf && p.kind != "king" && p.binnersSquares.length == 0) {
+                    if (p.color != this.turnOf && p.kind != "king" && !p.binderSquare) {
                         if (p.action.squares["attack"].includes(sqr)) {
                             return false;
                         }
@@ -510,6 +557,7 @@ class Game {
         let castleKind = this.getCastleKind(pice, from, to);
         if (castleKind && this.castleRights[this.turnOf][castleKind]) {
             this.castleReplacePice(castleKind, from, to);
+            this.kingsPlaces[this.turnOf] = to;
             this.changePriority();
             return true;
         }
