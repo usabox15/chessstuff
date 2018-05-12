@@ -23,7 +23,7 @@ class Action {
     }
 
     getInitState() {
-        this.squares = {"move": [], "attack": [], "xray": [], "cover": []};
+        this.squares = {"move": [], "attack": [], "xray": [], "cover": [], "control": []};
         this.refreshSquareFinder();
     }
 
@@ -48,10 +48,12 @@ class Action {
             else {
                 this.squares["cover"].push(strSquare);
             }
+            this.squares["control"].push(strSquare);
             if (linear) this.sqrBeforeXray = strSquare;
         }
         else {
             this.squares["move"].push(strSquare);
+            this.squares["control"].push(strSquare);
         }
     }
 
@@ -132,12 +134,12 @@ class Action {
         }
 
         let thisKing = occupiedSquares[this.getSquare(square)]
-        for (let [kingAction, conterAction] of [["move", "move"], ["attack", "cover"]]) {
+        for (let kingAction of ["move", "attack"]) {
             let wrongSquares = [];
             for (let sqr of this.squares[kingAction]) {
                 let isWrongSquare = false;
                 for (let p of Object.values(occupiedSquares)) {
-                    if (p.color != thisKing.color && p.action.squares[conterAction].includes(sqr)) {
+                    if (p.color != thisKing.color && p.action.squares["control"].includes(sqr)) {
                         isWrongSquare = true;
                         wrongSquares.push(sqr);
                         break;
@@ -203,13 +205,20 @@ class Action {
         for (let sqr of moveSquares) {
             if (occupiedSquares[sqr]) break;
             this.squares["move"].push(sqr);
+            this.squares["control"].push(sqr);
         }
 
         for (let sqr of attackSquares) {
-            if (occupiedSquares[sqr] && occupiedSquares[sqr].color != this.color) {
-                this.squares["attack"].push(sqr);
-                if (occupiedSquares[sqr].kind == "king") {
-                    occupiedSquares[sqr].checkersSquares.push(this.getSquare(square));
+            this.squares["control"].push(sqr);
+            if (occupiedSquares[sqr]) {
+                if (occupiedSquares[sqr].color == this.color) {
+                    this.squares["cover"].push(sqr);
+                }
+                else {
+                    this.squares["attack"].push(sqr);
+                    if (occupiedSquares[sqr].kind == "king") {
+                        occupiedSquares[sqr].checkersSquares.push(this.getSquare(square));
+                    }
                 }
             }
         }
