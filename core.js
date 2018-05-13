@@ -316,7 +316,8 @@ class Queen extends Pice {
         super(color, "queen", square);
     }
 
-    queenSquares(occupiedSquares) {
+    getSquares(occupiedSquares) {
+        this.getInitSquares();
         this.rookSquares(occupiedSquares);
         this.bishopSquares(occupiedSquares);
     }
@@ -328,9 +329,17 @@ Object.defineProperty(Queen.prototype, "bishopSquares", Object.getOwnPropertyDes
 class King extends Pice {
     constructor(color, square) {
         super(color, "king", square);
+        this.rank = color == "white" ? "1" : "8";
+        this.castlePoints = {"long": "c", "short": "g"};
+        this.castleRoads = {
+            "long": {"free": ["b", "c", "d"], "safe": ["c", "d"]},
+            "short": {"free": ["f", "g"], "safe": ["f", "g"]},
+        };
     }
 
-    kingSquares(occupiedSquares) {
+    getSquares(occupiedSquares, castleRights) {
+        this.getInitSquares();
+
         let ofsets = [[-1, 0], [-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1]];
         for (let ofset of ofsets) {
             let x = this.numSquare[0] + ofset[0];
@@ -377,6 +386,46 @@ class King extends Pice {
                 this.squares[kingAction].splice(this.squares[kingAction].indexOf(wsqr), 1);
             }
         }
+
+        for (let kind of ["long", "short"]) {
+            if (castleRights[kind] && this.acceptedCastle(occupiedSquares, kind)) {
+                this.squares["move"].push(this.castlePoints[kind] + this.rank)
+            }
+        }
+    }
+
+    acceptedCastle(occupiedSquares, kind) {
+        for (let type of ["free", "safe"]) {
+            if (!this[type + "CastleRoad"](occupiedSquares, this.castleRoads[kind][type])) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    freeCastleRoad(occupiedSquares, columns) {
+        for (let column of columns) {
+            if (occupiedSquares[column + this.rank]) return false;
+        }
+        return true;
+    }
+
+    safeCastleRoad(occupiedSquares, columns) {
+        for (let pice of Object.values(occupiedSquares).filter(p => p.color != this.color)) {
+            for (let column of columns) {
+                if (pice.squares["move"].includes(column + this.rank)) return false;
+            }
+        }
+        return true;
+    }
+
+    getCheck(checker, betweenSquares) {
+        for (let column of Object.values(this.castlePoints)) {
+            let square = column + this.rank;
+            if (this.squares["move"].includes(square)) {
+                this.squares["move"].splice(this.squares["move"].indexOf(square), 1);
+            }
+        }
     }
 }
 
@@ -386,6 +435,10 @@ class Board {
         this.occupiedSquares = {};
         this.priority = [0, 1];
         this.result = null;
+        this.castleRights = {
+            "white": {"short": true, "long": true},
+            "black": {"short": true, "long": true},
+        };
         this.kingsPlaces = {"white": "e1", "black": "e8"};
         this.picesBox = {
             "pawn": Pawn,
@@ -421,13 +474,29 @@ class Board {
         delete this.occupiedSquares[strSquare];
     }
 
-    replacePice(from, to) {
+    castleRookReplace(from, to, king) {
+        if (from == "e" + king.rank) {
+            if (to == "c" + king.rank) {
+                this.replacePice("a" + king.rank, "d" + king.rank, false);
+            }
+            else if (to == "g" + king.rank) {
+                this.replacePice("h" + king.rank, "f" + king.rank, false);
+            }
+        }
+    }
+
+    replacePice(from, to, refresh=true) {
         let pice = this.occupiedSquares[from];
         this.removePice(from);
         this.occupiedSquares[to] = pice;
         pice.getPlace(to);
-        if (pice.kind == "king") this.kingsPlaces[pice.color] = to;
-        this.refreshAllSquares();
+        if (pice.kind == "king") {
+            this.kingsPlaces[pice.color] = to;
+            this.castleRookReplace(from, to, pice);
+        }
+        if (refresh) {
+            this.refreshAllSquares();
+        }
     }
 
     refreshAllSquares() {
@@ -438,7 +507,7 @@ class Board {
             pice.getSquares(this.occupiedSquares);
         }
         for (let pice of this.allPices.filter(p => p.kind == "king")) {
-            pice.getSquares(this.occupiedSquares);
+            pice.getSquares(this.occupiedSquares, this.castleRights[pice.color]);
         }
         for (let pice of this.allPices.filter(p => p.binderSquare)) {
             pice.getBind(this.occupiedSquares, this.kingsPlaces[pice.color]);
@@ -452,7 +521,7 @@ class Board {
             if (["queen", "rook", "bishop"].includes(checker.kind)) {
                 betweenSquares = getBetweenSquares(checker.numSquare, oppKing.numSquare);
             }
-            for (let pice of this.allPices.filter(p => p.color == this.opponentColor && p.kind != "king")) {
+            for (let pice of this.allPices.filter(p => p.color == this.opponentColor)) {
                 pice.getCheck(checker, betweenSquares);
                 if (!pice.stuck) noMoves = false;
             }
@@ -475,11 +544,6 @@ class Game {
         this.board = new Board;
         this.getInitialPosition();
         this.priority = 0;
-        this.castleRights = {
-            "white": {"short": true, "long": true},
-            "black": {"short": true, "long": true},
-        };
-        this.kingsPlaces = {"white": "e1", "black": "e8"};
     }
 
     get turnOf() {
@@ -523,63 +587,10 @@ class Game {
         this.board.refreshAllSquares();
     }
 
-    getCastleKind(pice, from, to) {
-        if (pice.kind != "king") return null;
-        let r = this.turnOf == "white" ? "1" : "8";
-        if (from == "e" + r) {
-            if (to == "c" + r && this.freeCastleRoad(["b" + r, "c" + r, "d" + r]) && this.safeCastleRoad(["c" + r, "d" + r])) {
-                return "long";
-            }
-            if (to == "g" + r && this.freeCastleRoad(["f" + r, "g" + r]) && this.safeCastleRoad(["f" + r, "g" + r])) {
-                return "short";
-            }
-        }
-        return null;
-    }
-
-    freeCastleRoad(squares) {
-        for (let sqr of squares) {
-            if (this.board.occupiedSquares[sqr]) return false;
-        }
-        return true;
-    }
-
-    safeCastleRoad(squares) {
-        for (let pice of Object.values(this.board.occupiedSquares)) {
-            for (let sqr of squares) {
-                if (pice.color != this.turnOf && pice.squares["move"].includes(sqr)) return false;
-            }
-        }
-        return true;
-    }
-
-    castleReplacePice(kind, kingFrom, kingTo) {
-        let rank = this.turnOf == "white" ? "1" : "8";
-        if (kind == "long") {
-            var rookFrom = "a" + rank;
-            var rookTo = "d" + rank;
-        }
-        else {
-            var rookFrom = "h" + rank;
-            var rookTo = "f" + rank;
-        }
-        this.board.replacePice(kingFrom, kingTo);
-        this.board.replacePice(rookFrom, rookTo);
-    }
-
     move(from, to) {
         let pice = this.board.occupiedSquares[from];
         if (!pice || pice.color != this.turnOf) {
             return false;
-        }
-
-        let castleKind = this.getCastleKind(pice, from, to);
-        if (castleKind && this.castleRights[this.turnOf][castleKind]) {
-            this.castleReplacePice(castleKind, from, to);
-            this.kingsPlaces[this.turnOf] = to;
-            this.changePriority();
-            this.board.changePriority();
-            return true;
         }
 
         if (!pice.squares["move"].includes(to) && !pice.squares["attack"].includes(to)) {
@@ -587,10 +598,6 @@ class Game {
         }
 
         this.board.replacePice(from, to);
-
-        if (pice.kind == "king") {
-            this.kingsPlaces[this.turnOf] = to;
-        }
 
         console.log("result", this.board.result);
 
