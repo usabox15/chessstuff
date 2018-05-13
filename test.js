@@ -19,7 +19,7 @@ var symbols = {
 
 function markingSquares(pice) {
     for (let actionKind of ["move", "attack", "xray", "cover"]){
-        for (let sqr of pice.action.squares[actionKind]) {
+        for (let sqr of pice.squares[actionKind]) {
             $(".square[x=" + sqr[0] + "][y=" + sqr[1] + "]").addClass(actionKind + " marked");
         }
     }

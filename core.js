@@ -46,11 +46,17 @@ function getBetweenSquares(numSquare1, numSquare2, include=false) {
 }
 
 
-class Action {
-    constructor(color, kind) {
+class Pice {
+    constructor(color, kind, square) {
         this.color = color;
-        this.items = kind == "queen" ? ["rook", "bishop"] : [kind];
+        this.kind = kind;
+        this.getPlace(square);
+        this.getInitSquares();
         this.getInitState();
+    }
+
+    get stuck() {
+        return this.squares["move"].length == 0 && this.squares["attack"].length == 0;
     }
 
     refreshSquareFinder() {
@@ -58,9 +64,28 @@ class Action {
         this.endOfALine = false;
     }
 
-    getInitState() {
+    getInitSquares() {
         this.squares = {"move": [], "attack": [], "xray": [], "cover": [], "control": []};
         this.refreshSquareFinder();
+    }
+
+    getInitState() {
+        if (this.kind == "king") {
+            this.checkersSquares = [];
+        }
+        else {
+            this.binderSquare = null;
+        }
+    }
+
+    getPlace(square) {
+        this.strSquare = square;
+        this.numSquare = strToNum(square);
+    }
+
+    getSquares(occupiedSquares) {
+        this.getInitSquares();
+        this[this.kind + "Squares"](occupiedSquares);
     }
 
     nextSquareAction(occupiedSquares, square, nextSquare, linear=false) {
@@ -93,102 +118,247 @@ class Action {
         }
     }
 
-    rook(occupiedSquares, square) {
-        for (let j = 0; j <= 1; j++) {
-            let k = Math.abs(j - 1);
-            // up & right
-            this.refreshSquareFinder();
-            for (let i = square[k] + 1; i <= 7; i++) {
-                let s = []; s[k] = i; s[j] = square[j];
-                this.nextSquareAction(occupiedSquares, square, s, true);
-                if (this.endOfALine) break;
-            }
-            // down & left
-            this.refreshSquareFinder();
-            for (let i = square[k] - 1; i >= 0; i--) {
-                let s = []; s[k] = i; s[j] = square[j];
-                this.nextSquareAction(occupiedSquares, square, s, true);
-                if (this.endOfALine) break;
+    getTotalImmobilize() {
+        for (let actonKind of ["move", "attack", "cover", "xray"]) {
+            this.squares[actonKind] = [];
+        }
+    }
+
+    getBind(occupiedSquares, kingSquare) {
+        if (this.kind == "knight") {
+            this.getTotalImmobilize();
+        }
+        else {
+            this.squares["xray"] = [];
+            let betweenSquares = getBetweenSquares(this.binderSquare, strToNum(kingSquare), true);
+            for (let actonKind of ["move", "attack", "cover"]) {
+                let wrongSquares = [];
+                for (let sqr of this.squares[actonKind]) {
+                    if (!betweenSquares.includes(sqr)) {
+                        wrongSquares.push(sqr);
+                    }
+                }
+                for (let wsqr of wrongSquares) {
+                    this.squares[actonKind].splice(this.squares[actonKind].indexOf(wsqr), 1);
+                }
             }
         }
     }
 
-    bishop(occupiedSquares, square) {
+    getCheck(checker, betweenSquares) {
+        for (let actonKind of ["cover", "xray"]) {
+            this.squares[actonKind] = [];
+        }
+        if (this.squares["attack"].includes(checker.strSquare)) {
+            this.squares["attack"] = [checker.strSquare];
+        }
+        else {
+            this.squares["attack"] = [];
+        }
+        let wrongMoves = [];
+        for (let sqr of this.squares["move"]) {
+            if (!betweenSquares.includes(sqr)) {
+                wrongMoves.push(sqr);
+            }
+        }
+        for (let sqr of wrongMoves) {
+            this.squares["move"].splice(this.squares["move"].indexOf(sqr), 1);
+        }
+    }
+}
+
+
+class Pawn extends Pice {
+    constructor(color, square) {
+        super(color, "pawn", square);
+    }
+
+    pawnSquares(occupiedSquares) {
+        let moveSquares = [];
+        let attackSquares = [];
+        if (this.color == "white") {
+            moveSquares.push(numToStr([this.numSquare[0], this.numSquare[1] + 1]));
+            if (this.numSquare[1] == 1) {
+                moveSquares.push(numToStr([this.numSquare[0], this.numSquare[1] + 2]));
+            }
+            if (this.numSquare[0] - 1 >= 0) {
+                attackSquares.push(numToStr([this.numSquare[0] - 1, this.numSquare[1] + 1]))
+            }
+            if (this.numSquare[0] + 1 <= 7) {
+                attackSquares.push(numToStr([this.numSquare[0] + 1, this.numSquare[1] + 1]))
+            }
+        }
+        else {
+            moveSquares.push(numToStr([this.numSquare[0], this.numSquare[1] - 1]));
+            if (this.numSquare[1] == 6) {
+                moveSquares.push(numToStr([this.numSquare[0], this.numSquare[1] - 2]));
+            }
+            if (this.numSquare[0] - 1 >= 0) {
+                attackSquares.push(numToStr([this.numSquare[0] - 1, this.numSquare[1] - 1]))
+            }
+            if (this.numSquare[0] + 1 <= 7) {
+                attackSquares.push(numToStr([this.numSquare[0] + 1, this.numSquare[1] - 1]))
+            }
+        }
+
+        for (let sqr of moveSquares) {
+            if (occupiedSquares[sqr]) break;
+            this.squares["move"].push(sqr);
+        }
+
+        for (let sqr of attackSquares) {
+            this.squares["control"].push(sqr);
+            if (occupiedSquares[sqr]) {
+                if (occupiedSquares[sqr].color == this.color) {
+                    this.squares["cover"].push(sqr);
+                }
+                else {
+                    this.squares["attack"].push(sqr);
+                    if (occupiedSquares[sqr].kind == "king") {
+                        occupiedSquares[sqr].checkersSquares.push(this.strSquare);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+class Knight extends Pice {
+    constructor(color, square) {
+        super(color, "knight", square);
+    }
+
+    knightSquares(occupiedSquares) {
+        let ofsets = [[-2, -1], [-1, -2], [1, -2], [2, -1], [2, 1], [1, 2], [-1, 2], [-2, 1]];
+        for (let ofset of ofsets) {
+            let x = this.numSquare[0] + ofset[0];
+            let y = this.numSquare[1] + ofset[1];
+            if (x < 0 || x > 7 || y < 0 || y > 7) continue;
+
+            this.nextSquareAction(occupiedSquares, this.numSquare, [x, y]);
+        }
+    }
+}
+
+
+class Bishop extends Pice {
+    constructor(color, square) {
+        super(color, "bishop", square);
+    }
+
+    bishopSquares(occupiedSquares) {
         // downleft
-        let [i, j] = [square[0] - 1, square[1] - 1];
+        let [i, j] = [this.numSquare[0] - 1, this.numSquare[1] - 1];
         this.refreshSquareFinder();
         while (i >= 0 && j >= 0) {
-            this.nextSquareAction(occupiedSquares, square, [i, j], true);
+            this.nextSquareAction(occupiedSquares, this.numSquare, [i, j], true);
             if (this.endOfALine) break;
             i--; j--;
         }
         // downright
-        [i, j] = [square[0] + 1, square[1] - 1];
+        [i, j] = [this.numSquare[0] + 1, this.numSquare[1] - 1];
         this.refreshSquareFinder();
         while (i <= 7 && j >= 0) {
-            this.nextSquareAction(occupiedSquares, square, [i, j], true);
+            this.nextSquareAction(occupiedSquares, this.numSquare, [i, j], true);
             if (this.endOfALine) break;
             i++; j--;
         }
         // upleft
-        [i, j] = [square[0] - 1, square[1] + 1];
+        [i, j] = [this.numSquare[0] - 1, this.numSquare[1] + 1];
         this.refreshSquareFinder();
         while (i >= 0 && j <= 7) {
-            this.nextSquareAction(occupiedSquares, square, [i, j], true);
+            this.nextSquareAction(occupiedSquares, this.numSquare, [i, j], true);
             if (this.endOfALine) break;
             i--; j++;
         }
         // upright
-        [i, j] = [square[0] + 1, square[1] + 1];
+        [i, j] = [this.numSquare[0] + 1, this.numSquare[1] + 1];
         this.refreshSquareFinder();
         while (i <= 7 && j <= 7) {
-            this.nextSquareAction(occupiedSquares, square, [i, j], true);
+            this.nextSquareAction(occupiedSquares, this.numSquare, [i, j], true);
             if (this.endOfALine) break;
             i++; j++;
         }
     }
+}
 
-    knight(occupiedSquares, square) {
-        let ofsets = [[-2, -1], [-1, -2], [1, -2], [2, -1], [2, 1], [1, 2], [-1, 2], [-2, 1]];
-        for (let ofset of ofsets) {
-            let x = square[0] + ofset[0];
-            let y = square[1] + ofset[1];
-            if (x < 0 || x > 7 || y < 0 || y > 7) continue;
 
-            this.nextSquareAction(occupiedSquares, square, [x, y]);
-        }
+class Rook extends Pice {
+    constructor(color, square) {
+        super(color, "rook", square);
     }
 
-    king(occupiedSquares, square) {
+    rookSquares(occupiedSquares) {
+        for (let j = 0; j <= 1; j++) {
+            let k = Math.abs(j - 1);
+            // up & right
+            this.refreshSquareFinder();
+            for (let i = this.numSquare[k] + 1; i <= 7; i++) {
+                let s = []; s[k] = i; s[j] = this.numSquare[j];
+                this.nextSquareAction(occupiedSquares, this.numSquare, s, true);
+                if (this.endOfALine) break;
+            }
+            // down & left
+            this.refreshSquareFinder();
+            for (let i = this.numSquare[k] - 1; i >= 0; i--) {
+                let s = []; s[k] = i; s[j] = this.numSquare[j];
+                this.nextSquareAction(occupiedSquares, this.numSquare, s, true);
+                if (this.endOfALine) break;
+            }
+        }
+    }
+}
+
+
+class Queen extends Pice {
+    constructor(color, square) {
+        super(color, "queen", square);
+    }
+
+    queenSquares(occupiedSquares) {
+        this.rookSquares(occupiedSquares);
+        this.bishopSquares(occupiedSquares);
+    }
+}
+Object.defineProperty(Queen.prototype, "rookSquares", Object.getOwnPropertyDescriptor(Rook.prototype, "rookSquares"));
+Object.defineProperty(Queen.prototype, "bishopSquares", Object.getOwnPropertyDescriptor(Bishop.prototype, "bishopSquares"));
+
+
+class King extends Pice {
+    constructor(color, square) {
+        super(color, "king", square);
+    }
+
+    kingSquares(occupiedSquares) {
         let ofsets = [[-1, 0], [-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1]];
         for (let ofset of ofsets) {
-            let x = square[0] + ofset[0];
-            let y = square[1] + ofset[1];
+            let x = this.numSquare[0] + ofset[0];
+            let y = this.numSquare[1] + ofset[1];
             if (x < 0 || x > 7 || y < 0 || y > 7) continue;
 
-            this.nextSquareAction(occupiedSquares, square, [x, y]);
+            this.nextSquareAction(occupiedSquares, this.numSquare, [x, y]);
         }
 
-        let thisKing = occupiedSquares[numToStr(square)]
         for (let kingAction of ["move", "attack"]) {
             let wrongSquares = [];
             for (let sqr of this.squares[kingAction]) {
                 let isWrongSquare = false;
                 for (let p of Object.values(occupiedSquares)) {
-                    if (p.color != thisKing.color && p.action.squares["control"].includes(sqr)) {
+                    if (p.color != this.color && p.squares["control"].includes(sqr)) {
                         isWrongSquare = true;
                         wrongSquares.push(sqr);
                         break;
                     }
                 }
                 if (isWrongSquare) continue;
-                for (let checkerSquare of thisKing.checkersSquares) {
+                for (let checkerSquare of this.checkersSquares) {
                     let linedXray = false;
                     let checker = occupiedSquares[checkerSquare];
-                    if (checker.action.squares["xray"].includes(sqr)) {
+                    if (checker.squares["xray"].includes(sqr)) {
                         if (checker.kind == "queen") {
-                            let dif = getLinedCheckerDirection(checker.numSquare, square);
-                            let extLineSqr = [square[0] - dif[0], square[1] - dif[1]];
+                            let dif = getLinedCheckerDirection(checker.numSquare, this.numSquare);
+                            let extLineSqr = [this.numSquare[0] - dif[0], this.numSquare[1] - dif[1]];
                             if (!(extLineSqr[0] < 0 || extLineSqr[0] > 7 || extLineSqr[1] < 0 || extLineSqr[1] > 7) && numToStr(extLineSqr) == escapeSquare) {
                                 linedXray = true;
                             }
@@ -208,143 +378,6 @@ class Action {
             }
         }
     }
-
-    pawn(occupiedSquares, square) {
-        let moveSquares = [];
-        let attackSquares = [];
-        if (this.color == "white") {
-            moveSquares.push(numToStr([square[0], square[1] + 1]));
-            if (square[1] == 1) {
-                moveSquares.push(numToStr([square[0], square[1] + 2]));
-            }
-            if (square[0] - 1 >= 0) {
-                attackSquares.push(numToStr([square[0] - 1, square[1] + 1]))
-            }
-            if (square[0] + 1 <= 7) {
-                attackSquares.push(numToStr([square[0] + 1, square[1] + 1]))
-            }
-        }
-        else {
-            moveSquares.push(numToStr([square[0], square[1] - 1]));
-            if (square[1] == 6) {
-                moveSquares.push(numToStr([square[0], square[1] - 2]));
-            }
-            if (square[0] - 1 >= 0) {
-                attackSquares.push(numToStr([square[0] - 1, square[1] - 1]))
-            }
-            if (square[0] + 1 <= 7) {
-                attackSquares.push(numToStr([square[0] + 1, square[1] - 1]))
-            }
-        }
-
-        for (let sqr of moveSquares) {
-            if (occupiedSquares[sqr]) break;
-            this.squares["move"].push(sqr);
-        }
-
-        for (let sqr of attackSquares) {
-            this.squares["control"].push(sqr);
-            if (occupiedSquares[sqr]) {
-                if (occupiedSquares[sqr].color == this.color) {
-                    this.squares["cover"].push(sqr);
-                }
-                else {
-                    this.squares["attack"].push(sqr);
-                    if (occupiedSquares[sqr].kind == "king") {
-                        occupiedSquares[sqr].checkersSquares.push(numToStr(square));
-                    }
-                }
-            }
-        }
-    }
-
-    getSquares(occupiedSquares, square) {
-        this.getInitState();
-        for (let item of this.items) {
-            this[item](occupiedSquares, square);
-        }
-    }
-}
-
-
-class Pice {
-    constructor(color, kind, square) {
-        this.color = color;
-        this.kind = kind;
-        this.getPlace(square);
-        this.action = new Action(color, kind);
-        this.getInitState();
-    }
-
-    get stuck() {
-        return this.action.squares["move"].length == 0 && this.action.squares["attack"].length == 0;
-    }
-
-    getInitState() {
-        if (this.kind == "king") {
-            this.checkersSquares = [];
-        }
-        else {
-            this.binderSquare = null;
-        }
-    }
-
-    getPlace(square) {
-        this.strSquare = square;
-        this.numSquare = strToNum(square);
-    }
-
-    getSquares(occupiedSquares) {
-        this.action.getSquares(occupiedSquares, this.numSquare)
-    }
-
-    getTotalImmobilize() {
-        for (let actonKind of ["move", "attack", "cover", "xray"]) {
-            this.action.squares[actonKind] = [];
-        }
-    }
-
-    getBind(occupiedSquares, kingSquare) {
-        if (this.kind == "knight") {
-            this.getTotalImmobilize();
-        }
-        else {
-            this.action.squares["xray"] = [];
-            let betweenSquares = getBetweenSquares(this.binderSquare, strToNum(kingSquare), true);
-            for (let actonKind of ["move", "attack", "cover"]) {
-                let wrongSquares = [];
-                for (let sqr of this.action.squares[actonKind]) {
-                    if (!betweenSquares.includes(sqr)) {
-                        wrongSquares.push(sqr);
-                    }
-                }
-                for (let wsqr of wrongSquares) {
-                    this.action.squares[actonKind].splice(this.action.squares[actonKind].indexOf(wsqr), 1);
-                }
-            }
-        }
-    }
-
-    getCheck(checker, betweenSquares) {
-        for (let actonKind of ["cover", "xray"]) {
-            this.action.squares[actonKind] = [];
-        }
-        if (this.action.squares["attack"].includes(checker.strSquare)) {
-            this.action.squares["attack"] = [checker.strSquare];
-        }
-        else {
-            this.action.squares["attack"] = [];
-        }
-        let wrongMoves = [];
-        for (let sqr of this.action.squares["move"]) {
-            if (!betweenSquares.includes(sqr)) {
-                wrongMoves.push(sqr);
-            }
-        }
-        for (let sqr of wrongMoves) {
-            this.action.squares["move"].splice(this.action.squares["move"].indexOf(sqr), 1);
-        }
-    }
 }
 
 
@@ -354,6 +387,14 @@ class Board {
         this.priority = [0, 1];
         this.result = null;
         this.kingsPlaces = {"white": "e1", "black": "e8"};
+        this.picesBox = {
+            "pawn": Pawn,
+            "knight": Knight,
+            "bishop": Bishop,
+            "rook": Rook,
+            "queen": Queen,
+            "king": King,
+        }
     }
 
     get allPices() {
@@ -373,7 +414,7 @@ class Board {
     }
 
     placePice(color, kind, strSquare) {
-        this.occupiedSquares[strSquare] = new Pice(color, kind, strSquare);
+        this.occupiedSquares[strSquare] = new this.picesBox[kind](color, strSquare);
     }
 
     removePice(strSquare) {
@@ -506,7 +547,7 @@ class Game {
     safeCastleRoad(squares) {
         for (let pice of Object.values(this.board.occupiedSquares)) {
             for (let sqr of squares) {
-                if (pice.color != this.turnOf && pice.action.squares["move"].includes(sqr)) return false;
+                if (pice.color != this.turnOf && pice.squares["move"].includes(sqr)) return false;
             }
         }
         return true;
@@ -541,7 +582,7 @@ class Game {
             return true;
         }
 
-        if (!pice.action.squares["move"].includes(to) && !pice.action.squares["attack"].includes(to)) {
+        if (!pice.squares["move"].includes(to) && !pice.squares["attack"].includes(to)) {
             return false;
         }
 
