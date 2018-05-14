@@ -54,6 +54,10 @@
     background-color: lightblue;
 }
 
+.square.aim.marked {
+    background-color: #f4e241 !important;
+}
+
 .square.move.marked {
     background-color: green !important;
 }
@@ -70,6 +74,6 @@
     background-color: #aa42f4 !important;
 }
 
-.square.aim.marked {
-    background-color: #f4e241 !important;
+.square.control.marked {
+    background-color: #ff9900 !important;
 }

@@ -17,16 +17,20 @@ var symbols = {
     },
 };
 
-function markingSquares(pice) {
+function markingSquares(pice, actionKind, aimed=false) {
+    for (let sqr of pice.squares[actionKind]) {
+        $(".square[x=" + sqr[0] + "][y=" + sqr[1] + "]").addClass((aimed ? "aim " : "") + actionKind + " marked");
+    }
+}
+
+function markingAbilitySquares(pice, aimed=false) {
     for (let actionKind of ["move", "attack", "xray", "cover"]){
-        for (let sqr of pice.squares[actionKind]) {
-            $(".square[x=" + sqr[0] + "][y=" + sqr[1] + "]").addClass(actionKind + " marked");
-        }
+        markingSquares(pice, actionKind, aimed);
     }
 }
 
 function unMarkingSquares() {
-    $(".square").removeClass("move attack xray cover marked");
+    $(".square").removeClass("aim move attack xray cover control marked");
 }
 
 function refreshBoard(brd) {
@@ -58,7 +62,7 @@ function refreshBoard(brd) {
 //     let square = $(this).attr("x") + $(this).attr("y");
 //     let pice = new Pice("white", "queen", board.getSquare(square));
 //     pice.getSquares(board.occupiedSquares);
-//     markingSquares(pice);
+//     markingAbilitySquares(pice);
 // })
 // .mouseleave(function() {
 //     unMarkingSquares();
@@ -102,7 +106,7 @@ function refreshBoard(brd) {
 // .mouseenter(function() {
 //     let pice = board.occupiedSquares[$(this).attr("x") + $(this).attr("y")];
 //     if (pice) {
-//         markingSquares(pice);
+//         markingAbilitySquares(pice);
 //     }
 // })
 // .mouseleave(function() {
@@ -119,27 +123,43 @@ var aimedSquare = null;
 refreshBoard(game.board);
 
 $(".square").on("click", function() {
+    let newSquare = $(this).attr("x") + $(this).attr("y");
     if (aimedSquare) {
-        let response = game.move(aimedSquare, $(this).attr("x") + $(this).attr("y"));
-        $(".square").removeClass("aim marked");
-        aimedSquare = null;
-        if (response.feedback.success) {
-            refreshBoard(game.board);
+        if (aimedSquare != newSquare) {
+            let response = game.move(aimedSquare, newSquare);
+            if (response.feedback.success) {
+                refreshBoard(game.board);
+            }
         }
+        unMarkingSquares();
+        aimedSquare = null;
     }
     else {
-        $(this).addClass("aim marked");
-        aimedSquare = $(this).attr("x") + $(this).attr("y");
+        let pice = game.board.occupiedSquares[newSquare];
+        if (pice && pice.color == game.board.currentColor) {
+            $(this).addClass("aim marked");
+            markingAbilitySquares(pice, true);
+            aimedSquare = newSquare;
+        }
     }
 })
 
-$(".square")
+$(".square:not(.aim)")
 .mouseenter(function() {
-    let pice = game.board.occupiedSquares[$(this).attr("x") + $(this).attr("y")];
-    if (pice) {
-        markingSquares(pice);
+    if (!aimedSquare) {
+        let pice = game.board.occupiedSquares[$(this).attr("x") + $(this).attr("y")];
+        if (pice) {
+            if (pice.color == game.board.currentColor) {
+                markingAbilitySquares(pice);
+            }
+            else {
+                markingSquares(pice, "control");
+            }
+        }
     }
 })
 .mouseleave(function() {
-    unMarkingSquares();
+    if (!aimedSquare) {
+        unMarkingSquares();
+    }
 });

@@ -455,6 +455,10 @@ class Board {
         return Object.values(this.occupiedSquares);
     }
 
+    get allOccupiedSquares() {
+        return Object.keys(this.occupiedSquares);
+    }
+
     get currentColor() {
         return allColors[this.priority[0]];
     }
