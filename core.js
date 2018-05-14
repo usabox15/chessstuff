@@ -287,6 +287,7 @@ class Bishop extends Pice {
 class Rook extends Pice {
     constructor(color, square) {
         super(color, "rook", square);
+        this.side = square[0] == "a" ? "long" : "short";
     }
 
     rookSquares(occupiedSquares) {
@@ -474,41 +475,58 @@ class Board {
         delete this.occupiedSquares[strSquare];
     }
 
-    castleRookReplace(from, to, king) {
+    castleRookMove(from, to, king) {
         if (from == "e" + king.rank) {
             if (to == "c" + king.rank) {
-                this.replacePice("a" + king.rank, "d" + king.rank, false);
+                this.movePice("a" + king.rank, "d" + king.rank, false);
             }
             else if (to == "g" + king.rank) {
-                this.replacePice("h" + king.rank, "f" + king.rank, false);
+                this.movePice("h" + king.rank, "f" + king.rank, false);
             }
         }
     }
 
-    replacePice(from, to, refresh=true) {
+    stopKingCastleRights(color) {
+        this.castleRights[color] = {"short": false, "long": false};
+    }
+
+    stopRookCastleRights(pice) {
+        this.castleRights[pice.color][pice.side] = false;
+    }
+
+    replacePice(from, to, pice) {
+        this.removePice(from);
+        this.occupiedSquares[to] = pice;
+        pice.getPlace(to);
+    }
+
+    movePice(from, to, refresh=true) {
         let pice = this.occupiedSquares[from];
+
         if (!pice) {
             return {"success": false, "description": "There isn't a pice to replace."};
         }
-
         if (pice.color != this.currentColor) {
             return {"success": false, "description": "Wrong color pice."};
         }
-
         if (!pice.squares["move"].includes(to) && !pice.squares["attack"].includes(to)) {
             return {"success": false, "description": "Illegal move."};
         }
 
-        this.removePice(from);
-        this.occupiedSquares[to] = pice;
-        pice.getPlace(to);
+        this.replacePice(from, to, pice);
         if (pice.kind == "king") {
             this.kingsPlaces[pice.color] = to;
-            this.castleRookReplace(from, to, pice);
+            this.castleRookMove(from, to, pice);
+            this.stopKingCastleRights(pice.color);
         }
-        if (refresh) this.refreshAllSquares();
-        this.changePriority();
-        return {"success": true, "description": "Successfully replaced!"};
+        else if (pice.kind == "rook") {
+            this.stopRookCastleRights(pice);
+        }
+        if (refresh) {
+            this.refreshAllSquares();
+            this.changePriority();
+        }
+        return {"success": true, "description": "Successfully moved!"};
     }
 
     refreshAllSquares() {
@@ -591,6 +609,6 @@ class Game {
     }
 
     move(from, to) {
-        return {"feedback": this.board.replacePice(from, to), "result": this.board.result};
+        return {"feedback": this.board.movePice(from, to), "result": this.board.result};
     }
 }
