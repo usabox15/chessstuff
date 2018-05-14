@@ -487,6 +487,18 @@ class Board {
 
     replacePice(from, to, refresh=true) {
         let pice = this.occupiedSquares[from];
+        if (!pice) {
+            return {"success": false, "description": "There isn't a pice to replace."};
+        }
+
+        if (pice.color != this.currentColor) {
+            return {"success": false, "description": "Wrong color pice."};
+        }
+
+        if (!pice.squares["move"].includes(to) && !pice.squares["attack"].includes(to)) {
+            return {"success": false, "description": "Illegal move."};
+        }
+
         this.removePice(from);
         this.occupiedSquares[to] = pice;
         pice.getPlace(to);
@@ -494,9 +506,9 @@ class Board {
             this.kingsPlaces[pice.color] = to;
             this.castleRookReplace(from, to, pice);
         }
-        if (refresh) {
-            this.refreshAllSquares();
-        }
+        if (refresh) this.refreshAllSquares();
+        this.changePriority();
+        return {"success": true, "description": "Successfully replaced!"};
     }
 
     refreshAllSquares() {
@@ -543,15 +555,6 @@ class Game {
     constructor() {
         this.board = new Board;
         this.getInitialPosition();
-        this.priority = 0;
-    }
-
-    get turnOf() {
-        return allColors[this.priority];
-    }
-
-    changePriority() {
-        this.priority = Math.abs(this.priority - 1);
     }
 
     getInitialPosition() {
@@ -588,21 +591,6 @@ class Game {
     }
 
     move(from, to) {
-        let pice = this.board.occupiedSquares[from];
-        if (!pice || pice.color != this.turnOf) {
-            return false;
-        }
-
-        if (!pice.squares["move"].includes(to) && !pice.squares["attack"].includes(to)) {
-            return false;
-        }
-
-        this.board.replacePice(from, to);
-
-        console.log("result", this.board.result);
-
-        this.changePriority();
-        this.board.changePriority();
-        return true;
+        return {"feedback": this.board.replacePice(from, to), "result": this.board.result};
     }
 }

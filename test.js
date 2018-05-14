@@ -120,10 +120,10 @@ refreshBoard(game.board);
 
 $(".square").on("click", function() {
     if (aimedSquare) {
-        let moved = game.move(aimedSquare, $(this).attr("x") + $(this).attr("y"));
+        let response = game.move(aimedSquare, $(this).attr("x") + $(this).attr("y"));
         $(".square").removeClass("aim marked");
         aimedSquare = null;
-        if (moved) {
+        if (response.feedback.success) {
             refreshBoard(game.board);
         }
     }
