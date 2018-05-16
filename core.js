@@ -173,7 +173,8 @@ class Pawn extends Pice {
         super(color, "pawn", square);
     }
 
-    pawnSquares(occupiedSquares) {
+    getSquares(occupiedSquares, enPassant) {
+        this.getInitSquares();
         let moveSquares = [];
         let attackSquares = [];
         if (this.color == "white") {
@@ -208,16 +209,20 @@ class Pawn extends Pice {
 
         for (let sqr of attackSquares) {
             this.squares["control"].push(sqr);
-            if (occupiedSquares[sqr]) {
-                if (occupiedSquares[sqr].color == this.color) {
+            let otherPice = occupiedSquares[sqr];
+            if (otherPice) {
+                if (otherPice.color == this.color) {
                     this.squares["cover"].push(sqr);
                 }
                 else {
                     this.squares["attack"].push(sqr);
-                    if (occupiedSquares[sqr].kind == "king") {
-                        occupiedSquares[sqr].checkersSquares.push(this.strSquare);
+                    if (otherPice.kind == "king") {
+                        otherPice.checkersSquares.push(this.strSquare);
                     }
                 }
+            }
+            else if (enPassant == sqr) {
+                this.squares["attack"].push(sqr);
             }
         }
     }
@@ -435,6 +440,7 @@ class Board {
     constructor() {
         this.occupiedSquares = {};
         this.priority = [0, 1];
+        this.enPassant = null;
         this.result = null;
         this.castleRights = {
             "white": {"short": true, "long": true},
@@ -498,6 +504,15 @@ class Board {
         this.castleRights[pice.color][pice.side] = false;
     }
 
+    enPassantMatter(from, to, pice) {
+        if (Math.abs(from[1] - to[1]) == 2) {
+            this.enPassant = from[0] + (+from[1] + (this.currentColor == "white" ? 1 : -1));
+        }
+        else if (pice.squares["attack"].includes(to) && !this.occupiedSquares[to]) {
+            this.removePice(to[0] + from[1]);
+        }
+    }
+
     replacePice(from, to, pice) {
         this.removePice(from);
         this.occupiedSquares[to] = pice;
@@ -517,7 +532,6 @@ class Board {
             return {"success": false, "description": "Illegal move."};
         }
 
-        this.replacePice(from, to, pice);
         if (pice.kind == "king") {
             this.kingsPlaces[pice.color] = to;
             this.castleRookMove(from, to, pice);
@@ -526,6 +540,12 @@ class Board {
         else if (pice.kind == "rook") {
             this.stopRookCastleRights(pice);
         }
+        else if (pice.kind == "pawn") {
+            this.enPassantMatter(from, to, pice);
+        }
+
+        this.replacePice(from, to, pice);
+
         if (refresh) {
             this.refreshAllSquares();
             this.changePriority();
@@ -537,8 +557,11 @@ class Board {
         for (let pice of this.allPices) {
             pice.getInitState();
         }
-        for (let pice of this.allPices.filter(p => p.kind != "king")) {
+        for (let pice of this.allPices.filter(p => p.kind != "king" && p.kind != "pawn")) {
             pice.getSquares(this.occupiedSquares);
+        }
+        for (let pice of this.allPices.filter(p => p.kind == "pawn")) {
+            pice.getSquares(this.occupiedSquares, this.enPassant);
         }
         for (let pice of this.allPices.filter(p => p.kind == "king")) {
             pice.getSquares(this.occupiedSquares, this.castleRights[pice.color]);
@@ -569,6 +592,7 @@ class Board {
         if (noMoves && oppKing.stuck) {
             this.result = [this.priority[1], this.priority[0]];
         }
+        this.enPassant = null;
     }
 }
 
