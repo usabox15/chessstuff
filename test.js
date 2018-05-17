@@ -127,7 +127,8 @@ $(".square").on("click", function() {
     if (aimedSquare) {
         if (aimedSquare != newSquare) {
             let response = game.move(aimedSquare, newSquare);
-            if (response.feedback.success) {
+            // console.log(game.board.result);
+            if (response.success) {
                 refreshBoard(game.board);
             }
         }

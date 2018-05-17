@@ -570,10 +570,9 @@ class Board {
             pice.getBind(this.occupiedSquares, this.kingsPlaces[pice.color]);
         }
         let oppKing = this.occupiedSquares[this.kingsPlaces[this.opponentColor]];
-        let noMoves = false;
         if (oppKing.checkersSquares.length == 1) {
             let betweenSquares = [];
-            noMoves = true;
+            let noMoves = true;
             let checker = this.occupiedSquares[oppKing.checkersSquares[0]];
             if (["queen", "rook", "bishop"].includes(checker.kind)) {
                 betweenSquares = getBetweenSquares(checker.numSquare, oppKing.numSquare);
@@ -582,15 +581,21 @@ class Board {
                 pice.getCheck(checker, betweenSquares);
                 if (!pice.stuck) noMoves = false;
             }
+            if (noMoves) this.result = [this.priority[1], this.priority[0]];
         }
-        else if (oppKing.checkersSquares.length == 2) {
-            noMoves = true;
+        else if (oppKing.checkersSquares.length > 1) {
             for (let pice of this.allPices.filter(p => p.color == this.opponentColor && p.kind != "king")) {
                 pice.getTotalImmobilize();
             }
+            if (oppKing.stuck) this.result = [this.priority[1], this.priority[0]];
         }
-        if (noMoves && oppKing.stuck) {
-            this.result = [this.priority[1], this.priority[0]];
+        else {
+            let noMoves = true;
+            for (let pice of this.allPices.filter(p => p.color == this.opponentColor)) {
+                if (!pice.stuck) noMoves = false;
+                break;
+            }
+            if (noMoves) this.result = [0.5, 0.5];
         }
         this.enPassant = null;
     }
@@ -637,6 +642,6 @@ class Game {
     }
 
     move(from, to) {
-        return {"feedback": this.board.movePice(from, to), "result": this.board.result};
+        return this.board.movePice(from, to);
     }
 }
