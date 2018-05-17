@@ -128,8 +128,17 @@ $(".square").on("click", function() {
         if (aimedSquare != newSquare) {
             let response = game.move(aimedSquare, newSquare);
             // console.log(game.board.result);
+            // console.log(response);
             if (response.success) {
-                refreshBoard(game.board);
+                if (response.transformation) {
+                    response = game.transformation("queen");
+                    if (response.success) {
+                        refreshBoard(game.board);
+                    }
+                }
+                else {
+                    refreshBoard(game.board);
+                }
             }
         }
         unMarkingSquares();

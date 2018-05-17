@@ -442,6 +442,7 @@ class Board {
         this.priority = [0, 1];
         this.enPassant = null;
         this.result = null;
+        this.transformation = null;
         this.castleRights = {
             "white": {"short": true, "long": true},
             "black": {"short": true, "long": true},
@@ -471,6 +472,11 @@ class Board {
 
     get opponentColor() {
         return allColors[this.priority[1]];
+    }
+
+    refreshState() {
+        this.refreshAllSquares();
+        this.changePriority();
     }
 
     changePriority() {
@@ -513,6 +519,27 @@ class Board {
         }
     }
 
+    pawnTransformation(kind) {
+        try {
+            this.placePice(this.currentColor, kind, this.transformation[1]);
+            this.removePice(this.transformation[0]);
+            this.transformation = null;
+            this.refreshState();
+            return {
+                "success": true,
+                "transformation": false,
+                "description": "Successfully transformed!"};
+        }
+        catch(e) {
+            this.transformation = null;
+            console.log(e);
+            return {
+                "success": false,
+                "transformation": false,
+                "description": "Transformation failed."};
+        }
+    }
+
     replacePice(from, to, pice) {
         this.removePice(from);
         this.occupiedSquares[to] = pice;
@@ -522,14 +549,29 @@ class Board {
     movePice(from, to, refresh=true) {
         let pice = this.occupiedSquares[from];
 
+        if (this.transformation) {
+            return {
+                "success": false,
+                "transformation": true,
+                "description": "You need to tranform the pawn on " + this.transformation[1] + "."};
+        }
         if (!pice) {
-            return {"success": false, "description": "There isn't a pice to replace."};
+            return {
+                "success": false,
+                "transformation": false,
+                "description": "There isn't a pice to replace."};
         }
         if (pice.color != this.currentColor) {
-            return {"success": false, "description": "Wrong color pice."};
+            return {
+                "success": false,
+                "transformation": false,
+                "description": "Wrong color pice."};
         }
         if (!pice.squares["move"].includes(to) && !pice.squares["attack"].includes(to)) {
-            return {"success": false, "description": "Illegal move."};
+            return {
+                "success": false,
+                "transformation": false,
+                "description": "Illegal move."};
         }
 
         if (pice.kind == "king") {
@@ -541,16 +583,24 @@ class Board {
             this.stopRookCastleRights(pice);
         }
         else if (pice.kind == "pawn") {
+            if (["1", "8"].includes(to[1])) {
+                this.transformation = [from, to];
+                return {
+                    "success": true,
+                    "transformation": true,
+                    "description": "Pawn is ready to transform on " + to + "."};
+            }
             this.enPassantMatter(from, to, pice);
         }
 
         this.replacePice(from, to, pice);
 
-        if (refresh) {
-            this.refreshAllSquares();
-            this.changePriority();
-        }
-        return {"success": true, "description": "Successfully moved!"};
+        if (refresh) this.refreshState();
+
+        return {
+            "success": true,
+            "transformation": false,
+            "description": "Successfully moved!"};
     }
 
     refreshAllSquares() {
@@ -643,5 +693,9 @@ class Game {
 
     move(from, to) {
         return this.board.movePice(from, to);
+    }
+
+    transformation(kind) {
+        return this.board.pawnTransformation(kind);
     }
 }
