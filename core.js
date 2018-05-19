@@ -520,23 +520,14 @@ class Board {
     }
 
     pawnTransformation(kind) {
-        try {
-            this.placePice(this.currentColor, kind, this.transformation[1]);
-            this.removePice(this.transformation[0]);
-            this.transformation = null;
-            this.refreshState();
-            return {
-                "success": true,
-                "transformation": false,
-                "description": "Successfully transformed!"};
-        }
-        catch(err) {
-            this.transformation = null;
-            return {
-                "success": false,
-                "transformation": false,
-                "description": "Transformation failed.\n" + err};
-        }
+        this.placePice(this.currentColor, kind, this.transformation[1]);
+        this.removePice(this.transformation[0]);
+        this.transformation = null;
+        this.refreshState();
+        return {
+            "success": true,
+            "transformation": false,
+            "description": "Successfully transformed!"};
     }
 
     replacePice(from, to, pice) {
@@ -548,12 +539,6 @@ class Board {
     movePice(from, to, refresh=true) {
         let pice = this.occupiedSquares[from];
 
-        if (this.transformation) {
-            return {
-                "success": false,
-                "transformation": true,
-                "description": "You need to tranform the pawn on " + this.transformation[1] + "."};
-        }
         if (!pice) {
             return {
                 "success": false,
@@ -573,6 +558,7 @@ class Board {
                 "description": "Illegal move."};
         }
 
+        this.transformation = null;
         if (pice.kind == "king") {
             this.kingsPlaces[pice.color] = to;
             this.castleRookMove(from, to, pice);

@@ -125,17 +125,12 @@ function refreshBoard(brd) {
 
 var game = new Game;
 var aimedSquare = null;
-var transformation = false;
 
 refreshBoard(game.board);
 
-function endTransformChoice(kind) {
-    $("#hider").remove();
-    $("#choicesBox").remove();
-    transformation = false;
-    response = game.transformation(kind);
-    if (response.success) {
-        refreshBoard(game.board);
+function removeAdditionalInfo() {
+    for (let elem of ["#hider", "#choicesBox"]) {
+        $(elem).remove();
     }
 }
 
@@ -149,7 +144,6 @@ function hideBoard() {
 }
 
 function showTransformChoices(color) {
-    transformation = true;
     hideBoard();
     let position = $(".square[x=a][y=8]").position();
     let choicesBox = $("<div></div>");
@@ -162,7 +156,11 @@ function showTransformChoices(color) {
         choicesItem.addClass("square choicesItem");
         choicesItem.on("click", function(e) {
             e.stopPropagation();
-            endTransformChoice(kind);
+            removeAdditionalInfo();
+            response = game.transformation(kind);
+            if (response.success) {
+                refreshBoard(game.board);
+            }
         })
         choicesItem.append(createPice(color, kind));
         choicesBox.append(choicesItem);
@@ -171,16 +169,11 @@ function showTransformChoices(color) {
 }
 
 $("body").on("click", "#hider", function(e) {
-    if (transformation) {
-        endTransformChoice("abort");
-    }
-    else {
-        $("#hider").remove();
-    }
+    removeAdditionalInfo();
 })
 
 $("body").on("click", ".choicesBox", function() {
-    endTransformChoice("abort");
+    removeAdditionalInfo();
 })
 
 $(".square").on("click", function() {
