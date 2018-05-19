@@ -33,12 +33,18 @@ function unMarkingSquares() {
     $(".square").removeClass("aim move attack xray cover control marked");
 }
 
+function createPice(color, kind) {
+    let pice = $("<p>" + symbols[color][kind] + "</p>");
+    pice.addClass("pice");
+    return pice;
+}
+
 function refreshBoard(brd) {
     $(".square").empty();
     for (let square in brd.occupiedSquares) {
         let pice = brd.occupiedSquares[square];
         $(".square[x=" + square[0] + "][y=" + square[1] + "]")
-        .append("<p style='font-size: 40; margin: 0;'>" + symbols[pice.color][pice.kind] + "</p>");
+        .append(createPice(pice.color, pice.kind));
     }
 }
 
@@ -119,8 +125,63 @@ function refreshBoard(brd) {
 
 var game = new Game;
 var aimedSquare = null;
+var transformation = false;
 
 refreshBoard(game.board);
+
+function endTransformChoice(kind) {
+    $("#hider").remove();
+    $("#choicesBox").remove();
+    transformation = false;
+    response = game.transformation(kind);
+    if (response.success) {
+        refreshBoard(game.board);
+    }
+}
+
+function hideBoard() {
+    let position = $(".square[x=a][y=8]").position();
+    let hider = $("<div></div>");
+    hider.attr("id", "hider");
+    hider.css("top", position.top);
+    hider.css("left", position.left);
+    $("body").append(hider);
+}
+
+function showTransformChoices(color) {
+    transformation = true;
+    hideBoard();
+    let position = $(".square[x=a][y=8]").position();
+    let choicesBox = $("<div></div>");
+    choicesBox.addClass("row");
+    choicesBox.attr("id", "choicesBox");
+    choicesBox.css("top", position.top + 190);
+    choicesBox.css("left", position.left + 106);
+    for (let kind of ["queen", "rook", "bishop", "knight"]) {
+        let choicesItem = $("<div></div>");
+        choicesItem.addClass("square choicesItem");
+        choicesItem.on("click", function(e) {
+            e.stopPropagation();
+            endTransformChoice(kind);
+        })
+        choicesItem.append(createPice(color, kind));
+        choicesBox.append(choicesItem);
+    }
+    $("body").append(choicesBox);
+}
+
+$("body").on("click", "#hider", function(e) {
+    if (transformation) {
+        endTransformChoice("abort");
+    }
+    else {
+        $("#hider").remove();
+    }
+})
+
+$("body").on("click", ".choicesBox", function() {
+    endTransformChoice("abort");
+})
 
 $(".square").on("click", function() {
     let newSquare = $(this).attr("x") + $(this).attr("y");
@@ -131,10 +192,7 @@ $(".square").on("click", function() {
             // console.log(response);
             if (response.success) {
                 if (response.transformation) {
-                    response = game.transformation("queen");
-                    if (response.success) {
-                        refreshBoard(game.board);
-                    }
+                    showTransformChoices(game.board.currentColor);
                 }
                 else {
                     refreshBoard(game.board);

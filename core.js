@@ -374,7 +374,7 @@ class King extends Pice {
                         if (checker.kind == "queen") {
                             let dif = getLinedCheckerDirection(checker.numSquare, this.numSquare);
                             let extLineSqr = [this.numSquare[0] - dif[0], this.numSquare[1] - dif[1]];
-                            if (!(extLineSqr[0] < 0 || extLineSqr[0] > 7 || extLineSqr[1] < 0 || extLineSqr[1] > 7) && numToStr(extLineSqr) == escapeSquare) {
+                            if (!(extLineSqr[0] < 0 || extLineSqr[0] > 7 || extLineSqr[1] < 0 || extLineSqr[1] > 7) && numToStr(extLineSqr) == sqr) {
                                 linedXray = true;
                             }
                         }
@@ -530,13 +530,12 @@ class Board {
                 "transformation": false,
                 "description": "Successfully transformed!"};
         }
-        catch(e) {
+        catch(err) {
             this.transformation = null;
-            console.log(e);
             return {
                 "success": false,
                 "transformation": false,
-                "description": "Transformation failed."};
+                "description": "Transformation failed.\n" + err};
         }
     }
 

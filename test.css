@@ -44,14 +44,15 @@
     text-align: center;
     margin: 2;
     font-size: initial;
+    background-color: white;
 }
 
 .light.square {
-    background-color: lightgrey;
+    background-color: lightgrey !important;
 }
 
 .dark.square {
-    background-color: lightblue;
+    background-color: lightblue !important;
 }
 
 .square.aim.marked {
@@ -76,4 +77,23 @@
 
 .square.control.marked {
     background-color: #ff9900 !important;
+}
+
+.pice {
+    font-size: 40;
+    margin: 0;
+}
+
+#hider {
+    position: absolute;
+    width: 432;
+    height: 432;
+    background-color: pink;
+    opacity: 0.5;
+}
+
+#choicesBox {
+    position: absolute;
+    background-color: gray;
+    padding: 2;
 }
