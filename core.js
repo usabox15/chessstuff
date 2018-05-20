@@ -61,6 +61,7 @@ class Pice {
 
     refreshSquareFinder() {
         this.sqrBeforeXray = null;
+        this.xrayControl = false;
         this.endOfALine = false;
     }
 
@@ -92,6 +93,10 @@ class Pice {
         let strSquare = numToStr(nextSquare);
         if (this.sqrBeforeXray) {
             this.squares["xray"].push(strSquare);
+            if (this.xrayControl) {
+                this.squares["control"].push(strSquare);
+                this.xrayControl = false;
+            }
             if (occupiedSquares[strSquare]) {
                 if (occupiedSquares[strSquare].color != this.color && occupiedSquares[strSquare].kind == "king" && occupiedSquares[this.sqrBeforeXray].color != this.color) {
                     occupiedSquares[this.sqrBeforeXray].binderSquare = square;
@@ -104,6 +109,7 @@ class Pice {
                 this.squares["attack"].push(strSquare);
                 if (occupiedSquares[strSquare].kind == "king") {
                     occupiedSquares[strSquare].checkersSquares.push(numToStr(square));
+                    this.xrayControl = true;
                 }
             }
             else {
@@ -358,31 +364,8 @@ class King extends Pice {
         for (let kingAction of ["move", "attack"]) {
             let wrongSquares = [];
             for (let sqr of this.squares[kingAction]) {
-                let isWrongSquare = false;
                 for (let p of Object.values(occupiedSquares)) {
                     if (p.color != this.color && p.squares["control"].includes(sqr)) {
-                        isWrongSquare = true;
-                        wrongSquares.push(sqr);
-                        break;
-                    }
-                }
-                if (isWrongSquare) continue;
-                for (let checkerSquare of this.checkersSquares) {
-                    let linedXray = false;
-                    let checker = occupiedSquares[checkerSquare];
-                    if (checker.squares["xray"].includes(sqr)) {
-                        if (checker.kind == "queen") {
-                            let dif = getLinedCheckerDirection(checker.numSquare, this.numSquare);
-                            let extLineSqr = [this.numSquare[0] - dif[0], this.numSquare[1] - dif[1]];
-                            if (!(extLineSqr[0] < 0 || extLineSqr[0] > 7 || extLineSqr[1] < 0 || extLineSqr[1] > 7) && numToStr(extLineSqr) == sqr) {
-                                linedXray = true;
-                            }
-                        }
-                        else {
-                            linedXray = true;
-                        }
-                    }
-                    if (linedXray) {
                         wrongSquares.push(sqr);
                         break;
                     }
@@ -627,8 +610,10 @@ class Board {
         else {
             let noMoves = true;
             for (let pice of this.allPices.filter(p => p.color == this.opponentColor)) {
-                if (!pice.stuck) noMoves = false;
-                break;
+                if (!pice.stuck) {
+                    noMoves = false;
+                    break;
+                }
             }
             if (noMoves) this.result = [0.5, 0.5];
         }
