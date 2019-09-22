@@ -49,6 +49,16 @@ class SquareName {
     Human readable chess board square name.
     Create param:
       - name [string] (include two characters - symbol and number, for example 'a1').
+      _ _ _ _ _ _ _ _
+    8|_|_|_|_|_|_|_|_|
+    7|_|_|_|_|_|_|_|_|
+    6|_|_|_|_|_|_|_|_|
+    5|_|_|_|_|_|_|_|_|
+    4|_|_|_|_|_|_|_|_|
+    3|_|_|_|_|_|_|_|_|
+    2|_|_|_|_|_|_|_|_|
+    1|_|_|_|_|_|_|_|_|
+      a b c d e f g h
     */
 
     #symbols = ["a", "b", "c", "d", "e", "f", "g", "h"]
@@ -75,6 +85,16 @@ class SquareCoordinates {
     Chess board square coordinates.
     Create param:
       - coordinates [Array] (include two numbers - square coordinates from 0 to 7, for example [0, 0]).
+      _ _ _ _ _ _ _ _
+    7|_|_|_|_|_|_|_|_|
+    6|_|_|_|_|_|_|_|_|
+    5|_|_|_|_|_|_|_|_|
+    4|_|_|_|_|_|_|_|_|
+    3|_|_|_|_|_|_|_|_|
+    2|_|_|_|_|_|_|_|_|
+    1|_|_|_|_|_|_|_|_|
+    0|_|_|_|_|_|_|_|_|
+      0 1 2 3 4 5 6 7
     */
 
     #numbers = [0, 1, 2, 3, 4, 5, 6, 7]
