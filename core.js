@@ -1,7 +1,5 @@
-var allKinds = ["pawn", "knight", "bishop", "rook", "queen", "king"];
-var allColors = ["white", "black"];
-var symbolToNumber = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7};
-var numberToSymbol= {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"};
+const symbolToNumber = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7};
+const numberToSymbol= {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"};
 
 
 function strToNum(square) {
@@ -46,7 +44,102 @@ function getBetweenSquares(numSquare1, numSquare2, include=false) {
 }
 
 
+class SquareName {
+    /*
+    Human readable chess board square name.
+    Create param:
+      - name [string] (include two characters - symbol and number, for example 'a1').
+    */
+
+    #symbols = ["a", "b", "c", "d", "e", "f", "g", "h"]
+    #numbers = ["1", "2", "3", "4", "5", "6", "7", "8"]
+
+    constructor(name) {
+        let symbol = name[0];
+        let number = name[1];
+        if (!this.#symbols.includes(symbol)) {
+            throw Error(`Wrong symbol (${symbol}) passed`);
+        }
+        if (!this.#numbers.includes(number)) {
+            throw Error(`Wrong number (${number}) passed`);
+        }
+        this.symbol = symbol;
+        this.number = number;
+        this.value = `${symbol}${number}`;
+    }
+}
+
+
+class SquareCoordinates {
+    /*
+    Chess board square coordinates.
+    Create param:
+      - coordinates [Array] (include two numbers - square coordinates from 0 to 7, for example [0, 0]).
+    */
+
+    #numbers = [0, 1, 2, 3, 4, 5, 6, 7]
+
+    constructor(coordinates) {
+        let x = coordinates[0];
+        let y = coordinates[1];
+        if (!this.#numbers.includes(x)) {
+            throw Error(`Wrong x value (${x}) passed`);
+        }
+        if (!this.#numbers.includes(y)) {
+            throw Error(`Wrong y value (${y}) passed`);
+        }
+        this.x = x;
+        this.y = y;
+        this.value = [x, y];
+    }
+}
+
+
+class Square {
+    /*
+    Chess board square.
+    There are create params:
+      - name [string] (SquareName class create param);
+      - coordinates [Array] (SquareCoordinates class create param).
+    To create instance you need to pass one of this params.
+    */
+
+    #symbolToNumber = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7};
+    #numberToSymbol = {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"};
+
+    constructor(name=null, coordinates=null) {
+        if (name) {
+            this._name = SquareName(name);
+            this._coordinates = SquareCoordinates([this.#symbolToNumber[this._name.symbol], +(this._name.number - 1)]);
+        }
+        else if (coordinates) {
+            this._coordinates = SquareCoordinates(coordinates);
+            this._name = SquareName(this.#numberToSymbol[this._coordinates.x] + (this._coordinates.y + 1));
+        }
+        else {
+            throw Error("To create Square instance you need to pass either name or coordinates param");
+        }
+    }
+
+    get name() {
+        return this._name.value;
+    }
+
+    get coordinates() {
+        return this._coordinates.value;
+    }
+}
+
+
 class Pice {
+    /*
+    Base chess pice class.
+    There are create params:
+      - color [string] (white or black);
+      - kind [string] (pawn, knight, bishop, rook, queen, king);
+      - square [Square class instance] (where pice is placed).
+    */
+
     constructor(color, kind, square) {
         this.color = color;
         this.kind = kind;
@@ -56,6 +149,7 @@ class Pice {
     }
 
     get stuck() {
+        // check the pice get stucked
         return this.squares["move"].length == 0 && this.squares["attack"].length == 0;
     }
 
@@ -438,7 +532,8 @@ class Board {
             "rook": Rook,
             "queen": Queen,
             "king": King,
-        }
+        };
+        this.allColors = ["white", "black"];
     }
 
     get allPices() {
@@ -450,11 +545,11 @@ class Board {
     }
 
     get currentColor() {
-        return allColors[this.priority[0]];
+        return this.allColors[this.priority[0]];
     }
 
     get opponentColor() {
-        return allColors[this.priority[1]];
+        return this.allColors[this.priority[1]];
     }
 
     refreshState() {
