@@ -1,17 +1,3 @@
-const symbolToNumber = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7};
-const numberToSymbol= {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"};
-
-
-function strToNum(square) {
-    return [symbolToNumber[square[0]], +square[1] - 1];
-}
-
-
-function numToStr(square) {
-    return numberToSymbol[square[0]] + (square[1] + 1);
-}
-
-
 class SquareName {
     /*
     Human readable chess board square name.
@@ -134,6 +120,10 @@ class Square {
         this._pice = null;
     }
 
+    theSame(otherSquare) {
+        return this.name.value === otherSquare.name.value;
+    }
+
     _getLinedCheckerDirection(otherSquare) {
         // get direction of distance between this square and other one
         let dif = {x: 0, y: 0};
@@ -197,7 +187,7 @@ class PiceSquares {
     }
 
     remove(kind, squareToRemove) {
-        this[kind] = this[kind].filter(square => square.name.value !== squareToRemove.name.value);
+        this[kind] = this[kind].filter(square => !square.theSame(squareToRemove));
     }
 
     limit(kind, acceptedNames) {
@@ -329,54 +319,57 @@ class Pawn extends Pice {
 
     getSquares(occupiedSquares, enPassant) {
         this.refreshSquares();
-        let moveSquares = [];
-        let attackSquares = [];
+        let moveSquaresCoordinates = [];
+        let attackSquaresCoordinates = [];
+        let inLeftEdge = this.square.coordinates.x == 0;
+        let inRightEdge = this.square.coordinates.x == 7;
         if (this.color == "white") {
-            moveSquares.push(numToStr([this.numSquare[0], this.numSquare[1] + 1]));
-            if (this.numSquare[1] == 1) {
-                moveSquares.push(numToStr([this.numSquare[0], this.numSquare[1] + 2]));
+            moveSquaresCoordinates.push([this.square.coordinates.x, this.square.coordinates.y + 1]);
+            if (this.square.coordinates.y == 1) {
+                moveSquaresCoordinates.push([this.square.coordinates.x, this.square.coordinates.y + 2]);
             }
-            if (this.numSquare[0] - 1 >= 0) {
-                attackSquares.push(numToStr([this.numSquare[0] - 1, this.numSquare[1] + 1]))
+            if (!inLeftEdge) {
+                attackSquaresCoordinates.push([this.square.coordinates.x - 1, this.square.coordinates.y + 1]);
             }
-            if (this.numSquare[0] + 1 <= 7) {
-                attackSquares.push(numToStr([this.numSquare[0] + 1, this.numSquare[1] + 1]))
+            if (!inRightEdge) {
+                attackSquaresCoordinates.push([this.square.coordinates.x + 1, this.square.coordinates.y + 1]);
             }
         }
         else {
-            moveSquares.push(numToStr([this.numSquare[0], this.numSquare[1] - 1]));
-            if (this.numSquare[1] == 6) {
-                moveSquares.push(numToStr([this.numSquare[0], this.numSquare[1] - 2]));
+            moveSquaresCoordinates.push([this.square.coordinates.x, this.square.coordinates.y - 1]);
+            if (this.square.coordinates.y == 6) {
+                moveSquaresCoordinates.push([this.square.coordinates.x, this.square.coordinates.y - 2]);
             }
-            if (this.numSquare[0] - 1 >= 0) {
-                attackSquares.push(numToStr([this.numSquare[0] - 1, this.numSquare[1] - 1]))
+            if (!inLeftEdge) {
+                attackSquaresCoordinates.push([this.square.coordinates.x - 1, this.square.coordinates.y - 1]);
             }
-            if (this.numSquare[0] + 1 <= 7) {
-                attackSquares.push(numToStr([this.numSquare[0] + 1, this.numSquare[1] - 1]))
+            if (!inRightEdge) {
+                attackSquaresCoordinates.push([this.square.coordinates.x + 1, this.square.coordinates.y - 1]);
             }
         }
 
-        for (let sqr of moveSquares) {
-            if (occupiedSquares[sqr]) break;
-            this.squares["move"].push(sqr);
+        for (let [x, y] of moveSquaresCoordinates) {
+            let square = occupiedSquares.getFromCoordinates(x, y);
+            if (square.pice) break;
+            this.squares.add("move", square);
         }
 
-        for (let sqr of attackSquares) {
-            this.squares["control"].push(sqr);
-            let otherPice = occupiedSquares[sqr];
-            if (otherPice) {
-                if (otherPice.color == this.color) {
-                    this.squares["cover"].push(sqr);
+        for (let [x, y] of attackSquaresCoordinates) {
+            let square = occupiedSquares.getFromCoordinates(x, y);
+            this.squares.add("control", square);
+            if (square.pice) {
+                if (this.sameColor(square.pice)) {
+                    this.squares.add("cover", square);
                 }
                 else {
-                    this.squares["attack"].push(sqr);
-                    if (otherPice.kind == "king") {
-                        otherPice.checkersSquares.push(this.strSquare);
+                    this.squares.add("attack", square);
+                    if (square.pice.isKing) {
+                        square.pice.checkersSquares.push(this.square);
                     }
                 }
             }
-            else if (enPassant == sqr) {
-                this.squares["attack"].push(sqr);
+            else if (enPassant && square.theSame(enPassant)) {
+                this.squares.add("attack", square);
             }
         }
     }
