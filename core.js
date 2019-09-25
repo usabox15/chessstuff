@@ -206,16 +206,17 @@ class PiceSquares {
     Chess pice dependent squares storage.
     */
 
+    #allKinds = ['move', 'attack', 'xray', 'cover', 'control'];
+
     constructor() {
         this.refresh();
     }
 
-    refresh() {
-        this.move = null;
-        this.attack = null;
-        this.xray = null;
-        this.cover = null;
-        this.control = null;
+    refresh(kind='all') {
+        let kinds = kind === 'all' ? this.#allKinds : [kind];
+        for (let kind of kinds) {
+            this[kind] = null;
+        }
     }
 
     add(kind, square) {
@@ -225,6 +226,14 @@ class PiceSquares {
         else {
             this[kind] = [square];
         }
+    }
+
+    remove(kind, squareToRemove) {
+        this[kind] = this[kind].filter(square => square.name.value !== squareToRemove.name.value);
+    }
+
+    limit(kind, acceptedNames) {
+        this[kind] = this[kind].filter(square => acceptedNames.includes(square.name.value));
     }
 }
 
@@ -285,7 +294,7 @@ class Pice {
     }
 
     nextSquareAction(nextSquare) {
-        // handle next square from pice
+        // define next square kinds and handle logic with it
         if (this.sqrBeforeXray) {
             this.squares.add("xray", nextSquare);
             if (this.xrayControl) {
@@ -306,7 +315,7 @@ class Pice {
             else {
                 this.squares.add("attack", nextSquare);
                 if (nextSquare.pice.isKing) {
-                    nextSquare.pice.checkersSquares.push(this.square.coordinates);
+                    nextSquare.pice.checkersSquares.push(this.square);
                     this.xrayControl = true;
                 }
             }
