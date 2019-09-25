@@ -12,38 +12,6 @@ function numToStr(square) {
 }
 
 
-function getLinedCheckerDirection(numCheckerSquare, numKingSquare) {
-    let dif = [0, 0];
-    for (let i in dif) {
-        if (numKingSquare[i] > numCheckerSquare[i]) {
-            dif[i] = -1;
-        }
-        else if (numKingSquare[i] < numCheckerSquare[i]) {
-            dif[i] = 1;
-        }
-    }
-    return dif;
-}
-
-
-function getBetweenSquares(numSquare1, numSquare2, include=false) {
-    let dx = Math.abs(numSquare2[0] - numSquare1[0]);
-    let dy = Math.abs(numSquare2[1] - numSquare1[1]);
-    if (dx != dy && dx != 0 && dy != 0) {
-        return [];
-    }
-    let betweenSquares = [];
-    let dif = getLinedCheckerDirection(numSquare1, numSquare2);
-    let distance = Math.max(dx, dy);
-    let start = include ? 0 : 1;
-    let end = distance - start;
-    for (let i = start; i <= end; i++) {
-        betweenSquares.push(numToStr([numSquare2[0] + i * dif[0], numSquare2[1] + i * dif[1]]));
-    }
-    return betweenSquares;
-}
-
-
 class SquareName {
     /*
     Human readable chess board square name.
@@ -233,6 +201,7 @@ class PiceSquares {
     }
 
     limit(kind, acceptedNames) {
+        // limit some kind of Pice actions squares by Array of accepted square names
         this[kind] = this[kind].filter(square => acceptedNames.includes(square.name.value));
     }
 }
@@ -275,7 +244,7 @@ class Pice {
     }
 
     getInitState() {
-        this.binderSquare = null;
+        this.binder = null;
     }
 
     getPlace(square) {
@@ -284,7 +253,7 @@ class Pice {
     }
 
     sameColor(otherPice) {
-        return this.color == otherPice.color;
+        return this.color === otherPice.color;
     }
 
     getSquares(occupiedSquares) {
@@ -302,8 +271,10 @@ class Pice {
                 this.xrayControl = false;
             }
             if (nextSquare.pice) {
-                if (!this.sameColor(nextSquare.pice) && nextSquare.pice.isKing && !this.sameColor(this.sqrBeforeXray.pice)) {
-                    this.sqrBeforeXray.pice.binderSquare = this.square;
+                let isOppKingSquare = nextSquare.pice.isKing && !this.sameColor(nextSquare.pice);
+                let isOppPiceBeforeXray = !this.sameColor(this.sqrBeforeXray.pice);
+                if (isOppKingSquare && isOppPiceBeforeXray) {
+                    this.sqrBeforeXray.pice.binder = this;
                 }
                 this.endOfALine = true;
             }
@@ -335,31 +306,18 @@ class Pice {
     getBind(kingSquare) {
         // make pice is binded
         this.squares.refresh("xray");
-        let betweenSquares = this.binderSquare.getBetweenSquaresNames(kingSquare, true);
+        let betweenSquares = this.binder.square.getBetweenSquaresNames(kingSquare, true);
         for (let actonKind of ["move", "attack", "cover"]) {
             this.squares.limit(actonKind, betweenSquares);
         }
     }
 
     getCheck(checker, betweenSquares) {
-        for (let actonKind of ["cover", "xray"]) {
-            this.squares[actonKind] = [];
-        }
-        if (this.squares["attack"].includes(checker.strSquare)) {
-            this.squares["attack"] = [checker.strSquare];
-        }
-        else {
-            this.squares["attack"] = [];
-        }
-        let wrongMoves = [];
-        for (let sqr of this.squares["move"]) {
-            if (!betweenSquares.includes(sqr)) {
-                wrongMoves.push(sqr);
-            }
-        }
-        for (let sqr of wrongMoves) {
-            this.squares["move"].splice(this.squares["move"].indexOf(sqr), 1);
-        }
+        // change Pice action abilities after its king was checked
+        this.squares.refresh("cover");
+        this.squares.refresh("xray");
+        this.squares.limit("attack", [checker.square.name.value]);
+        this.squares.limit("move", betweenSquares);
     }
 }
 
@@ -609,7 +567,7 @@ class King extends Pice {
         return true;
     }
 
-    getCheck(checker, betweenSquares) {
+    getCheck() {
         for (let column of Object.values(this.castlePoints)) {
             let square = column + this.rank;
             if (this.squares["move"].includes(square)) {
@@ -790,32 +748,29 @@ class Board {
         for (let pice of this.allPices.filter(p => p.kind == "king")) {
             pice.getSquares(this.occupiedSquares, this.castleRights[pice.color]);
         }
-        for (let pice of this.allPices.filter(p => p.binderSquare)) {
+        for (let pice of this.allPices.filter(p => p.binder)) {
             pice.getBind(this.kingsPlaces[pice.color]);
         }
         let oppKing = this.occupiedSquares[this.kingsPlaces[this.opponentColor]];
         if (oppKing.checkersSquares.length == 1) {
-            let betweenSquares = [];
             let noMoves = true;
             let checker = this.occupiedSquares[oppKing.checkersSquares[0]];
-            if (["queen", "rook", "bishop"].includes(checker.kind)) {
-                betweenSquares = getBetweenSquares(checker.numSquare, oppKing.numSquare);
-            }
-            for (let pice of this.allPices.filter(p => p.color == this.opponentColor)) {
+            let betweenSquares = checker.isLinear ? checker.square.getBetweenSquaresNames(oppKing.square) : [];
+            for (let pice of this.allPices.filter(p => p.sameColor(oppKing))) {
                 pice.getCheck(checker, betweenSquares);
                 if (!pice.stuck) noMoves = false;
             }
             if (noMoves) this.result = [this.priority[1], this.priority[0]];
         }
         else if (oppKing.checkersSquares.length > 1) {
-            for (let pice of this.allPices.filter(p => p.color == this.opponentColor && p.kind != "king")) {
+            for (let pice of this.allPices.filter(p => p.sameColor(oppKing) && !p.isKing)) {
                 pice.getTotalImmobilize();
             }
             if (oppKing.stuck) this.result = [this.priority[1], this.priority[0]];
         }
         else {
             let noMoves = true;
-            for (let pice of this.allPices.filter(p => p.color == this.opponentColor)) {
+            for (let pice of this.allPices.filter(p => p.sameColor(oppKing))) {
                 if (!pice.stuck) {
                     noMoves = false;
                     break;
