@@ -329,29 +329,15 @@ class Pice {
     }
 
     getTotalImmobilize() {
-        for (let actonKind of ["move", "attack", "cover", "xray"]) {
-            this.squares[actonKind] = [];
-        }
+        this.squares.refresh();
     }
 
-    getBind(occupiedSquares, kingSquare) {
-        if (this.kind == "knight") {
-            this.getTotalImmobilize();
-        }
-        else {
-            this.squares["xray"] = [];
-            let betweenSquares = getBetweenSquares(this.binderSquare, strToNum(kingSquare), true);
-            for (let actonKind of ["move", "attack", "cover"]) {
-                let wrongSquares = [];
-                for (let sqr of this.squares[actonKind]) {
-                    if (!betweenSquares.includes(sqr)) {
-                        wrongSquares.push(sqr);
-                    }
-                }
-                for (let wsqr of wrongSquares) {
-                    this.squares[actonKind].splice(this.squares[actonKind].indexOf(wsqr), 1);
-                }
-            }
+    getBind(kingSquare) {
+        // make pice is binded
+        this.squares.refresh("xray");
+        let betweenSquares = this.binderSquare.getBetweenSquaresNames(kingSquare, true);
+        for (let actonKind of ["move", "attack", "cover"]) {
+            this.squares.limit(actonKind, betweenSquares);
         }
     }
 
@@ -454,6 +440,9 @@ class Knight extends Pice {
             this.nextSquareAction(occupiedSquares.getFromCoordinates(x, y));
         }
     }
+
+    getBind() {
+        this.getTotalImmobilize();
 }
 
 
@@ -802,7 +791,7 @@ class Board {
             pice.getSquares(this.occupiedSquares, this.castleRights[pice.color]);
         }
         for (let pice of this.allPices.filter(p => p.binderSquare)) {
-            pice.getBind(this.occupiedSquares, this.kingsPlaces[pice.color]);
+            pice.getBind(this.kingsPlaces[pice.color]);
         }
         let oppKing = this.occupiedSquares[this.kingsPlaces[this.opponentColor]];
         if (oppKing.checkersSquares.length == 1) {
