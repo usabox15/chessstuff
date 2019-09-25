@@ -147,11 +147,11 @@ class Square {
     }
 
     get name() {
-        return this._name.value;
+        return this._name;
     }
 
     get coordinates() {
-        return this._coordinates.value;
+        return this._coordinates;
     }
 
     get pice() {
@@ -164,6 +164,39 @@ class Square {
 
     removePice() {
         this._pice = null;
+    }
+
+    _getLinedCheckerDirection(otherSquare) {
+        // get direction of distance between this square and other one
+        let dif = {x: 0, y: 0};
+        for (let i of ['x', 'y']) {
+            if (otherSquare.coordinates[i] > this.coordinates[i]) {
+                dif[i] = -1;
+            }
+            else if (otherSquare.coordinates[i] < this.coordinates[i]) {
+                dif[i] = 1;
+            }
+        }
+        return dif;
+    }
+
+    getBetweenSquaresNames(otherSquare, include=false) {
+        // get names of squares between this square and other one
+        let dx = Math.abs(otherSquare.coordinates.x - this.coordinates.x);
+        let dy = Math.abs(otherSquare.coordinates.y - this.coordinates.y);
+        if (dx != dy && dx != 0 && dy != 0) {
+            return [];
+        }
+        let betweenSquaresNames = [];
+        let dif = this._getLinedCheckerDirection(otherSquare);
+        let distance = Math.max(dx, dy);
+        let start = include ? 0 : 1;
+        for (let i = start; i <= distance - start; i++) {
+            let x = otherSquare.coordinates.x + i * dif.x;
+            let y = otherSquare.coordinates.y + i * dif.y;
+            betweenSquaresNames.push(Square.coordinatesToName(x, y));
+        }
+        return betweenSquaresNames;
     }
 }
 
