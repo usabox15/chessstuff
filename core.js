@@ -422,43 +422,38 @@ class Knight extends Pice {
 
 
 class Bishop extends Pice {
+    #directions = [
+        {x: -1, y: 1, outsideX: -1, outsideY: 8},   // A (upleft)
+        {x: 1, y: 1, outsideX: 8, outsideY: 8},     // B (upright)
+        {x: 1, y: -1, outsideX: 8, outsideY: -1},   // C (downright)
+        {x: -1, y: -1, outsideX: -1, outsideY: -1}, // D (downleft)
+    ];
+    /*   ___ ___ ___
+        | A |   | B |
+       1|___|___|___|
+        |   |Bis|   |
+       0|___|hop|___|
+        | D |   | C |
+      -1|___|___|___|
+          -1   0   1
+    */
+
     constructor(color, square) {
         super(color, "bishop", square);
         this.isLinear = true;
     }
 
     bishopSquares(occupiedSquares) {
-        // downleft
-        let [i, j] = [this.numSquare[0] - 1, this.numSquare[1] - 1];
-        this.refreshSquareFinder();
-        while (i >= 0 && j >= 0) {
-            this.nextSquareAction(occupiedSquares.getFromCoordinates(i, j));
-            if (this.endOfALine) break;
-            i--; j--;
-        }
-        // downright
-        [i, j] = [this.numSquare[0] + 1, this.numSquare[1] - 1];
-        this.refreshSquareFinder();
-        while (i <= 7 && j >= 0) {
-            this.nextSquareAction(occupiedSquares.getFromCoordinates(i, j));
-            if (this.endOfALine) break;
-            i++; j--;
-        }
-        // upleft
-        [i, j] = [this.numSquare[0] - 1, this.numSquare[1] + 1];
-        this.refreshSquareFinder();
-        while (i >= 0 && j <= 7) {
-            this.nextSquareAction(occupiedSquares.getFromCoordinates(i, j));
-            if (this.endOfALine) break;
-            i--; j++;
-        }
-        // upright
-        [i, j] = [this.numSquare[0] + 1, this.numSquare[1] + 1];
-        this.refreshSquareFinder();
-        while (i <= 7 && j <= 7) {
-            this.nextSquareAction(occupiedSquares.getFromCoordinates(i, j));
-            if (this.endOfALine) break;
-            i++; j++;
+        for (let direction of this.#directions) {
+            this.refreshSquareFinder();
+            let x = this.square.coordinates.x + direction.x;
+            let y = this.square.coordinates.y + direction.y;
+            while (x != direction.outsideX && y != direction.outsideY) {
+                this.nextSquareAction(occupiedSquares.getFromCoordinates(x, y));
+                if (this.endOfALine) break;
+                x += direction.x;
+                y += direction.y;
+            }
         }
     }
 }
