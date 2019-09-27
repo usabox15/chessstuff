@@ -15,8 +15,8 @@ class SquareName {
       a b c d e f g h
     */
 
-    #symbols = ["a", "b", "c", "d", "e", "f", "g", "h"]
-    #numbers = ["1", "2", "3", "4", "5", "6", "7", "8"]
+    #symbols = ["a", "b", "c", "d", "e", "f", "g", "h"];
+    #numbers = ["1", "2", "3", "4", "5", "6", "7", "8"];
 
     constructor(name) {
         let symbol = name[0];
@@ -51,7 +51,7 @@ class SquareCoordinates {
       0 1 2 3 4 5 6 7
     */
 
-    #numbers = [0, 1, 2, 3, 4, 5, 6, 7]
+    #numbers = [0, 1, 2, 3, 4, 5, 6, 7];
 
     constructor(coordinates) {
         let x = coordinates[0];
@@ -377,15 +377,38 @@ class Pawn extends Pice {
 
 
 class Knight extends Pice {
+    #ofsets = [
+        {x: -2, y: 1},  // A
+        {x: -1, y: 2},  // B
+        {x: 1, y: 2},   // C
+        {x: 2, y: 1},   // D
+        {x: 2, y: -1},  // E
+        {x: 1, y: -2},  // F
+        {x: -1, y: -2}, // G
+        {x: -2, y: -1}, // H
+    ];
+    /*   ___ ___ ___ ___ ___
+        |   | B |   | C |   |
+       2|___|___|___|___|___|
+        | A |   |   |   | D |
+       1|___|___|___|___|___|
+        |   |   |Kni|   |   |
+       0|___|___|ght|___|___|
+        | H |   |   |   | E |
+      -1|___|___|___|___|___|
+        |   | G |   | F |   |
+      -2|___|___|___|___|___|
+          -2  -1   0   1   2
+    */
+
     constructor(color, square) {
         super(color, "knight", square);
     }
 
     knightSquares(occupiedSquares) {
-        let ofsets = [[-2, -1], [-1, -2], [1, -2], [2, -1], [2, 1], [1, 2], [-1, 2], [-2, 1]];
-        for (let ofset of ofsets) {
-            let x = this.numSquare[0] + ofset[0];
-            let y = this.numSquare[1] + ofset[1];
+        for (let ofset of this.#ofsets) {
+            let x = this.square.coordinates.x + ofset.x;
+            let y = this.square.coordinates.y + ofset.y;
             if (x < 0 || x > 7 || y < 0 || y > 7) continue;
 
             this.nextSquareAction(occupiedSquares.getFromCoordinates(x, y));
@@ -394,6 +417,7 @@ class Knight extends Pice {
 
     getBind() {
         this.getTotalImmobilize();
+    }
 }
 
 
