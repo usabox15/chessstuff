@@ -120,6 +120,22 @@ class Square {
         return this._pice;
     }
 
+    get onUpEdge() {
+        return this.coordinates.y == 7;
+    }
+
+    get onRightEdge() {
+        return this.coordinates.x == 7;
+    }
+
+    get onDownEdge() {
+        return this.coordinates.y == 0;
+    }
+
+    get onLeftEdge() {
+        return this.coordinates.x == 0;
+    }
+
     placePice(pice) {
         this._pice = pice;
     }
@@ -325,46 +341,59 @@ class Pice {
 class Pawn extends Pice {
     constructor(color, square) {
         super(color, "pawn", square);
+        this.direction = color == "white" ? 1 : -1;
     }
 
-    getSquares(occupiedSquares, enPassant) {
-        this.refreshSquares();
-        let moveSquaresCoordinates = [];
-        let attackSquaresCoordinates = [];
-        let inLeftEdge = this.square.coordinates.x == 0;
-        let inRightEdge = this.square.coordinates.x == 7;
-        if (this.color == "white") {
-            moveSquaresCoordinates.push([this.square.coordinates.x, this.square.coordinates.y + 1]);
-            if (this.square.coordinates.y == 1) {
-                moveSquaresCoordinates.push([this.square.coordinates.x, this.square.coordinates.y + 2]);
-            }
-            if (!inLeftEdge) {
-                attackSquaresCoordinates.push([this.square.coordinates.x - 1, this.square.coordinates.y + 1]);
-            }
-            if (!inRightEdge) {
-                attackSquaresCoordinates.push([this.square.coordinates.x + 1, this.square.coordinates.y + 1]);
-            }
-        }
-        else {
-            moveSquaresCoordinates.push([this.square.coordinates.x, this.square.coordinates.y - 1]);
-            if (this.square.coordinates.y == 6) {
-                moveSquaresCoordinates.push([this.square.coordinates.x, this.square.coordinates.y - 2]);
-            }
-            if (!inLeftEdge) {
-                attackSquaresCoordinates.push([this.square.coordinates.x - 1, this.square.coordinates.y - 1]);
-            }
-            if (!inRightEdge) {
-                attackSquaresCoordinates.push([this.square.coordinates.x + 1, this.square.coordinates.y - 1]);
-            }
-        }
+    get onInitialHorizontal() {
+        return (
+            this.color == "white" && this.square.coordinates.y == 1
+            ||
+            this.color == "black" && this.square.coordinates.y == 6
+        )
+    }
 
-        for (let [x, y] of moveSquaresCoordinates) {
+    _getMoveCoordinates() {
+        let moveSquaresCoordinates = [];
+        moveSquaresCoordinates.push([
+            this.square.coordinates.x,
+            this.square.coordinates.y + 1 * this.direction
+        ]);
+        if (this.onInitialHorizontal) {
+            moveSquaresCoordinates.push([
+                this.square.coordinates.x,
+                this.square.coordinates.y + 2 * this.direction
+            ]);
+        }
+        return moveSquaresCoordinates;
+    }
+
+    _getMoveSquares() {
+        for (let [x, y] of this._getMoveCoordinates()) {
             let square = occupiedSquares.getFromCoordinates(x, y);
             if (square.pice) break;
             this.squares.add("move", square);
         }
+    }
 
-        for (let [x, y] of attackSquaresCoordinates) {
+    _getAttackCoordinates() {
+        let attackSquaresCoordinates = [];
+        if (!this.square.onRightEdge) {
+            attackSquaresCoordinates.push([
+                this.square.coordinates.x + 1,
+                this.square.coordinates.y + 1 * this.direction
+            ]);
+        }
+        if (!this.square.onLeftEdge) {
+            attackSquaresCoordinates.push([
+                this.square.coordinates.x - 1,
+                this.square.coordinates.y + 1 * this.direction
+            ]);
+        }
+        return attackSquaresCoordinates;
+    }
+
+    _getAttackSquares() {
+        for (let [x, y] of this._getAttackCoordinates()) {
             let square = occupiedSquares.getFromCoordinates(x, y);
             this.squares.add("control", square);
             if (square.pice) {
@@ -382,6 +411,12 @@ class Pawn extends Pice {
                 this.squares.add("attack", square);
             }
         }
+    }
+
+    getSquares(occupiedSquares, enPassant) {
+        this.refreshSquares();
+        this._getMoveSquares();
+        this._getAttackSquares();
     }
 }
 
