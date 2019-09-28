@@ -583,6 +583,58 @@ class Queen extends LinearPice {
 }
 
 
+class KingCastle {
+    constructor(color) {
+        horizontal = color == "white" ? "1" : "8";
+        this.short = {
+            accepted: true,
+            squareName: `g${horizontal}`,
+            free: [`f${horizontal}`, `g${horizontal}`],
+            safe: [`f${horizontal}`, `g${horizontal}`],
+        };
+        this.long = {
+            accepted: true,
+            squareName: `c${horizontal}`,
+            free: [`b${horizontal}`, `c${horizontal}`, `d${horizontal}`],
+            safe: [`c${horizontal}`, `d${horizontal}`],
+        };
+    }
+
+    _freeCastleRoad(occupiedSquares, kind) {
+        for (let squareName of this[kind].free) {
+            if (occupiedSquares[squareName].pice) return false;
+        }
+        return true;
+    }
+
+    _safeCastleRoad(occupiedSquares, kind) {
+        for (let sqr of Object.values(occupiedSquares).filter(s => !this.sameColor(s.pice))) {
+            for (let squareName of this[kind].safe) {
+                if (sqr.pice.squares.control.filter(s => s.name.value == squareName).length != 0) return false;
+            }
+        }
+        return true;
+    }
+
+    isLegal(occupiedSquares, kind) {
+        if (!this._freeCastleRoad(occupiedSquares, kind)) {
+            return false;
+        }
+        if (!this._safeCastleRoad(occupiedSquares, kind)) {
+            return false;
+        }
+        return true;
+    }
+
+    stop(side='all') {
+        sides = side == 'all' ? ['short', 'long'] : [side];
+        for (let s in sides) {
+            this[s].accepted = false;
+        }
+    }
+}
+
+
 class King extends StepPice {
     /*  Step points
          ___ ___ ___
