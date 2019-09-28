@@ -51,15 +51,23 @@ class SquareCoordinates {
       0 1 2 3 4 5 6 7
     */
 
-    #numbers = [0, 1, 2, 3, 4, 5, 6, 7];
+    static numbers = [0, 1, 2, 3, 4, 5, 6, 7];
+
+    static correctCoordinate(coordinate) {
+        return SquareCoordinates.numbers.includes(coordinate);
+    }
+
+    static correctCoordinates(x, y) {
+        return SquareCoordinates.correctCoordinate(x) && SquareCoordinates.correctCoordinate(y);
+    }
 
     constructor(coordinates) {
         let x = coordinates[0];
         let y = coordinates[1];
-        if (!this.#numbers.includes(x)) {
+        if (!SquareCoordinates.correctCoordinate(x)) {
             throw Error(`Wrong x value (${x}) passed`);
         }
-        if (!this.#numbers.includes(y)) {
+        if (!SquareCoordinates.correctCoordinate(y)) {
             throw Error(`Wrong y value (${y}) passed`);
         }
         this.x = x;
@@ -388,7 +396,7 @@ class StepPice extends Pice {
         for (let stepPoint of stepPoints) {
             let x = this.square.coordinates.x + stepPoint.x;
             let y = this.square.coordinates.y + stepPoint.y;
-            if (x < 0 || x > 7 || y < 0 || y > 7) continue;
+            if (!SquareCoordinates.correctCoordinates(x, y)) continue;
 
             this.nextSquareAction(occupiedSquares.getFromCoordinates(x, y));
         }
@@ -447,7 +455,7 @@ class LinearPice extends Pice {
             this.refreshSquareFinder();
             let x = this.square.coordinates.x + direction.x;
             let y = this.square.coordinates.y + direction.y;
-            while (x != direction.outsideX && y != direction.outsideY) {
+            while (SquareCoordinates.correctCoordinates(x, y)) {
                 this.nextSquareAction(occupiedSquares.getFromCoordinates(x, y));
                 if (this.endOfALine) break;
                 x += direction.x;
@@ -470,10 +478,10 @@ class Bishop extends LinearPice {
           -1   0   1
     */
     static directions = [
-        {x: -1, y: 1, outsideX: -1, outsideY: 8},   // A (upleft)
-        {x: 1, y: 1, outsideX: 8, outsideY: 8},     // B (upright)
-        {x: 1, y: -1, outsideX: 8, outsideY: -1},   // C (downright)
-        {x: -1, y: -1, outsideX: -1, outsideY: -1}, // D (downleft)
+        {x: -1, y: 1},  // A (upleft)
+        {x: 1, y: 1},   // B (upright)
+        {x: 1, y: -1},  // C (downright)
+        {x: -1, y: -1}, // D (downleft)
     ];
 
     constructor(color, square) {
@@ -498,10 +506,10 @@ class Rook extends LinearPice {
           -1   0   1
     */
     static directions = [
-        {x: 0, y: 1, outsideX: null, outsideY: 8},   // A (up)
-        {x: 1, y: 0, outsideX: 8, outsideY: null},   // B (right)
-        {x: 0, y: -1, outsideX: null, outsideY: -1}, // C (down)
-        {x: -1, y: 0, outsideX: -1, outsideY: null}, // D (left)
+        {x: 0, y: 1},  // A (up)
+        {x: 1, y: 0},  // B (right)
+        {x: 0, y: -1}, // C (down)
+        {x: -1, y: 0}, // D (left)
     ];
 
     constructor(color, square) {
