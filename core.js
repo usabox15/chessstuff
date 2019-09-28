@@ -378,18 +378,27 @@ class Pawn extends Pice {
 }
 
 
-class Knight extends Pice {
-    #ofsets = [
-        {x: -2, y: 1},  // A
-        {x: -1, y: 2},  // B
-        {x: 1, y: 2},   // C
-        {x: 2, y: 1},   // D
-        {x: 2, y: -1},  // E
-        {x: 1, y: -2},  // F
-        {x: -1, y: -2}, // G
-        {x: -2, y: -1}, // H
-    ];
-    /*   ___ ___ ___ ___ ___
+class StepPice extends Pice {
+    constructor(color, kind, square) {
+        super(color, kind, square);
+    }
+
+    getStepSquares(occupiedSquares, stepPoints) {
+        this.refreshSquareFinder();
+        for (let stepPoint of stepPoints) {
+            let x = this.square.coordinates.x + stepPoint.x;
+            let y = this.square.coordinates.y + stepPoint.y;
+            if (x < 0 || x > 7 || y < 0 || y > 7) continue;
+
+            this.nextSquareAction(occupiedSquares.getFromCoordinates(x, y));
+        }
+    }
+}
+
+
+class Knight extends StepPice {
+    /*  Step points
+         ___ ___ ___ ___ ___
         |   | B |   | C |   |
        2|___|___|___|___|___|
         | A |   |   |   | D |
@@ -402,20 +411,23 @@ class Knight extends Pice {
       -2|___|___|___|___|___|
           -2  -1   0   1   2
     */
+    #stepPoints = [
+        {x: -2, y: 1},  // A
+        {x: -1, y: 2},  // B
+        {x: 1, y: 2},   // C
+        {x: 2, y: 1},   // D
+        {x: 2, y: -1},  // E
+        {x: 1, y: -2},  // F
+        {x: -1, y: -2}, // G
+        {x: -2, y: -1}, // H
+    ];
 
     constructor(color, square) {
         super(color, "knight", square);
     }
 
     getSquares(occupiedSquares) {
-        this.refreshSquareFinder();
-        for (let ofset of this.#ofsets) {
-            let x = this.square.coordinates.x + ofset.x;
-            let y = this.square.coordinates.y + ofset.y;
-            if (x < 0 || x > 7 || y < 0 || y > 7) continue;
-
-            this.nextSquareAction(occupiedSquares.getFromCoordinates(x, y));
-        }
+        this.getStepSquares(occupiedSquares, this.#stepPoints);
     }
 
     getBind() {
@@ -528,7 +540,28 @@ class Queen extends LinearPice {
 }
 
 
-class King extends Pice {
+class King extends StepPice {
+    /*  Step points
+         ___ ___ ___
+        | A | B | C |
+       1|___|___|___|
+        | H |Ki | D |
+       0|___| ng|___|
+        | G | F | E |
+      -1|___|___|___|
+          -1   0   1
+    */
+    #stepPoints = [
+        {x: -1, y: 1},  // A
+        {x: 0, y: 1},   // B
+        {x: 1, y: 1},   // C
+        {x: 1, y: 0},   // D
+        {x: 1, y: -1},  // E
+        {x: 0, y: -1},  // F
+        {x: -1, y: -1}, // G
+        {x: -1, y: 0},  // H
+    ];
+
     constructor(color, square) {
         super(color, "king", square);
         this.rank = color == "white" ? "1" : "8";
@@ -545,16 +578,7 @@ class King extends Pice {
     }
 
     getSquares(occupiedSquares, castleRights) {
-        this.refreshSquares();
-
-        let ofsets = [[-1, 0], [-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1]];
-        for (let ofset of ofsets) {
-            let x = this.numSquare[0] + ofset[0];
-            let y = this.numSquare[1] + ofset[1];
-            if (x < 0 || x > 7 || y < 0 || y > 7) continue;
-
-            this.nextSquareAction(occupiedSquares.getFromCoordinates(x, y));
-        }
+        this.getStepSquares(occupiedSquares, this.#stepPoints);
 
         for (let kingAction of ["move", "attack"]) {
             let wrongSquares = [];
