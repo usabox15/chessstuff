@@ -78,17 +78,17 @@ class Square {
     To create instance you need to pass one of this params.
     */
 
-    static #symbolToNumber = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7};
-    static #numberToSymbol = {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"};
+    static symbolToNumber = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7};
+    static numberToSymbol = {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"};
 
     constructor(name=null, coordinates=null) {
         if (name) {
             this._name = SquareName(name);
-            this._coordinates = SquareCoordinates([Square.#symbolToNumber[this._name.symbol], +(this._name.number - 1)]);
+            this._coordinates = SquareCoordinates([Square.symbolToNumber[this._name.symbol], +(this._name.number - 1)]);
         }
         else if (coordinates) {
             this._coordinates = SquareCoordinates(coordinates);
-            this._name = SquareName(Square.#numberToSymbol[this._coordinates.x] + (this._coordinates.y + 1));
+            this._name = SquareName(Square.numberToSymbol[this._coordinates.x] + (this._coordinates.y + 1));
         }
         else {
             throw Error("To create Square instance you need to pass either name or coordinates param");
@@ -97,7 +97,7 @@ class Square {
     }
 
     static coordinatesToName(x, y) {
-        return Square.#numberToSymbol[x] + (y + 1);
+        return Square.numberToSymbol[x] + (y + 1);
     }
 
     get name() {
@@ -122,6 +122,14 @@ class Square {
 
     theSame(otherSquare) {
         return this.name.value === otherSquare.name.value;
+    }
+
+    onVertical(vertical) {
+        return this.name.symbol === vertical;
+    }
+
+    onHorizontal(horizontal) {
+        return this.name.number == horizontal;
     }
 
     _getLinedCheckerDirection(otherSquare) {
@@ -244,12 +252,6 @@ class Pice {
 
     sameColor(otherPice) {
         return this.color === otherPice.color;
-    }
-
-    getSquares(occupiedSquares) {
-        // get pice dependent squares
-        this.refreshSquares();
-        this[this.kind + "Squares"](occupiedSquares);
     }
 
     nextSquareAction(nextSquare) {
@@ -405,7 +407,8 @@ class Knight extends Pice {
         super(color, "knight", square);
     }
 
-    knightSquares(occupiedSquares) {
+    getSquares(occupiedSquares) {
+        this.refreshSquareFinder();
         for (let ofset of this.#ofsets) {
             let x = this.square.coordinates.x + ofset.x;
             let y = this.square.coordinates.y + ofset.y;
@@ -421,30 +424,14 @@ class Knight extends Pice {
 }
 
 
-class Bishop extends Pice {
-    #directions = [
-        {x: -1, y: 1, outsideX: -1, outsideY: 8},   // A (upleft)
-        {x: 1, y: 1, outsideX: 8, outsideY: 8},     // B (upright)
-        {x: 1, y: -1, outsideX: 8, outsideY: -1},   // C (downright)
-        {x: -1, y: -1, outsideX: -1, outsideY: -1}, // D (downleft)
-    ];
-    /*   ___ ___ ___
-        | A |   | B |
-       1|___|___|___|
-        |   |Bis|   |
-       0|___|hop|___|
-        | D |   | C |
-      -1|___|___|___|
-          -1   0   1
-    */
-
-    constructor(color, square) {
-        super(color, "bishop", square);
+class LinearPice extends Pice {
+    constructor(color, kind, square) {
+        super(color, kind, square);
         this.isLinear = true;
     }
 
-    bishopSquares(occupiedSquares) {
-        for (let direction of this.#directions) {
+    getLinearSquares(occupiedSquares, directions) {
+        for (let direction of directions) {
             this.refreshSquareFinder();
             let x = this.square.coordinates.x + direction.x;
             let y = this.square.coordinates.y + direction.y;
@@ -459,49 +446,86 @@ class Bishop extends Pice {
 }
 
 
-class Rook extends Pice {
+class Bishop extends LinearPice {
+    /*  Directions
+         ___ ___ ___
+        | A |   | B |
+       1|___|___|___|
+        |   |Bis|   |
+       0|___|hop|___|
+        | D |   | C |
+      -1|___|___|___|
+          -1   0   1
+    */
+    static directions = [
+        {x: -1, y: 1, outsideX: -1, outsideY: 8},   // A (upleft)
+        {x: 1, y: 1, outsideX: 8, outsideY: 8},     // B (upright)
+        {x: 1, y: -1, outsideX: 8, outsideY: -1},   // C (downright)
+        {x: -1, y: -1, outsideX: -1, outsideY: -1}, // D (downleft)
+    ];
+
     constructor(color, square) {
-        super(color, "rook", square);
-        this.side = square[0] == "a" ? "long" : "short";
-        this.isLinear = true;
-    }
-
-    rookSquares(occupiedSquares) {
-        for (let j = 0; j <= 1; j++) {
-            let k = Math.abs(j - 1);
-            // up & right
-            this.refreshSquareFinder();
-            for (let i = this.numSquare[k] + 1; i <= 7; i++) {
-                let s = []; s[k] = i; s[j] = this.numSquare[j];
-                this.nextSquareAction(occupiedSquares.getFromCoordinates(s[0], s[1]));
-                if (this.endOfALine) break;
-            }
-            // down & left
-            this.refreshSquareFinder();
-            for (let i = this.numSquare[k] - 1; i >= 0; i--) {
-                let s = []; s[k] = i; s[j] = this.numSquare[j];
-                this.nextSquareAction(occupiedSquares.getFromCoordinates(s[0], s[1]));
-                if (this.endOfALine) break;
-            }
-        }
-    }
-}
-
-
-class Queen extends Pice {
-    constructor(color, square) {
-        super(color, "queen", square);
-        this.isLinear = true;
+        super(color, "bishop", square);
     }
 
     getSquares(occupiedSquares) {
-        this.refreshSquares();
-        this.rookSquares(occupiedSquares);
-        this.bishopSquares(occupiedSquares);
+        this.getLinearSquares(occupiedSquares, Bishop.directions);
     }
 }
-Object.defineProperty(Queen.prototype, "rookSquares", Object.getOwnPropertyDescriptor(Rook.prototype, "rookSquares"));
-Object.defineProperty(Queen.prototype, "bishopSquares", Object.getOwnPropertyDescriptor(Bishop.prototype, "bishopSquares"));
+
+
+class Rook extends LinearPice {
+    /*  Directions
+         ___ ___ ___
+        |   | A |   |
+       1|___|___|___|
+        | D |Ro | B |
+       0|___| ok|___|
+        |   | C |   |
+      -1|___|___|___|
+          -1   0   1
+    */
+    static directions = [
+        {x: 0, y: 1, outsideX: null, outsideY: 8},   // A (up)
+        {x: 1, y: 0, outsideX: 8, outsideY: null},   // B (right)
+        {x: 0, y: -1, outsideX: null, outsideY: -1}, // C (down)
+        {x: -1, y: 0, outsideX: -1, outsideY: null}, // D (left)
+    ];
+
+    constructor(color, square) {
+        super(color, "rook", square);
+        this.side = square.onVertical("a") ? "long" : "short";
+    }
+
+    getSquares(occupiedSquares) {
+        this.getLinearSquares(occupiedSquares, Rook.directions);
+    }
+}
+
+
+class Queen extends LinearPice {
+    /*  Directions
+         ___ ___ ___
+        | A | B | C |
+       1|___|___|___|
+        | H |Que| D |
+       0|___| en|___|
+        | G | F | E |
+      -1|___|___|___|
+          -1   0   1
+
+        Actualy use Bishop and Rook directions.
+    */
+
+    constructor(color, square) {
+        super(color, "queen", square);
+    }
+
+    getSquares(occupiedSquares) {
+        this.getLinearSquares(occupiedSquares, Bishop.directions);
+        this.getLinearSquares(occupiedSquares, Rook.directions);
+    }
+}
 
 
 class King extends Pice {
