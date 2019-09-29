@@ -226,6 +226,10 @@ class PiceSquares {
         // limit some kind of Pice actions squares by Array of accepted square names
         this[kind] = this[kind].filter(square => acceptedNames.includes(square.name.value));
     }
+
+    includes(kind, square) {
+        return this[kind].filter(s => s.theSame(square)).length != 0;
+    }
 }
 
 
@@ -234,18 +238,16 @@ class Pice {
     Base chess pice class.
     There are create params:
       - color [string] (white or black);
-      - kind [string] (pawn, knight, bishop, rook, queen, king);
       - square [Square class instance] (where pice is placed).
     */
 
-    constructor(color, kind, square) {
+    constructor(color, square) {
         this.color = color;
-        this.kind = kind;
         this.getPlace(square);
         this.squares = new PiceSquares;
         this.refreshSquareFinder();
         this.getInitState();
-        this.isKing = false;
+        this.getKind();
         this.isLinear = false;
     }
 
@@ -269,6 +271,15 @@ class Pice {
         this.binder = null;
     }
 
+    getKind() {
+        this.isPawn = false;
+        this.isKnight = false;
+        this.isBishop = false;
+        this.isRook = false;
+        this.isQeen = false;
+        this.isKing = false;
+    }
+
     getPlace(square) {
         this.square = square;
         square.placePice(this);
@@ -276,6 +287,10 @@ class Pice {
 
     sameColor(otherPice) {
         return this.color === otherPice.color;
+    }
+
+    hasColor(color) {
+        return this.color === color;
     }
 
     nextSquareAction(nextSquare) {
@@ -340,7 +355,8 @@ class Pice {
 
 class Pawn extends Pice {
     constructor(color, square) {
-        super(color, "pawn", square);
+        super(color, square);
+        this.isPawn = true;
         this.direction = color == "white" ? 1 : -1;
     }
 
@@ -367,9 +383,9 @@ class Pawn extends Pice {
         return moveSquaresCoordinates;
     }
 
-    _getMoveSquares() {
+    _getMoveSquares(boardSquares) {
         for (let [x, y] of this._getMoveCoordinates()) {
-            let square = occupiedSquares.getFromCoordinates(x, y);
+            let square = boardSquares.getFromCoordinates(x, y);
             if (square.pice) break;
             this.squares.add("move", square);
         }
@@ -392,9 +408,9 @@ class Pawn extends Pice {
         return attackSquaresCoordinates;
     }
 
-    _getAttackSquares() {
+    _getAttackSquares(boardSquares) {
         for (let [x, y] of this._getAttackCoordinates()) {
-            let square = occupiedSquares.getFromCoordinates(x, y);
+            let square = boardSquares.getFromCoordinates(x, y);
             this.squares.add("control", square);
             if (square.pice) {
                 if (this.sameColor(square.pice)) {
@@ -413,27 +429,27 @@ class Pawn extends Pice {
         }
     }
 
-    getSquares(occupiedSquares, enPassant) {
+    getSquares(boardSquares, enPassant) {
         this.refreshSquares();
-        this._getMoveSquares();
-        this._getAttackSquares();
+        this._getMoveSquares(boardSquares);
+        this._getAttackSquares(boardSquares);
     }
 }
 
 
 class StepPice extends Pice {
-    constructor(color, kind, square) {
-        super(color, kind, square);
+    constructor(color, square) {
+        super(color, square);
     }
 
-    getStepSquares(occupiedSquares, stepPoints) {
+    getStepSquares(boardSquares, stepPoints) {
         this.refreshSquareFinder();
         for (let stepPoint of stepPoints) {
             let x = this.square.coordinates.x + stepPoint.x;
             let y = this.square.coordinates.y + stepPoint.y;
             if (!SquareCoordinates.correctCoordinates(x, y)) continue;
 
-            this.nextSquareAction(occupiedSquares.getFromCoordinates(x, y));
+            this.nextSquareAction(boardSquares.getFromCoordinates(x, y));
         }
     }
 }
@@ -466,11 +482,12 @@ class Knight extends StepPice {
     ];
 
     constructor(color, square) {
-        super(color, "knight", square);
+        super(color, square);
+        this.isKnight = true;
     }
 
-    getSquares(occupiedSquares) {
-        this.getStepSquares(occupiedSquares, this.#stepPoints);
+    getSquares(boardSquares) {
+        this.getStepSquares(boardSquares, this.#stepPoints);
     }
 
     getBind() {
@@ -480,18 +497,18 @@ class Knight extends StepPice {
 
 
 class LinearPice extends Pice {
-    constructor(color, kind, square) {
-        super(color, kind, square);
+    constructor(color, square) {
+        super(color, square);
         this.isLinear = true;
     }
 
-    getLinearSquares(occupiedSquares, directions) {
+    getLinearSquares(boardSquares, directions) {
         for (let direction of directions) {
             this.refreshSquareFinder();
             let x = this.square.coordinates.x + direction.x;
             let y = this.square.coordinates.y + direction.y;
             while (SquareCoordinates.correctCoordinates(x, y)) {
-                this.nextSquareAction(occupiedSquares.getFromCoordinates(x, y));
+                this.nextSquareAction(boardSquares.getFromCoordinates(x, y));
                 if (this.endOfALine) break;
                 x += direction.x;
                 y += direction.y;
@@ -520,11 +537,12 @@ class Bishop extends LinearPice {
     ];
 
     constructor(color, square) {
-        super(color, "bishop", square);
+        super(color, square);
+        this.isBishop = true;
     }
 
-    getSquares(occupiedSquares) {
-        this.getLinearSquares(occupiedSquares, Bishop.directions);
+    getSquares(boardSquares) {
+        this.getLinearSquares(boardSquares, Bishop.directions);
     }
 }
 
@@ -548,12 +566,13 @@ class Rook extends LinearPice {
     ];
 
     constructor(color, square) {
-        super(color, "rook", square);
+        super(color, square);
+        this.isRook = true;
         this.side = square.onVertical("a") ? "long" : "short";
     }
 
-    getSquares(occupiedSquares) {
-        this.getLinearSquares(occupiedSquares, Rook.directions);
+    getSquares(boardSquares) {
+        this.getLinearSquares(boardSquares, Rook.directions);
     }
 }
 
@@ -573,12 +592,13 @@ class Queen extends LinearPice {
     */
 
     constructor(color, square) {
-        super(color, "queen", square);
+        super(color, square);
+        this.isQeen = true;
     }
 
-    getSquares(occupiedSquares) {
-        this.getLinearSquares(occupiedSquares, Bishop.directions);
-        this.getLinearSquares(occupiedSquares, Rook.directions);
+    getSquares(boardSquares) {
+        this.getLinearSquares(boardSquares, Bishop.directions);
+        this.getLinearSquares(boardSquares, Rook.directions);
     }
 }
 
@@ -600,27 +620,27 @@ class KingCastle {
         };
     }
 
-    _freeCastleRoad(occupiedSquares, kind) {
-        for (let squareName of this[kind].free) {
-            if (occupiedSquares[squareName].pice) return false;
+    _freeCastleRoad(boardSquares, side) {
+        for (let squareName of this[side].free) {
+            if (boardSquares[squareName].pice) return false;
         }
         return true;
     }
 
-    _safeCastleRoad(occupiedSquares, kind) {
-        for (let sqr of Object.values(occupiedSquares).filter(s => !this.sameColor(s.pice))) {
-            for (let squareName of this[kind].safe) {
-                if (sqr.pice.squares.control.filter(s => s.name.value == squareName).length != 0) return false;
+    _safeCastleRoad(boardSquares, side) {
+        for (let sqr of Object.values(boardSquares.occupied).filter(s => !this.sameColor(s.pice))) {
+            for (let squareName of this[side].safe) {
+                if (sqr.pice.squares.includes("control", boardSquares[squareName])) return false;
             }
         }
         return true;
     }
 
-    isLegal(occupiedSquares, kind) {
-        if (!this._freeCastleRoad(occupiedSquares, kind)) {
+    isLegal(boardSquares, side) {
+        if (!this._freeCastleRoad(boardSquares, side)) {
             return false;
         }
-        if (!this._safeCastleRoad(occupiedSquares, kind)) {
+        if (!this._safeCastleRoad(boardSquares, side)) {
             return false;
         }
         return true;
@@ -658,7 +678,7 @@ class King extends StepPice {
     ];
 
     constructor(color, square) {
-        super(color, "king", square);
+        super(color, square);
         this.castle = KingCastle(color);
         this.isKing = true;
     }
@@ -667,12 +687,12 @@ class King extends StepPice {
         this.checkersSquares = [];
     }
 
-    _removeEnemyControlledSquares() {
+    _removeEnemyControlledSquares(boardSquares) {
         for (let kingAction of ["move", "attack"]) {
             let squaresToRemove = [];
             for (let sqr of this.squares[kingAction]) {
-                for (let s of Object.values(occupiedSquares)) {
-                    if (!this.sameColor(s.pice) && s.pice.squares.control.filter(p => p.square.theSame(sqr)).length != 0) {
+                for (let s of Object.values(boardSquares.occupied)) {
+                    if (!this.sameColor(s.pice) && s.pice.squares.includes("control", sqr)) {
                         squaresToRemove.push(sqr);
                         break;
                     }
@@ -684,24 +704,24 @@ class King extends StepPice {
         }
     }
 
-    _addCastleMoves() {
-        for (let kind of ["long", "short"]) {
-            if (this.castle[kind].accepted && this.castle.isLegal(occupiedSquares, kind)) {
-                this.squares.add("move", occupiedSquares[this.castle[kind].squareName]);
+    _addCastleMoves(boardSquares) {
+        for (let side of ["long", "short"]) {
+            if (this.castle[side].accepted && this.castle.isLegal(boardSquares, side)) {
+                this.squares.add("move", boardSquares[this.castle[side].squareName]);
             }
         }
     }
 
     _removeCastleMoves() {
-        for (let kind of ["long", "short"]) {
-            this.squares.remove("move", occupiedSquares[this.castle[kind].squareName]);
+        for (let side of ["long", "short"]) {
+            this.squares.remove("move", boardSquares[this.castle[side].squareName]);
         }
     }
 
-    getSquares(occupiedSquares) {
-        this.getStepSquares(occupiedSquares, this.#stepPoints);
-        this._removeEnemyControlledSquares();
-        this._addCastleMoves();
+    getSquares(boardSquares) {
+        this.getStepSquares(boardSquares, this.#stepPoints);
+        this._removeEnemyControlledSquares(boardSquares);
+        this._addCastleMoves(boardSquares);
     }
 
     getCheck() {
@@ -780,15 +800,10 @@ class Board {
     constructor() {
         this.squares = new BoardSquares;
         this.colors = new BoardColors;
-        this.occupiedSquares = {
-            getFromCoordinates(x, y) {
-                return this[Square.coordinatesToName(x, y)];
-            }
-        };
         this.enPassant = null;
         this.result = null;
         this.transformation = null;
-        this.kingsPlaces = {"white": "e1", "black": "e8"};
+        this.kings = {"white": null, "black": null};
     }
 
     get allPices() {
@@ -809,7 +824,10 @@ class Board {
     }
 
     placePice(color, kind, squareName) {
-        new this.#picesBox[kind](color, this.squares[squareName]);
+        let pice = new this.#picesBox[kind](color, this.squares[squareName]);
+        if (pice.isKing) {
+            this.kings[color] = pice;
+        }
     }
 
     removePice(squareName) {
@@ -817,29 +835,31 @@ class Board {
     }
 
     castleRookMove(from, to, king) {
-        if (from == "e" + king.rank) {
-            if (to == "c" + king.rank) {
-                this.movePice("a" + king.rank, "d" + king.rank, false);
+        horizontal = king.castle.horizontal;
+        if (from == `e${horizontal}`) {
+            if (to == `c${horizontal}`) {
+                this.movePice(`a${horizontal}`, `d${horizontal}`, false);
             }
-            else if (to == "g" + king.rank) {
-                this.movePice("h" + king.rank, "f" + king.rank, false);
+            else if (to == `g${horizontal}`) {
+                this.movePice(`h${horizontal}`, `f${horizontal}`, false);
             }
         }
     }
 
     stopKingCastleRights(color) {
-        this.occupiedSquares[this.kingsPlaces[color]].pice.castle.stop();
+       this.kings[color].castle.stop();
     }
 
     stopRookCastleRights(pice) {
-        this.occupiedSquares[this.kingsPlaces[pice.color]].pice.castle.stop(pice.side);
+        this.kings[pice.color].castle.stop(pice.side);
     }
 
     enPassantMatter(from, to, pice) {
+        let toSquare = this.squares[to];
         if (Math.abs(from[1] - to[1]) == 2) {
             this.enPassant = from[0] + (+from[1] + (this.colors.current == "white" ? 1 : -1));
         }
-        else if (pice.squares["attack"].includes(to) && !this.occupiedSquares[to]) {
+        else if (pice.squares.includes("attack", toSquare) && !toSquare.pice) {
             this.removePice(to[0] + from[1]);
         }
     }
@@ -855,14 +875,15 @@ class Board {
             "description": "Successfully transformed!"};
     }
 
-    replacePice(from, to, pice) {
-        this.removePice(from);
-        this.occupiedSquares[to] = pice;
-        pice.getPlace(to);
+    _replacePice(fromSquare, toSquare, pice) {
+        fromSquare.removePice();
+        pice.getPlace(toSquare);
     }
 
     movePice(from, to, refresh=true) {
-        let pice = this.occupiedSquares[from];
+        let fromSquare = this.squares[from];
+        let toSquare = this.squares[to];
+        let pice = fromSquare.pice;
 
         if (!pice) {
             return {
@@ -870,13 +891,13 @@ class Board {
                 "transformation": false,
                 "description": "There isn't a pice to replace."};
         }
-        if (pice.color != this.colors.current) {
+        if (!pice.hasColor(this.colors.current)) {
             return {
                 "success": false,
                 "transformation": false,
                 "description": "Wrong color pice."};
         }
-        if (!pice.squares["move"].includes(to) && !pice.squares["attack"].includes(to)) {
+        if (!pice.squares.includes("move", toSquare) && !pice.squares.includes("attack", toSquare)) {
             return {
                 "success": false,
                 "transformation": false,
@@ -884,15 +905,14 @@ class Board {
         }
 
         this.transformation = null;
-        if (pice.kind == "king") {
-            this.kingsPlaces[pice.color] = to;
+        if (pice.isKing) {
             this.castleRookMove(from, to, pice);
             this.stopKingCastleRights(pice.color);
         }
-        else if (pice.kind == "rook") {
+        else if (pice.isRook) {
             this.stopRookCastleRights(pice);
         }
-        else if (pice.kind == "pawn") {
+        else if (pice.isPawn) {
             if (["1", "8"].includes(to[1])) {
                 this.transformation = [from, to];
                 return {
@@ -903,7 +923,7 @@ class Board {
             this.enPassantMatter(from, to, pice);
         }
 
-        this.replacePice(from, to, pice);
+        this._replacePice(fromSquare, toSquare, pice);
 
         if (refresh) this.refreshState();
 
@@ -917,22 +937,19 @@ class Board {
         for (let pice of this.allPices) {
             pice.getInitState();
         }
-        for (let pice of this.allPices.filter(p => p.kind != "king" && p.kind != "pawn")) {
-            pice.getSquares(this.occupiedSquares);
+        for (let pice of this.allPices.filter(p => !p.isPawn)) {
+            pice.getSquares(this.squares);
         }
-        for (let pice of this.allPices.filter(p => p.kind == "pawn")) {
-            pice.getSquares(this.occupiedSquares, this.enPassant);
-        }
-        for (let pice of this.allPices.filter(p => p.kind == "king")) {
-            pice.getSquares(this.occupiedSquares);
+        for (let pice of this.allPices.filter(p => p.isPawn)) {
+            pice.getSquares(this.squares, this.enPassant);
         }
         for (let pice of this.allPices.filter(p => p.binder)) {
-            pice.getBind(this.kingsPlaces[pice.color]);
+            pice.getBind(this.kings[pice.color].square);
         }
-        let oppKing = this.occupiedSquares[this.kingsPlaces[this.colors.opponent]];
+        let oppKing = this.kings[this.colors.opponent];
         if (oppKing.checkersSquares.length == 1) {
             let noMoves = true;
-            let checker = this.occupiedSquares[oppKing.checkersSquares[0]];
+            let checker = this.squares[oppKing.checkersSquares[0]];
             let betweenSquares = checker.isLinear ? checker.square.getBetweenSquaresNames(oppKing.square) : [];
             for (let pice of this.allPices.filter(p => p.sameColor(oppKing))) {
                 pice.getCheck(checker, betweenSquares);
