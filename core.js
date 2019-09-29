@@ -15,16 +15,16 @@ class SquareName {
       a b c d e f g h
     */
 
-    #symbols = ["a", "b", "c", "d", "e", "f", "g", "h"];
-    #numbers = ["1", "2", "3", "4", "5", "6", "7", "8"];
+    static symbols = ["a", "b", "c", "d", "e", "f", "g", "h"];
+    static numbers = ["1", "2", "3", "4", "5", "6", "7", "8"];
 
     constructor(name) {
         let symbol = name[0];
         let number = name[1];
-        if (!this.#symbols.includes(symbol)) {
+        if (!SquareName.symbols.includes(symbol)) {
             throw Error(`Wrong symbol (${symbol}) passed`);
         }
-        if (!this.#numbers.includes(number)) {
+        if (!SquareName.numbers.includes(number)) {
             throw Error(`Wrong number (${number}) passed`);
         }
         this.symbol = symbol;
@@ -710,8 +710,37 @@ class King extends StepPice {
 }
 
 
+class BoardSquares {
+    constructor() {
+        this._create();
+    }
+
+    _create() {
+        for (let symbol of SquareName.symbols) {
+            for (let number of SquareName.numbers) {
+                let name = `${symbol}${number}`;
+                this[name] = Square(name);
+            }
+        }
+    }
+
+    get occupied() {
+        return Object.fromEntries(
+            Object.entries(this)
+            .filter(data => data[1].pice)
+        );
+    }
+
+    getFromCoordinates(x, y) {
+        return this[Square.coordinatesToName(x, y)];
+    }
+
+}
+
+
 class Board {
     constructor() {
+        this.squares = BoardSquares();
         this.occupiedSquares = {
             getFromCoordinates(x, y) {
                 return this[Square.coordinatesToName(x, y)];
@@ -721,10 +750,6 @@ class Board {
         this.enPassant = null;
         this.result = null;
         this.transformation = null;
-        this.castleRights = {
-            "white": {"short": true, "long": true},
-            "black": {"short": true, "long": true},
-        };
         this.kingsPlaces = {"white": "e1", "black": "e8"};
         this.picesBox = {
             "pawn": Pawn,
