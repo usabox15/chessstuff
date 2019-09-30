@@ -188,6 +188,11 @@ class Square {
         }
         return betweenSquaresNames;
     }
+
+    getBetweenSquaresCount(otherSquare) {
+        // get count of squares between this square and other one
+        return this.getBetweenSquaresNames(otherSquare).length;
+    }
 }
 
 
@@ -358,6 +363,7 @@ class Pawn extends Pice {
         super(color, square);
         this.isPawn = true;
         this.direction = color == "white" ? 1 : -1;
+        this.enPassantSquare = null;
     }
 
     get onInitialHorizontal() {
@@ -423,13 +429,14 @@ class Pawn extends Pice {
                     }
                 }
             }
-            else if (enPassant && square.theSame(enPassant)) {
-                this.squares.add("attack", square);
-            }
+        }
+        if (this.enPassantSquare) {
+            this.squares.add("attack", this.enPassantSquare);
+            this.enPassantSquare = null;
         }
     }
 
-    getSquares(boardSquares, enPassant) {
+    getSquares(boardSquares) {
         this.refreshSquares();
         this._getMoveSquares(boardSquares);
         this._getAttackSquares(boardSquares);
@@ -800,7 +807,6 @@ class Board {
     constructor() {
         this.squares = new BoardSquares;
         this.colors = new BoardColors;
-        this.enPassant = null;
         this.result = null;
         this.transformation = null;
         this.kings = {"white": null, "black": null};
@@ -854,13 +860,29 @@ class Board {
         this.kings[pice.color].castle.stop(pice.side);
     }
 
-    enPassantMatter(from, to, pice) {
-        let toSquare = this.squares[to];
-        if (Math.abs(from[1] - to[1]) == 2) {
-            this.enPassant = from[0] + (+from[1] + (this.colors.current == "white" ? 1 : -1));
+    enPassantMatter(fromSquare, toSquare, pawn) {
+        // jump through one square
+        if (toSquare.getBetweenSquaresCount(fromSquare) == 1) {
+            let enPassantSquare = this.squares.getFromCoordinates(
+                toSquare.coordinates.x,
+                toSquare.coordinates.y - pawn.direction
+            );
+            for (let [state, dx] of [["onRightEdge", 1], ["onLeftEdge", -1]]) {
+                if (!toSquare[state]) {
+                    let x = toSquare.coordinates.x + dx;
+                    let y = toSquare.coordinates.y;
+                    let otherPice = this.squares.getFromCoordinates(x, y).pice;
+                    if (otherPice && otherPice.isPawn) {
+                        otherPice.enPassantSquare = enPassantSquare;
+                    }
+                }
+            }
         }
-        else if (pice.squares.includes("attack", toSquare) && !toSquare.pice) {
-            this.removePice(to[0] + from[1]);
+        // catch other pawn en passant
+        else if (pawn.squares.includes("attack", toSquare) && !toSquare.pice) {
+            let x = toSquare.coordinates.x;
+            let y = fromSquare.coordinates.y;
+            this.removePice(this.squares.getFromCoordinates(x, y).name.value);
         }
     }
 
@@ -920,7 +942,7 @@ class Board {
                     "transformation": true,
                     "description": "Pawn is ready to transform on " + to + "."};
             }
-            this.enPassantMatter(from, to, pice);
+            this.enPassantMatter(fromSquare, toSquare, pice);
         }
 
         this._replacePice(fromSquare, toSquare, pice);
@@ -937,11 +959,8 @@ class Board {
         for (let pice of this.allPices) {
             pice.getInitState();
         }
-        for (let pice of this.allPices.filter(p => !p.isPawn)) {
+        for (let pice of this.allPices) {
             pice.getSquares(this.squares);
-        }
-        for (let pice of this.allPices.filter(p => p.isPawn)) {
-            pice.getSquares(this.squares, this.enPassant);
         }
         for (let pice of this.allPices.filter(p => p.binder)) {
             pice.getBind(this.kings[pice.color].square);
@@ -973,7 +992,6 @@ class Board {
             }
             if (noMoves) this.result = [0.5, 0.5];
         }
-        this.enPassant = null;
     }
 }
 
