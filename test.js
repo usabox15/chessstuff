@@ -18,8 +18,11 @@ var symbols = {
 };
 
 function markingSquares(pice, actionKind, aimed=false) {
-    for (let sqr of pice.squares[actionKind]) {
-        $(".square[x=" + sqr[0] + "][y=" + sqr[1] + "]").addClass((aimed ? "aim " : "") + actionKind + " marked");
+    let squares = pice.squares[actionKind] || [];
+    let aimClassName = (aimed ? "aim " : "");
+    for (let sqr of squares) {
+        $(`.square[x=${sqr.name.symbol}][y=${sqr.name.number}]`)
+        .addClass(`${aimClassName}${actionKind} marked`);
     }
 }
 
@@ -41,9 +44,8 @@ function createPice(color, kind) {
 
 function refreshBoard(brd) {
     $(".square").empty();
-    for (let square in brd.occupiedSquares) {
-        let pice = brd.occupiedSquares[square];
-        $(".square[x=" + square[0] + "][y=" + square[1] + "]")
+    for (let pice of brd.allPices) {
+        $(`.square[x=${pice.square.name.symbol}][y=${pice.square.name.number}]`)
         .append(createPice(pice.color, pice.kind));
     }
 }
@@ -181,11 +183,9 @@ $(".square").on("click", function() {
     if (aimedSquare) {
         if (aimedSquare != newSquare) {
             let response = game.move(aimedSquare, newSquare);
-            // console.log(game.board.result);
-            // console.log(response);
             if (response.success) {
                 if (response.transformation) {
-                    showTransformChoices(game.board.currentColor);
+                    showTransformChoices(game.board.colors.current);
                 }
                 else {
                     refreshBoard(game.board);
@@ -196,8 +196,8 @@ $(".square").on("click", function() {
         aimedSquare = null;
     }
     else {
-        let pice = game.board.occupiedSquares[newSquare];
-        if (pice && pice.color == game.board.currentColor) {
+        let pice = game.board.squares[newSquare].pice;
+        if (pice && pice.hasColor(game.board.colors.current)) {
             $(this).addClass("aim marked");
             markingAbilitySquares(pice, true);
             aimedSquare = newSquare;
@@ -208,9 +208,9 @@ $(".square").on("click", function() {
 $(".square:not(.aim)")
 .mouseenter(function() {
     if (!aimedSquare) {
-        let pice = game.board.occupiedSquares[$(this).attr("x") + $(this).attr("y")];
+        let pice = game.board.squares[$(this).attr("x") + $(this).attr("y")].pice;
         if (pice) {
-            if (pice.color == game.board.currentColor) {
+            if (pice.hasColor(game.board.colors.current)) {
                 markingAbilitySquares(pice);
             }
             else {
