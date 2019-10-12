@@ -27,9 +27,21 @@ class SquareName {
         if (!SquareName.numbers.includes(number)) {
             throw Error(`Wrong number (${number}) passed`);
         }
-        this.symbol = symbol;
-        this.number = number;
-        this.value = `${symbol}${number}`;
+        this._symbol = symbol;
+        this._number = number;
+        this._value = `${symbol}${number}`;
+    }
+
+    get symbol() {
+        return this._symbol;
+    }
+
+    get number() {
+        return this._number;
+    }
+
+    get value() {
+        return this._value;
     }
 }
 
@@ -70,9 +82,21 @@ class SquareCoordinates {
         if (!SquareCoordinates.correctCoordinate(y)) {
             throw Error(`Wrong y value (${y}) passed`);
         }
-        this.x = x;
-        this.y = y;
-        this.value = [x, y];
+        this._x = x;
+        this._y = y;
+        this._value = [x, y];
+    }
+
+    get x() {
+        return this._x;
+    }
+
+    get y() {
+        return this._y;
+    }
+
+    get value() {
+        return this._value;
     }
 }
 
@@ -91,12 +115,12 @@ class Square {
 
     constructor(name=null, coordinates=null) {
         if (name) {
-            this._name = SquareName(name);
-            this._coordinates = SquareCoordinates([Square.symbolToNumber[this._name.symbol], +(this._name.number - 1)]);
+            this._name = new SquareName(name);
+            this._coordinates = new SquareCoordinates([Square.symbolToNumber[this._name.symbol], +(this._name.number - 1)]);
         }
         else if (coordinates) {
-            this._coordinates = SquareCoordinates(coordinates);
-            this._name = SquareName(Square.numberToSymbol[this._coordinates.x] + (this._coordinates.y + 1));
+            this._coordinates = new SquareCoordinates(coordinates);
+            this._name = new SquareName(Square.numberToSymbol[this._coordinates.x] + (this._coordinates.y + 1));
         }
         else {
             throw Error("To create Square instance you need to pass either name or coordinates param");
@@ -254,11 +278,16 @@ class Pice {
         this.getInitState();
         this.getKind();
         this.isLinear = false;
+        this._kind = null;
     }
 
     get stuck() {
         // check the pice get stucked
         return !this.squares.move && !this.squares.attack;
+    }
+
+    get kind() {
+        return this._kind;
     }
 
     refreshSquareFinder() {
@@ -281,7 +310,7 @@ class Pice {
         this.isKnight = false;
         this.isBishop = false;
         this.isRook = false;
-        this.isQeen = false;
+        this.isQueen = false;
         this.isKing = false;
     }
 
@@ -364,6 +393,7 @@ class Pawn extends Pice {
         this.isPawn = true;
         this.direction = color == "white" ? 1 : -1;
         this.enPassantSquare = null;
+        this._kind = "pawn";
     }
 
     get onInitialHorizontal() {
@@ -491,6 +521,7 @@ class Knight extends StepPice {
     constructor(color, square) {
         super(color, square);
         this.isKnight = true;
+        this._kind = "knight";
     }
 
     getSquares(boardSquares) {
@@ -546,6 +577,7 @@ class Bishop extends LinearPice {
     constructor(color, square) {
         super(color, square);
         this.isBishop = true;
+        this._kind = "bishop";
     }
 
     getSquares(boardSquares) {
@@ -576,6 +608,7 @@ class Rook extends LinearPice {
         super(color, square);
         this.isRook = true;
         this.side = square.onVertical("a") ? "long" : "short";
+        this._kind = "rook";
     }
 
     getSquares(boardSquares) {
@@ -600,7 +633,8 @@ class Queen extends LinearPice {
 
     constructor(color, square) {
         super(color, square);
-        this.isQeen = true;
+        this.isQueen = true;
+        this._kind = "queen";
     }
 
     getSquares(boardSquares) {
@@ -612,7 +646,7 @@ class Queen extends LinearPice {
 
 class KingCastle {
     constructor(color) {
-        horizontal = color == "white" ? "1" : "8";
+        let horizontal = color == "white" ? "1" : "8";
         this.short = {
             accepted: true,
             squareName: `g${horizontal}`,
@@ -717,8 +751,9 @@ class King extends StepPice {
 
     constructor(color, square) {
         super(color, square);
-        this.castle = KingCastle(color);
+        this.castle = new KingCastle(color);
         this.isKing = true;
+        this._kind = "king";
     }
 
     getInitState() {
@@ -727,17 +762,19 @@ class King extends StepPice {
 
     _removeEnemyControlledSquares(boardSquares) {
         for (let kingAction of ["move", "attack"]) {
-            let squaresToRemove = [];
-            for (let sqr of this.squares[kingAction]) {
-                for (let s of Object.values(boardSquares.occupied)) {
-                    if (!this.sameColor(s.pice) && s.pice.squares.includes("control", sqr)) {
-                        squaresToRemove.push(sqr);
-                        break;
+            if (this.squares[kingAction]) {
+                let squaresToRemove = [];
+                for (let sqr of this.squares[kingAction]) {
+                    for (let s of Object.values(boardSquares.occupied)) {
+                        if (!this.sameColor(s.pice) && s.pice.squares.includes("control", sqr)) {
+                            squaresToRemove.push(sqr);
+                            break;
+                        }
                     }
                 }
-            }
-            for (let sqr of squaresToRemove) {
-                this.squares.remove(kingAction, sqr);
+                for (let sqr of squaresToRemove) {
+                    this.squares.remove(kingAction, sqr);
+                }
             }
         }
     }
@@ -777,7 +814,7 @@ class BoardSquares {
         for (let symbol of SquareName.symbols) {
             for (let number of SquareName.numbers) {
                 let name = `${symbol}${number}`;
-                this[name] = Square(name);
+                this[name] = new Square(name);
             }
         }
     }
@@ -849,10 +886,6 @@ class Board {
             pices.push(square.pice);
         }
         return pices;
-    }
-
-    get allOccupiedSquares() {
-        return Object.keys(this.squares.occupied);
     }
 
     refreshState() {
