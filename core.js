@@ -887,14 +887,23 @@ class Board {
     }
 
     pawnTransformation(kind) {
-        this.placePice(this.colors.current, kind, this.transformation[1]);
-        this.removePice(this.transformation[0]);
+        if (!this.transformation) {
+            return {
+                "success": false,
+                "transformation": false,
+                "description": "There isn't transformation."
+            };
+        }
+
+        this.placePice(this.colors.current, kind, this.transformation.transformationSquare);
+        this.removePice(this.transformation.upToTransformationSquare);
         this.transformation = null;
         this.refreshState();
         return {
             "success": true,
             "transformation": false,
-            "description": "Successfully transformed!"};
+            "description": "Successfully transformed!"
+        };
     }
 
     _replacePice(fromSquare, toSquare, pice) {
@@ -911,19 +920,22 @@ class Board {
             return {
                 "success": false,
                 "transformation": false,
-                "description": "There isn't a pice to replace."};
+                "description": "There isn't a pice to replace."
+            };
         }
         if (!pice.hasColor(this.colors.current)) {
             return {
                 "success": false,
                 "transformation": false,
-                "description": "Wrong color pice."};
+                "description": "Wrong color pice."
+            };
         }
         if (!pice.squares.includes("move", toSquare) && !pice.squares.includes("attack", toSquare)) {
             return {
                 "success": false,
                 "transformation": false,
-                "description": "Illegal move."};
+                "description": "Illegal move."
+            };
         }
 
         this.transformation = null;
@@ -935,12 +947,16 @@ class Board {
             this.stopRookCastleRights(pice);
         }
         else if (pice.isPawn) {
-            if (["1", "8"].includes(to[1])) {
-                this.transformation = [from, to];
+            if (toSquare.onUpEdge || toSquare.onDownEdge) {
+                this.transformation = {
+                    upToTransformationSquare: from,
+                    transformationSquare: to
+                };
                 return {
                     "success": true,
                     "transformation": true,
-                    "description": "Pawn is ready to transform on " + to + "."};
+                    "description": `Pawn is ready to transform on ${to} square.`
+                };
             }
             this.enPassantMatter(fromSquare, toSquare, pice);
         }
