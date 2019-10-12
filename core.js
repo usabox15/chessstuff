@@ -322,7 +322,7 @@ class Pice {
             else {
                 this.squares.add("attack", nextSquare);
                 if (nextSquare.pice.isKing) {
-                    nextSquare.pice.checkersSquares.push(this.square);
+                    nextSquare.pice.checkers.add(this.square.pice);
                     this.xrayControl = true;
                 }
             }
@@ -425,7 +425,7 @@ class Pawn extends Pice {
                 else {
                     this.squares.add("attack", square);
                     if (square.pice.isKing) {
-                        square.pice.checkersSquares.push(this.square);
+                        square.pice.checkers.add(this.square.pice);
                     }
                 }
             }
@@ -662,6 +662,37 @@ class KingCastle {
 }
 
 
+class KingCheckers {
+    constructor() {
+        this._items = [];
+    }
+
+    get first() {
+        return this._items.length > 0 ? this._items[0] : null;
+    }
+
+    get second() {
+        return this._items.length == 2 ? this._items[1] : null;
+    }
+
+    get exist() {
+        return this._items.length > 0;
+    }
+
+    get single() {
+        return this._items.length == 1;
+    }
+
+    get several() {
+        return this._items.length == 2;
+    }
+
+    add(pice) {
+        this._items.push(pice);
+    }
+}
+
+
 class King extends StepPice {
     /*  Step points
          ___ ___ ___
@@ -691,7 +722,7 @@ class King extends StepPice {
     }
 
     getInitState() {
-        this.checkersSquares = [];
+        this.checkers = new KingCheckers;
     }
 
     _removeEnemyControlledSquares(boardSquares) {
@@ -968,7 +999,8 @@ class Board {
         return {
             "success": true,
             "transformation": false,
-            "description": "Successfully moved!"};
+            "description": "Successfully moved!"
+        };
     }
 
     refreshAllSquares() {
@@ -982,9 +1014,9 @@ class Board {
             pice.getBind(this.kings[pice.color].square);
         }
         let oppKing = this.kings[this.colors.opponent];
-        if (oppKing.checkersSquares.length == 1) {
+        if (oppKing.checkers.single) {
             let noMoves = true;
-            let checker = this.squares[oppKing.checkersSquares[0]];
+            let checker = oppKing.checkers.first;
             let betweenSquares = checker.isLinear ? checker.square.getBetweenSquaresNames(oppKing.square) : [];
             for (let pice of this.allPices.filter(p => p.sameColor(oppKing))) {
                 pice.getCheck(checker, betweenSquares);
@@ -992,7 +1024,7 @@ class Board {
             }
             if (noMoves) this.result = [this.colors.secondPriority, this.colors.firstPriority];
         }
-        else if (oppKing.checkersSquares.length > 1) {
+        else if (oppKing.checkers.several) {
             for (let pice of this.allPices.filter(p => p.sameColor(oppKing) && !p.isKing)) {
                 pice.getTotalImmobilize();
             }
