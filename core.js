@@ -101,6 +101,67 @@ class SquareCoordinates {
 }
 
 
+class ActionsRelation {
+    /*
+    Relation between whether piece and squares or square and pieces by piece action.
+    */
+
+    #allKinds = ['move', 'attack', 'xray', 'cover', 'control'];
+
+    constructor(target) {
+        this.target = target;
+        this.refresh();
+    }
+
+    refresh(kind='all') {
+        let kinds = kind === 'all' ? this.#allKinds : [kind];
+        for (let kind of kinds) {
+            if (this[kind]) {
+                for (let item of this[kind]) {
+                    item[this._getRelatedName(item)].remove(kind, this.target, false);
+                }
+                this[kind] = null;
+            }
+        }
+    }
+
+    add(kind, item, relate=true) {
+        if (this[kind]) {
+            this[kind].push(item);
+        }
+        else {
+            this[kind] = [item];
+        }
+        if (relate) {
+            item[this._getRelatedName(item)].add(kind, this.target, false);
+        }
+    }
+
+    remove(kind, item, relate=true) {
+        if (this[kind]) {
+            this[kind] = this[kind].filter(i => !i.theSame(item));
+            if (this[kind].length == 0) {
+                this[kind] = null;
+            }
+        }
+        if (relate) {
+            item[this._getRelatedName(item)].remove(kind, this.target, false);
+        }
+    }
+
+    includes(kind, item) {
+        if (!this[kind]) {
+            return false;
+        }
+        return this[kind].filter(i => i.theSame(item)).length != 0;
+    }
+
+    _getRelatedName(item) {
+        return item instanceof Piece ? 'squares' : 'pieces';
+    }
+}
+
+
 class Square {
     /*
     Chess board square.
@@ -125,7 +186,8 @@ class Square {
         else {
             throw Error("To create Square instance you need to pass either name or coordinates param");
         }
-        this._pice = null;
+        this._piece = null;
+        this.pieces = new ActionsRelation(this);
     }
 
     static coordinatesToName(x, y) {
@@ -140,8 +202,8 @@ class Square {
         return this._coordinates;
     }
 
-    get pice() {
-        return this._pice;
+    get piece() {
+        return this._piece;
     }
 
     get onUpEdge() {
@@ -160,12 +222,12 @@ class Square {
         return this.coordinates.x == 0;
     }
 
-    placePice(pice) {
-        this._pice = pice;
+    placePiece(piece) {
+        this._piece = piece;
     }
 
-    removePice() {
-        this._pice = null;
+    removePiece() {
+        this._piece = null;
     }
 
     theSame(otherSquare) {
@@ -220,60 +282,35 @@ class Square {
 }
 
 
-class PiceSquares {
-    /*
-    Chess pice dependent squares storage.
-    */
-
-    #allKinds = ['move', 'attack', 'xray', 'cover', 'control'];
-
-    constructor() {
-        this.refresh();
-    }
-
-    refresh(kind='all') {
-        let kinds = kind === 'all' ? this.#allKinds : [kind];
-        for (let kind of kinds) {
-            this[kind] = null;
-        }
-    }
-
-    add(kind, square) {
-        if (this[kind]) {
-            this[kind].push(square);
-        }
-        else {
-            this[kind] = [square];
-        }
-    }
-
-    remove(kind, squareToRemove) {
-        this[kind] = this[kind].filter(square => !square.theSame(squareToRemove));
+class PieceSquares extends ActionsRelation {
+    constructor(target) {
+        super(target);
     }
 
     limit(kind, acceptedNames) {
-        // limit some kind of Pice actions squares by Array of accepted square names
-        this[kind] = this[kind].filter(square => acceptedNames.includes(square.name.value));
-    }
-
-    includes(kind, square) {
-        return this[kind].filter(s => s.theSame(square)).length != 0;
+        // limit some kind of Piece actions squares by Array of accepted square names
+        if (this[kind]) {
+            this[kind] = this[kind].filter(square => acceptedNames.includes(square.name.value));
+            for (let square of this[kind].filter(square => !acceptedNames.includes(square.name.value))) {
+                square[this._getRelatedName(square)].remove(kind, this.target, false);
+            }
+        }
     }
 }
 
 
-class Pice {
+class Piece {
     /*
-    Base chess pice class.
+    Base chess piece class.
     There are create params:
       - color [string] (white or black);
-      - square [Square class instance] (where pice is placed).
+      - square [Square class instance] (where piece is placed).
     */
 
     constructor(color, square) {
         this.color = color;
         this.getPlace(square);
-        this.squares = new PiceSquares;
+        this.squares = new PieceSquares(this);
         this.refreshSquareFinder();
         this.getInitState();
         this.getKind();
@@ -282,7 +319,7 @@ class Pice {
     }
 
     get stuck() {
-        // check the pice get stucked
+        // check the piece get stucked
         return !this.squares.move && !this.squares.attack;
     }
 
@@ -291,8 +328,8 @@ class Pice {
     }
 
     refreshSquareFinder() {
-        this.sqrBeforeXray = null; // square before xray (always occupied by pice)
-        this.xrayControl = false; // control square behind checked king (inline of pice attack)
+        this.sqrBeforeXray = null; // square before xray (always occupied by piece)
+        this.xrayControl = false; // control square behind checked king (inline of piece attack)
         this.endOfALine = false;
     }
 
@@ -316,11 +353,15 @@ class Pice {
 
     getPlace(square) {
         this.square = square;
-        square.placePice(this);
+        square.placePiece(this);
     }
 
-    sameColor(otherPice) {
-        return this.color === otherPice.color;
+    theSame(otherPiece) {
+        return this.square.theSame(otherPiece.square);
+    }
+
+    sameColor(otherPiece) {
+        return this.color === otherPiece.color;
     }
 
     hasColor(color) {
@@ -335,23 +376,23 @@ class Pice {
                 this.squares.add("control", nextSquare);
                 this.xrayControl = false;
             }
-            if (nextSquare.pice) {
-                let isOppKingSquare = nextSquare.pice.isKing && !this.sameColor(nextSquare.pice);
-                let isOppPiceBeforeXray = !this.sameColor(this.sqrBeforeXray.pice);
-                if (isOppKingSquare && isOppPiceBeforeXray) {
-                    this.sqrBeforeXray.pice.binder = this;
+            if (nextSquare.piece) {
+                let isOppKingSquare = nextSquare.piece.isKing && !this.sameColor(nextSquare.piece);
+                let isOppPieceBeforeXray = !this.sameColor(this.sqrBeforeXray.piece);
+                if (isOppKingSquare && isOppPieceBeforeXray) {
+                    this.sqrBeforeXray.piece.binder = this;
                 }
                 this.endOfALine = true;
             }
         }
-        else if (nextSquare.pice) {
-            if (this.sameColor(nextSquare.pice)) {
+        else if (nextSquare.piece) {
+            if (this.sameColor(nextSquare.piece)) {
                 this.squares.add("cover", nextSquare);
             }
             else {
                 this.squares.add("attack", nextSquare);
-                if (nextSquare.pice.isKing) {
-                    nextSquare.pice.checkers.add(this.square.pice);
+                if (nextSquare.piece.isKing) {
+                    nextSquare.piece.checkers.add(this.square.piece);
                     this.xrayControl = true;
                 }
             }
@@ -369,7 +410,7 @@ class Pice {
     }
 
     getBind(kingSquare) {
-        // make pice is binded
+        // make piece is binded
         this.squares.refresh("xray");
         let betweenSquares = this.binder.square.getBetweenSquaresNames(kingSquare, true);
         for (let actonKind of ["move", "attack", "cover"]) {
@@ -378,7 +419,7 @@ class Pice {
     }
 
     getCheck(checker, betweenSquares) {
-        // change Pice action abilities after its king was checked
+        // change Piece action abilities after its king was checked
         this.squares.refresh("cover");
         this.squares.refresh("xray");
         this.squares.limit("attack", [checker.square.name.value]);
@@ -387,7 +428,7 @@ class Pice {
 }
 
 
-class Pawn extends Pice {
+class Pawn extends Piece {
     constructor(color, square) {
         super(color, square);
         this.isPawn = true;
@@ -422,7 +463,7 @@ class Pawn extends Pice {
     _getMoveSquares(boardSquares) {
         for (let [x, y] of this._getMoveCoordinates()) {
             let square = boardSquares.getFromCoordinates(x, y);
-            if (square.pice) break;
+            if (square.piece) break;
             this.squares.add("move", square);
         }
     }
@@ -448,14 +489,14 @@ class Pawn extends Pice {
         for (let [x, y] of this._getAttackCoordinates()) {
             let square = boardSquares.getFromCoordinates(x, y);
             this.squares.add("control", square);
-            if (square.pice) {
-                if (this.sameColor(square.pice)) {
+            if (square.piece) {
+                if (this.sameColor(square.piece)) {
                     this.squares.add("cover", square);
                 }
                 else {
                     this.squares.add("attack", square);
-                    if (square.pice.isKing) {
-                        square.pice.checkers.add(this.square.pice);
+                    if (square.piece.isKing) {
+                        square.piece.checkers.add(this.square.piece);
                     }
                 }
             }
@@ -474,7 +515,7 @@ class Pawn extends Pice {
 }
 
 
-class StepPice extends Pice {
+class StepPiece extends Piece {
     constructor(color, square) {
         super(color, square);
     }
@@ -492,7 +533,7 @@ class StepPice extends Pice {
 }
 
 
-class Knight extends StepPice {
+class Knight extends StepPiece {
     /*  Step points
          ___ ___ ___ ___ ___
         |   | B |   | C |   |
@@ -525,6 +566,7 @@ class Knight extends StepPice {
     }
 
     getSquares(boardSquares) {
+        this.refreshSquares();
         this.getStepSquares(boardSquares, this.#stepPoints);
     }
 
@@ -534,7 +576,7 @@ class Knight extends StepPice {
 }
 
 
-class LinearPice extends Pice {
+class LinearPiece extends Piece {
     constructor(color, square) {
         super(color, square);
         this.isLinear = true;
@@ -556,7 +598,7 @@ class LinearPice extends Pice {
 }
 
 
-class Bishop extends LinearPice {
+class Bishop extends LinearPiece {
     /*  Directions
          ___ ___ ___
         | A |   | B |
@@ -581,12 +623,13 @@ class Bishop extends LinearPice {
     }
 
     getSquares(boardSquares) {
+        this.refreshSquares();
         this.getLinearSquares(boardSquares, Bishop.directions);
     }
 }
 
 
-class Rook extends LinearPice {
+class Rook extends LinearPiece {
     /*  Directions
          ___ ___ ___
         |   | A |   |
@@ -612,12 +655,13 @@ class Rook extends LinearPice {
     }
 
     getSquares(boardSquares) {
+        this.refreshSquares();
         this.getLinearSquares(boardSquares, Rook.directions);
     }
 }
 
 
-class Queen extends LinearPice {
+class Queen extends LinearPiece {
     /*  Directions
          ___ ___ ___
         | A | B | C |
@@ -638,6 +682,7 @@ class Queen extends LinearPice {
     }
 
     getSquares(boardSquares) {
+        this.refreshSquares();
         this.getLinearSquares(boardSquares, Bishop.directions);
         this.getLinearSquares(boardSquares, Rook.directions);
     }
@@ -645,51 +690,65 @@ class Queen extends LinearPice {
 
 
 class KingCastle {
-    constructor(color) {
+    constructor(color, boardSquares) {
         let horizontal = color == "white" ? "1" : "8";
+        this.color = color;
         this.short = {
             accepted: true,
-            squareName: `g${horizontal}`,
-            free: [`f${horizontal}`, `g${horizontal}`],
-            safe: [`f${horizontal}`, `g${horizontal}`],
+            square: boardSquares[`g${horizontal}`],
+            free: [
+                boardSquares[`f${horizontal}`],
+                boardSquares[`g${horizontal}`]
+            ],
+            safe: [
+                boardSquares[`f${horizontal}`],
+                boardSquares[`g${horizontal}`]
+            ],
         };
         this.long = {
             accepted: true,
-            squareName: `c${horizontal}`,
-            free: [`b${horizontal}`, `c${horizontal}`, `d${horizontal}`],
-            safe: [`c${horizontal}`, `d${horizontal}`],
+            square: boardSquares[`c${horizontal}`],
+            free: [
+                boardSquares[`b${horizontal}`],
+                boardSquares[`c${horizontal}`],
+                boardSquares[`d${horizontal}`]
+            ],
+            safe: [
+                boardSquares[`c${horizontal}`],
+                boardSquares[`d${horizontal}`]
+            ],
         };
     }
 
-    _freeCastleRoad(boardSquares, side) {
-        for (let squareName of this[side].free) {
-            if (boardSquares[squareName].pice) return false;
+    _freeCastleRoad(side) {
+        for (let square of this[side].free) {
+            if (square.piece) return false;
         }
         return true;
     }
 
-    _safeCastleRoad(boardSquares, side) {
-        for (let sqr of Object.values(boardSquares.occupied).filter(s => !this.sameColor(s.pice))) {
-            for (let squareName of this[side].safe) {
-                if (sqr.pice.squares.includes("control", boardSquares[squareName])) return false;
+    _safeCastleRoad(side) {
+        for (let square of this[side].safe) {
+            if (square.pieces.control.filter(p => !p.hasColor(this.color)).length > 0) {
+                return false;
             }
         }
         return true;
     }
 
-    isLegal(boardSquares, side) {
-        if (!this._freeCastleRoad(boardSquares, side)) {
+    isLegal(side) {
+        if (!this._freeCastleRoad(side)) {
             return false;
         }
-        if (!this._safeCastleRoad(boardSquares, side)) {
+        if (!this._safeCastleRoad(side)) {
             return false;
         }
         return true;
     }
 
     stop(side='all') {
-        sides = side == 'all' ? ['short', 'long'] : [side];
-        for (let s in sides) {
+        let sides = side == 'all' ? ['short', 'long'] : [side];
+        for (let s of sides) {
             this[s].accepted = false;
         }
     }
@@ -721,13 +780,13 @@ class KingCheckers {
         return this._items.length == 2;
     }
 
-    add(pice) {
-        this._items.push(pice);
+    add(piece) {
+        this._items.push(piece);
     }
 }
 
 
-class King extends StepPice {
+class King extends StepPiece {
     /*  Step points
          ___ ___ ___
         | A | B | C |
@@ -749,9 +808,9 @@ class King extends StepPice {
         {x: -1, y: 0},  // H
     ];
 
-    constructor(color, square) {
+    constructor(color, square, boardSquares) {
         super(color, square);
-        this.castle = new KingCastle(color);
+        this.castle = new KingCastle(color, boardSquares);
         this.isKing = true;
         this._kind = "king";
     }
@@ -760,43 +819,41 @@ class King extends StepPice {
         this.checkers = new KingCheckers;
     }
 
-    _removeEnemyControlledSquares(boardSquares) {
+    _removeEnemyControlledSquares() {
         for (let kingAction of ["move", "attack"]) {
             if (this.squares[kingAction]) {
                 let squaresToRemove = [];
-                for (let sqr of this.squares[kingAction]) {
-                    for (let s of Object.values(boardSquares.occupied)) {
-                        if (!this.sameColor(s.pice) && s.pice.squares.includes("control", sqr)) {
-                            squaresToRemove.push(sqr);
-                            break;
-                        }
+                for (let square of this.squares[kingAction]) {
+                    if (square.pieces.control.filter(p => !this.sameColor(p)).length > 0) {
+                        squaresToRemove.push(square);
                     }
                 }
-                for (let sqr of squaresToRemove) {
-                    this.squares.remove(kingAction, sqr);
+                for (let square of squaresToRemove) {
+                    this.squares.remove(kingAction, square);
                 }
             }
         }
     }
 
-    _addCastleMoves(boardSquares) {
+    _addCastleMoves() {
         for (let side of ["long", "short"]) {
-            if (this.castle[side].accepted && this.castle.isLegal(boardSquares, side)) {
-                this.squares.add("move", boardSquares[this.castle[side].squareName]);
+            if (this.castle[side].accepted && this.castle.isLegal(side)) {
+                this.squares.add("move", this.castle[side].square);
             }
         }
     }
 
     _removeCastleMoves() {
         for (let side of ["long", "short"]) {
-            this.squares.remove("move", boardSquares[this.castle[side].squareName]);
+            this.squares.remove("move", this.castle[side].square);
         }
     }
 
     getSquares(boardSquares) {
+        this.refreshSquares();
         this.getStepSquares(boardSquares, this.#stepPoints);
-        this._removeEnemyControlledSquares(boardSquares);
-        this._addCastleMoves(boardSquares);
+        this._removeEnemyControlledSquares();
+        this._addCastleMoves();
     }
 
     getCheck() {
@@ -822,7 +879,7 @@ class BoardSquares {
     get occupied() {
         return Object.fromEntries(
             Object.entries(this)
-            .filter(data => data[1].pice)
+            .filter(data => data[1].piece)
         );
     }
 
@@ -863,7 +920,7 @@ class BoardColors {
 
 
 class Board {
-    #picesBox = {
+    #piecesBox = {
         "pawn": Pawn,
         "knight": Knight,
         "bishop": Bishop,
@@ -880,12 +937,12 @@ class Board {
         this.kings = {"white": null, "black": null};
     }
 
-    get allPices() {
-        let pices = [];
+    get allPieces() {
+        let pieces = [];
         for (let square of Object.values(this.squares.occupied)) {
-            pices.push(square.pice);
+            pieces.push(square.piece);
         }
-        return pices;
+        return pieces;
     }
 
     refreshState() {
@@ -893,25 +950,25 @@ class Board {
         this.colors.changePriority();
     }
 
-    placePice(color, kind, squareName) {
-        let pice = new this.#picesBox[kind](color, this.squares[squareName]);
-        if (pice.isKing) {
-            this.kings[color] = pice;
+    placePiece(color, kind, squareName) {
+        let piece = new this.#piecesBox[kind](color, this.squares[squareName], this.squares);
+        if (piece.isKing) {
+            this.kings[color] = piece;
         }
     }
 
-    removePice(squareName) {
-        this.squares[squareName].removePice();
+    removePiece(squareName) {
+        this.squares[squareName].removePiece();
     }
 
-    castleRookMove(from, to, king) {
-        horizontal = king.castle.horizontal;
+    _castleRookMove(from, to, king) {
+        let horizontal = king.castle.horizontal;
         if (from == `e${horizontal}`) {
             if (to == `c${horizontal}`) {
-                this.movePice(`a${horizontal}`, `d${horizontal}`, false);
+                this.movePiece(`a${horizontal}`, `d${horizontal}`, false);
             }
             else if (to == `g${horizontal}`) {
-                this.movePice(`h${horizontal}`, `f${horizontal}`, false);
+                this.movePiece(`h${horizontal}`, `f${horizontal}`, false);
             }
         }
     }
@@ -920,8 +977,8 @@ class Board {
        this.kings[color].castle.stop();
     }
 
-    stopRookCastleRights(pice) {
-        this.kings[pice.color].castle.stop(pice.side);
+    stopRookCastleRights(piece) {
+        this.kings[piece.color].castle.stop(piece.side);
     }
 
     enPassantMatter(fromSquare, toSquare, pawn) {
@@ -935,18 +992,18 @@ class Board {
                 if (!toSquare[state]) {
                     let x = toSquare.coordinates.x + dx;
                     let y = toSquare.coordinates.y;
-                    let otherPice = this.squares.getFromCoordinates(x, y).pice;
-                    if (otherPice && otherPice.isPawn) {
-                        otherPice.enPassantSquare = enPassantSquare;
+                    let otherPiece = this.squares.getFromCoordinates(x, y).piece;
+                    if (otherPiece && otherPiece.isPawn) {
+                        otherPiece.enPassantSquare = enPassantSquare;
                     }
                 }
             }
         }
         // catch other pawn en passant
-        else if (pawn.squares.includes("attack", toSquare) && !toSquare.pice) {
+        else if (pawn.squares.includes("attack", toSquare) && !toSquare.piece) {
             let x = toSquare.coordinates.x;
             let y = fromSquare.coordinates.y;
-            this.removePice(this.squares.getFromCoordinates(x, y).name.value);
+            this.removePiece(this.squares.getFromCoordinates(x, y).name.value);
         }
     }
 
@@ -959,8 +1016,8 @@ class Board {
             };
         }
 
-        this.placePice(this.colors.current, kind, this.transformation.transformationSquare);
-        this.removePice(this.transformation.upToTransformationSquare);
+        this.placePiece(this.colors.current, kind, this.transformation.transformationSquare);
+        this.removePiece(this.transformation.upToTransformationSquare);
         this.transformation = null;
         this.refreshState();
         return {
@@ -970,31 +1027,31 @@ class Board {
         };
     }
 
-    _replacePice(fromSquare, toSquare, pice) {
-        fromSquare.removePice();
-        pice.getPlace(toSquare);
+    _replacePiece(fromSquare, toSquare, piece) {
+        fromSquare.removePiece();
+        piece.getPlace(toSquare);
     }
 
-    movePice(from, to, refresh=true) {
+    movePiece(from, to, refresh=true) {
         let fromSquare = this.squares[from];
         let toSquare = this.squares[to];
-        let pice = fromSquare.pice;
+        let piece = fromSquare.piece;
 
-        if (!pice) {
+        if (!piece) {
             return {
                 "success": false,
                 "transformation": false,
-                "description": "There isn't a pice to replace."
+                "description": "There isn't a piece to replace."
             };
         }
-        if (!pice.hasColor(this.colors.current)) {
+        if (!piece.hasColor(this.colors.current)) {
             return {
                 "success": false,
                 "transformation": false,
-                "description": "Wrong color pice."
+                "description": "Wrong color piece."
             };
         }
-        if (!pice.squares.includes("move", toSquare) && !pice.squares.includes("attack", toSquare)) {
+        if (!piece.squares.includes("move", toSquare) && !piece.squares.includes("attack", toSquare)) {
             return {
                 "success": false,
                 "transformation": false,
@@ -1003,14 +1060,14 @@ class Board {
         }
 
         this.transformation = null;
-        if (pice.isKing) {
-            this.castleRookMove(from, to, pice);
-            this.stopKingCastleRights(pice.color);
+        if (piece.isKing) {
+            this._castleRookMove(from, to, piece);
+            this.stopKingCastleRights(piece.color);
         }
-        else if (pice.isRook) {
-            this.stopRookCastleRights(pice);
+        else if (piece.isRook) {
+            this.stopRookCastleRights(piece);
         }
-        else if (pice.isPawn) {
+        else if (piece.isPawn) {
             if (toSquare.onUpEdge || toSquare.onDownEdge) {
                 this.transformation = {
                     upToTransformationSquare: from,
@@ -1022,10 +1079,10 @@ class Board {
                     "description": `Pawn is ready to transform on ${to} square.`
                 };
             }
-            this.enPassantMatter(fromSquare, toSquare, pice);
+            this.enPassantMatter(fromSquare, toSquare, piece);
         }
 
-        this._replacePice(fromSquare, toSquare, pice);
+        this._replacePiece(fromSquare, toSquare, piece);
 
         if (refresh) this.refreshState();
 
@@ -1037,36 +1094,39 @@ class Board {
     }
 
     refreshAllSquares() {
-        for (let pice of this.allPices) {
-            pice.getInitState();
+        for (let piece of this.allPieces) {
+            piece.getInitState();
         }
-        for (let pice of this.allPices) {
-            pice.getSquares(this.squares);
+        for (let piece of this.allPieces.filter(p => !p.isKing)) {
+            piece.getSquares(this.squares);
         }
-        for (let pice of this.allPices.filter(p => p.binder)) {
-            pice.getBind(this.kings[pice.color].square);
+        for (let piece of this.allPieces.filter(p => p.binder)) {
+            piece.getBind(this.kings[piece.color].square);
+        }
+        for (let piece of this.allPieces.filter(p => p.isKing)) {
+            piece.getSquares(this.squares);
         }
         let oppKing = this.kings[this.colors.opponent];
         if (oppKing.checkers.single) {
             let noMoves = true;
             let checker = oppKing.checkers.first;
             let betweenSquares = checker.isLinear ? checker.square.getBetweenSquaresNames(oppKing.square) : [];
-            for (let pice of this.allPices.filter(p => p.sameColor(oppKing))) {
-                pice.getCheck(checker, betweenSquares);
-                if (!pice.stuck) noMoves = false;
+            for (let piece of this.allPieces.filter(p => p.sameColor(oppKing))) {
+                piece.getCheck(checker, betweenSquares);
+                if (!piece.stuck) noMoves = false;
             }
             if (noMoves) this.result = [this.colors.secondPriority, this.colors.firstPriority];
         }
         else if (oppKing.checkers.several) {
-            for (let pice of this.allPices.filter(p => p.sameColor(oppKing) && !p.isKing)) {
-                pice.getTotalImmobilize();
+            for (let piece of this.allPieces.filter(p => p.sameColor(oppKing) && !p.isKing)) {
+                piece.getTotalImmobilize();
             }
             if (oppKing.stuck) this.result = [this.colors.secondPriority, this.colors.firstPriority];
         }
         else {
             let noMoves = true;
-            for (let pice of this.allPices.filter(p => p.sameColor(oppKing))) {
-                if (!pice.stuck) {
+            for (let piece of this.allPieces.filter(p => p.sameColor(oppKing))) {
+                if (!piece.stuck) {
                     noMoves = false;
                     break;
                 }
@@ -1085,39 +1145,39 @@ class Game {
 
     getInitialPosition() {
         for (let sqr of ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7"]) {
-            this.board.placePice("black", "pawn", sqr);
+            this.board.placePiece("black", "pawn", sqr);
         }
         for (let sqr of ["b8", "g8"]) {
-            this.board.placePice("black", "knight", sqr);
+            this.board.placePiece("black", "knight", sqr);
         }
         for (let sqr of ["c8", "f8"]) {
-            this.board.placePice("black", "bishop", sqr);
+            this.board.placePiece("black", "bishop", sqr);
         }
         for (let sqr of ["a8", "h8"]) {
-            this.board.placePice("black", "rook", sqr);
+            this.board.placePiece("black", "rook", sqr);
         }
-        this.board.placePice("black", "queen", "d8");
-        this.board.placePice("black", "king", "e8");
+        this.board.placePiece("black", "queen", "d8");
+        this.board.placePiece("black", "king", "e8");
 
         for (let sqr of ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"]) {
-            this.board.placePice("white", "pawn", sqr);
+            this.board.placePiece("white", "pawn", sqr);
         }
         for (let sqr of ["b1", "g1"]) {
-            this.board.placePice("white", "knight", sqr);
+            this.board.placePiece("white", "knight", sqr);
         }
         for (let sqr of ["c1", "f1"]) {
-            this.board.placePice("white", "bishop", sqr);
+            this.board.placePiece("white", "bishop", sqr);
         }
         for (let sqr of ["a1", "h1"]) {
-            this.board.placePice("white", "rook", sqr);
+            this.board.placePiece("white", "rook", sqr);
         }
-        this.board.placePice("white", "queen", "d1");
-        this.board.placePice("white", "king", "e1");
+        this.board.placePiece("white", "queen", "d1");
+        this.board.placePiece("white", "king", "e1");
         this.board.refreshAllSquares();
     }
 
     move(from, to) {
-        return this.board.movePice(from, to);
+        return this.board.movePiece(from, to);
     }
 
     transformation(kind) {
