@@ -1184,3 +1184,35 @@ class Game {
         return this.board.pawnTransformation(kind);
     }
 }
+
+
+module.exports = {
+    board: {
+        board: Board,
+        boardColors: BoardColors,
+        boardSquares: BoardSquares
+    },
+    game: Game,
+    pieces: {
+        piece: Piece,
+        stepPiece: StepPiece,
+        linearPiece: LinearPiece,
+        pawn: Pawn,
+        knight: Knight,
+        bishop: Bishop,
+        rook: Rook,
+        queen: Queen,
+        kingCastle: KingCastle,
+        kingCheckers: KingCheckers,
+        king: King
+    },
+    relations: {
+        actionsRelation: ActionsRelation,
+        pieceSquares: PieceSquares
+    },
+    square: {
+        square: Square,
+        squareCoordinates: SquareCoordinates,
+        squareName: SquareName
+    }
+};
