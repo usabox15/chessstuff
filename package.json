@@ -1,0 +1,25 @@
+{
+  "name": "jschess",
+  "version": "1.0.0",
+  "description": "Chess util",
+  "main": "./src/main.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YegorDB/chess.git"
+  },
+  "keywords": [
+    "chess"
+  ],
+  "author": "Yegor Bitensky",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/YegorDB/chess/issues"
+  },
+  "homepage": "https://github.com/YegorDB/chess#readme",
+  "devDependencies": {
+    "mocha": "^6.2.2"
+  }
+}
