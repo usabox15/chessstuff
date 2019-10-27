@@ -1,5 +1,6 @@
 var pieces = require('./pieces');
 var square = require('./square');
+var ar = require('./relations').ActionsRelation;
 
 
 class BoardSquares {
@@ -140,7 +141,7 @@ class Board {
             }
         }
         // catch other pawn en passant
-        else if (pawn.squares.includes("attack", toSquare) && !toSquare.piece) {
+        else if (pawn.squares.includes(ar.ATTACK, toSquare) && !toSquare.piece) {
             let x = toSquare.coordinates.x;
             let y = fromSquare.coordinates.y;
             this.removePiece(this.squares.getFromCoordinates(x, y).name.value);
@@ -191,7 +192,7 @@ class Board {
                 "description": "Wrong color piece."
             };
         }
-        if (!piece.squares.includes("move", toSquare) && !piece.squares.includes("attack", toSquare)) {
+        if (!piece.squares.includes(ar.MOVE, toSquare) && !piece.squares.includes(ar.ATTACK, toSquare)) {
             return {
                 "success": false,
                 "transformation": false,

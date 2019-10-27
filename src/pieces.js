@@ -1,4 +1,5 @@
 var relations = require('./relations');
+var ar = relations.ActionsRelation;
 
 
 class Piece {
@@ -6,13 +7,13 @@ class Piece {
     Base chess piece class.
     There are create params:
       - color [string] (white or black);
-      - square [Square class instance] (where piece is placed).
+      - square [square instance] (where piece is placed).
     */
 
     constructor(color, square) {
         this.color = color;
         this.getPlace(square);
-        this.squares = new relations.PieceSquares(this);
+        this.squares = new relations.PieceSquares(this, 'squares');
         this.refreshSquareFinder();
         this.getInitState();
         this.getKind();
@@ -22,7 +23,7 @@ class Piece {
 
     get stuck() {
         // check the piece get stucked
-        return !this.squares.move && !this.squares.attack;
+        return !this.squares[ar.MOVE] && !this.squares[ar.ATTACK];
     }
 
     get kind() {
@@ -73,9 +74,9 @@ class Piece {
     nextSquareAction(nextSquare) {
         // define next square kinds and handle logic with it
         if (this.sqrBeforeXray) {
-            this.squares.add("xray", nextSquare);
+            this.squares.add(ar.XRAY, nextSquare);
             if (this.xrayControl) {
-                this.squares.add("control", nextSquare);
+                this.squares.add(ar.CONTROL, nextSquare);
                 this.xrayControl = false;
             }
             if (nextSquare.piece) {
@@ -89,21 +90,21 @@ class Piece {
         }
         else if (nextSquare.piece) {
             if (this.sameColor(nextSquare.piece)) {
-                this.squares.add("cover", nextSquare);
+                this.squares.add(ar.COVER, nextSquare);
             }
             else {
-                this.squares.add("attack", nextSquare);
+                this.squares.add(ar.ATTACK, nextSquare);
                 if (nextSquare.piece.isKing) {
                     nextSquare.piece.checkers.add(this.square.piece);
                     this.xrayControl = true;
                 }
             }
-            this.squares.add("control", nextSquare);
+            this.squares.add(ar.CONTROL, nextSquare);
             if (this.isLinear) this.sqrBeforeXray = nextSquare;
         }
         else {
-            this.squares.add("move", nextSquare);
-            this.squares.add("control", nextSquare);
+            this.squares.add(ar.MOVE, nextSquare);
+            this.squares.add(ar.CONTROL, nextSquare);
         }
     }
 
@@ -113,19 +114,19 @@ class Piece {
 
     getBind(kingSquare) {
         // make piece is binded
-        this.squares.refresh("xray");
+        this.squares.refresh(ar.XRAY);
         let betweenSquares = this.binder.square.getBetweenSquaresNames(kingSquare, true);
-        for (let actonKind of ["move", "attack", "cover"]) {
+        for (let actonKind of [ar.MOVE, ar.ATTACK, ar.COVER]) {
             this.squares.limit(actonKind, betweenSquares);
         }
     }
 
     getCheck(checker, betweenSquares) {
         // change Piece action abilities after its king was checked
-        this.squares.refresh("cover");
-        this.squares.refresh("xray");
-        this.squares.limit("attack", [checker.square.name.value]);
-        this.squares.limit("move", betweenSquares);
+        this.squares.refresh(ar.COVER);
+        this.squares.refresh(ar.XRAY);
+        this.squares.limit(ar.ATTACK, [checker.square.name.value]);
+        this.squares.limit(ar.MOVE, betweenSquares);
     }
 }
 
@@ -166,7 +167,7 @@ class Pawn extends Piece {
         for (let [x, y] of this._getMoveCoordinates()) {
             let square = boardSquares.getFromCoordinates(x, y);
             if (square.piece) break;
-            this.squares.add("move", square);
+            this.squares.add(ar.MOVE, square);
         }
     }
 
@@ -190,13 +191,13 @@ class Pawn extends Piece {
     _getAttackSquares(boardSquares) {
         for (let [x, y] of this._getAttackCoordinates()) {
             let square = boardSquares.getFromCoordinates(x, y);
-            this.squares.add("control", square);
+            this.squares.add(ar.CONTROL, square);
             if (square.piece) {
                 if (this.sameColor(square.piece)) {
-                    this.squares.add("cover", square);
+                    this.squares.add(ar.COVER, square);
                 }
                 else {
-                    this.squares.add("attack", square);
+                    this.squares.add(ar.ATTACK, square);
                     if (square.piece.isKing) {
                         square.piece.checkers.add(this.square.piece);
                     }
@@ -204,7 +205,7 @@ class Pawn extends Piece {
             }
         }
         if (this.enPassantSquare) {
-            this.squares.add("attack", this.enPassantSquare);
+            this.squares.add(ar.ATTACK, this.enPassantSquare);
             this.enPassantSquare = null;
         }
     }
@@ -431,7 +432,7 @@ class KingCastle {
 
     _safeCastleRoad(side) {
         for (let square of this[side].safe) {
-            if (square.pieces.control.filter(p => !p.hasColor(this.color)).length > 0) {
+            if (square.pieces[ar.CONTROL].filter(p => !p.hasColor(this.color)).length > 0) {
                 return false;
             }
         }
@@ -522,11 +523,11 @@ class King extends StepPiece {
     }
 
     _removeEnemyControlledSquares() {
-        for (let kingAction of ["move", "attack"]) {
+        for (let kingAction of [ar.MOVE, ar.ATTACK]) {
             if (this.squares[kingAction]) {
                 let squaresToRemove = [];
                 for (let square of this.squares[kingAction]) {
-                    if (square.pieces.control.filter(p => !this.sameColor(p)).length > 0) {
+                    if (square.pieces[ar.CONTROL].filter(p => !this.sameColor(p)).length > 0) {
                         squaresToRemove.push(square);
                     }
                 }
@@ -540,14 +541,14 @@ class King extends StepPiece {
     _addCastleMoves() {
         for (let side of ["long", "short"]) {
             if (this.castle[side].accepted && this.castle.isLegal(side)) {
-                this.squares.add("move", this.castle[side].square);
+                this.squares.add(ar.MOVE, this.castle[side].square);
             }
         }
     }
 
     _removeCastleMoves() {
         for (let side of ["long", "short"]) {
-            this.squares.remove("move", this.castle[side].square);
+            this.squares.remove(ar.MOVE, this.castle[side].square);
         }
     }
 
