@@ -129,7 +129,7 @@ class Square {
             throw Error("To create Square instance you need to pass either name or coordinates param");
         }
         this._piece = null;
-        this.pieces = new relations.ActionsRelation(this, 'pieces');
+        this.pieces = new relations.ActionsRelation(this, 'squares');
     }
 
     static coordinatesToName(x, y) {
