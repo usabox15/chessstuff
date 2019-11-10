@@ -6,10 +6,10 @@ class ActionsRelation {
       - ActionsRelation.ATTACK;
       - ActionsRelation.XRAY;
       - ActionsRelation.COVER (protect);
-      - ActionsRelation.CONTROL (move or attack).
+      - ActionsRelation.CONTROL (prevent opponent king move to).
     There are create params:
       - target [whether some kind of piece or square instance];
-      - relatedName [string] (related attribute name of target).
+      - relatedName [string] (related items attribute name of relate).
     */
 
     static MOVE = 'move';
@@ -95,12 +95,13 @@ class PieceSquares extends ActionsRelation {
     limit(kind, acceptedNames) {
         // limit some kind of Piece actions squares by Array of accepted square names
         this._checkKind(kind);
-        if (this[kind]) {
-            this[kind] = this[kind].filter(square => acceptedNames.includes(square.name.value));
-            for (let square of this[kind].filter(square => !acceptedNames.includes(square.name.value))) {
-                square[this._relatedName].remove(kind, this._target, false);
-            }
+        if (!this[kind]) {
+            return;
         }
+        for (let square of this[kind].filter(square => !acceptedNames.includes(square.name.value))) {
+            square[this._relatedName].remove(kind, this._target, false);
+        }
+        this[kind] = this[kind].filter(square => acceptedNames.includes(square.name.value));
     }
 }
 
