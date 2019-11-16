@@ -129,8 +129,8 @@ class Board {
                 toSquare.coordinates.x,
                 toSquare.coordinates.y - pawn.direction
             );
-            for (let [state, dx] of [["onRightEdge", 1], ["onLeftEdge", -1]]) {
-                if (!toSquare[state]) {
+            for (let [state, dx] of [["right", 1], ["left", -1]]) {
+                if (!toSquare.onEdge[state]) {
                     let x = toSquare.coordinates.x + dx;
                     let y = toSquare.coordinates.y;
                     let otherPiece = this.squares.getFromCoordinates(x, y).piece;
@@ -209,7 +209,7 @@ class Board {
             this.stopRookCastleRights(piece);
         }
         else if (piece.isPawn) {
-            if (toSquare.onUpEdge || toSquare.onDownEdge) {
+            if (toSquare.onEdge.up || toSquare.onEdge.down) {
                 this.transformation = {
                     upToTransformationSquare: from,
                     transformationSquare: to

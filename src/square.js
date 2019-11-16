@@ -104,6 +104,48 @@ class SquareCoordinates {
 }
 
 
+class SquareOnEdge {
+    /*
+    Chess board square location on edge.
+    Create param:
+      - coordinates [SquareCoordinates].
+    */
+
+    constructor(coordinates) {
+        this._up = false;
+        this._right = false;
+        this._down = false;
+        this._left = false;
+        if (coordinates.y == 7) {
+            this._up = true;
+        } else if (coordinates.y == 0) {
+            this._down = true;
+        }
+        if (coordinates.x == 7) {
+            this._right = true;
+        } else if (coordinates.x == 0) {
+            this._left = true;
+        }
+    }
+
+    get up() {
+        return this._up;
+    }
+
+    get right() {
+        return this._right;
+    }
+
+    get down() {
+        return this._down;
+    }
+
+    get left() {
+        return this._left;
+    }
+}
+
+
 class Square {
     /*
     Chess board square.
@@ -130,6 +172,7 @@ class Square {
         }
         this._piece = null;
         this.pieces = new relations.ActionsRelation(this, 'squares');
+        this.onEdge = new SquareOnEdge(this.coordinates);
     }
 
     static coordinatesToName(x, y) {
@@ -146,22 +189,6 @@ class Square {
 
     get piece() {
         return this._piece;
-    }
-
-    get onUpEdge() {
-        return this.coordinates.y == 7;
-    }
-
-    get onRightEdge() {
-        return this.coordinates.x == 7;
-    }
-
-    get onDownEdge() {
-        return this.coordinates.y == 0;
-    }
-
-    get onLeftEdge() {
-        return this.coordinates.x == 0;
     }
 
     placePiece(piece) {
@@ -227,5 +254,6 @@ class Square {
 module.exports = {
     Square: Square,
     SquareCoordinates: SquareCoordinates,
-    SquareName: SquareName
+    SquareName: SquareName,
+    SquareOnEdge: SquareOnEdge
 };

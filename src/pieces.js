@@ -173,13 +173,13 @@ class Pawn extends Piece {
 
     _getAttackCoordinates() {
         let attackSquaresCoordinates = [];
-        if (!this.square.onRightEdge) {
+        if (!this.square.onEdge.right) {
             attackSquaresCoordinates.push([
                 this.square.coordinates.x + 1,
                 this.square.coordinates.y + 1 * this.direction
             ]);
         }
-        if (!this.square.onLeftEdge) {
+        if (!this.square.onEdge.left) {
             attackSquaresCoordinates.push([
                 this.square.coordinates.x - 1,
                 this.square.coordinates.y + 1 * this.direction
