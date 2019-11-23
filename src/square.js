@@ -146,6 +146,75 @@ class SquareOnEdge {
 }
 
 
+class SquaresLine {
+    /*
+    Line between two chess board squares.
+    Create param:
+      - startSquare [Square];
+      - endSquare [Square].
+    */
+
+    constructor(startSquare, endSquare) {
+        this._startSquare = startSquare;
+        this._endSquare = endSquare;
+        this._dx = Math.abs(startSquare.coordinates.x - endSquare.coordinates.x);
+        this._dy = Math.abs(startSquare.coordinates.y - endSquare.coordinates.y);
+        this._direction = {x: 0, y: 0};
+        this._betweenSquaresNames = [];
+        this._betweenSquaresCount = 0;
+        this._getBetweenSquaresData();
+    }
+
+    _checkOnTheSameLine() {
+        // throw error if squares aren't located on the same line
+        if (this._dx != this._dy && this._dx != 0 && this._dy != 0) {
+            throw Error(`
+                Squares ${this._startSquare.name.value} and ${this._endSquare.name.value}
+                aren't located on the same line (horizontal, vertical, diagonal).
+            `);
+        }
+    }
+
+    _getDirection() {
+        // get direction of distance between start square and end square
+        this._checkOnTheSameLine();
+        for (let i of ['x', 'y']) {
+            if (this._startSquare.coordinates[i] > this._endSquare.coordinates[i]) {
+                this._direction[i] = -1;
+            }
+            else if (this._startSquare.coordinates[i] < this._endSquare.coordinates[i]) {
+                this._direction[i] = 1;
+            }
+        }
+    }
+
+    _getBetweenSquaresData() {
+        // get data of squares between start square and end square
+        this._getDirection();
+        let distance = Math.max(this._dx, this._dy);
+        for (let i = 1; i <= distance - 1; i++) {
+            let coordinates = [];
+            for (let j of ['x', 'y']) {
+                coordinates.push(this._startSquare.coordinates[j] + i * this._direction[j]);
+            }
+            this._betweenSquaresNames.push(Square.coordinatesToName(...coordinates));
+        }
+        this._betweenSquaresCount = this._betweenSquaresNames.length;
+    }
+
+    betweenSquaresNames(includeEnd=false) {
+        if (includeEnd) {
+            return this._betweenSquaresNames.concat([this._endSquare.name.value]);
+        }
+        return this._betweenSquaresNames;
+    }
+
+    betweenSquaresCount(includeEnd=false) {
+        return this._betweenSquaresCount + (includeEnd ? 1 : 0);
+    }
+}
+
+
 class Square {
     /*
     Chess board square.
@@ -157,6 +226,10 @@ class Square {
 
     static symbolToNumber = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7};
     static numberToSymbol = {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"};
+
+    static coordinatesToName(x, y) {
+        return Square.numberToSymbol[x] + (y + 1);
+    }
 
     constructor(name=null, coordinates=null) {
         if (name) {
@@ -173,10 +246,6 @@ class Square {
         this._piece = null;
         this.pieces = new relations.ActionsRelation(this, 'squares');
         this.onEdge = new SquareOnEdge(this.coordinates);
-    }
-
-    static coordinatesToName(x, y) {
-        return Square.numberToSymbol[x] + (y + 1);
     }
 
     get name() {
@@ -211,42 +280,12 @@ class Square {
         return this.name.number == horizontal;
     }
 
-    _getLinedCheckerDirection(otherSquare) {
-        // get direction of distance between this square and other one
-        let dif = {x: 0, y: 0};
-        for (let i of ['x', 'y']) {
-            if (otherSquare.coordinates[i] > this.coordinates[i]) {
-                dif[i] = -1;
-            }
-            else if (otherSquare.coordinates[i] < this.coordinates[i]) {
-                dif[i] = 1;
-            }
-        }
-        return dif;
+    getBetweenSquaresNames(otherSquare, includeOtherSquare=false) {
+        return new SquaresLine(this, otherSquare).betweenSquaresNames(includeOtherSquare);
     }
 
-    getBetweenSquaresNames(otherSquare, include=false) {
-        // get names of squares between this square and other one
-        let dx = Math.abs(otherSquare.coordinates.x - this.coordinates.x);
-        let dy = Math.abs(otherSquare.coordinates.y - this.coordinates.y);
-        if (dx != dy && dx != 0 && dy != 0) {
-            return [];
-        }
-        let betweenSquaresNames = [];
-        let dif = this._getLinedCheckerDirection(otherSquare);
-        let distance = Math.max(dx, dy);
-        let start = include ? 0 : 1;
-        for (let i = start; i <= distance - start; i++) {
-            let x = otherSquare.coordinates.x + i * dif.x;
-            let y = otherSquare.coordinates.y + i * dif.y;
-            betweenSquaresNames.push(Square.coordinatesToName(x, y));
-        }
-        return betweenSquaresNames;
-    }
-
-    getBetweenSquaresCount(otherSquare) {
-        // get count of squares between this square and other one
-        return this.getBetweenSquaresNames(otherSquare).length;
+    getBetweenSquaresCount(otherSquare, includeOtherSquare=false) {
+        return new SquaresLine(this, otherSquare).betweenSquaresCount(includeOtherSquare);
     }
 }
 
@@ -255,5 +294,6 @@ module.exports = {
     Square: Square,
     SquareCoordinates: SquareCoordinates,
     SquareName: SquareName,
-    SquareOnEdge: SquareOnEdge
+    SquareOnEdge: SquareOnEdge,
+    SquaresLine: SquaresLine
 };
