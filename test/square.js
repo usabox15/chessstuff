@@ -125,4 +125,48 @@ describe('Test square', function () {
             assert.equal(c3c7.betweenSquaresCount(true), 4);
         });
     });
+    describe('Test Square', function () {
+        it('should get square name value by square coordinates value', function () {
+            assert.equal(Square.coordinatesToName(1, 5), 'b6');
+            assert.equal(Square.coordinatesToName(3, 1), 'd2');
+            assert.equal(Square.coordinatesToName(4, 4), 'e5');
+            assert.equal(Square.coordinatesToName(6, 0), 'g1');
+            assert.equal(Square.coordinatesToName(7, 3), 'h4');
+        });
+
+        it('should throw error by create with no arguments', function () {
+            assert.throws(() => {new Square();});
+        });
+
+        it('should check piece placement', function () {
+            let square = new Square('a1');
+            assert.equal(square.piece, null);
+            square.placePiece('piece');
+            assert.equal(square.piece, 'piece');
+            square.removePiece();
+            assert.equal(square.piece, null);
+        });
+
+        it('should check the same squares', function () {
+            let square = new Square('f5');
+            assert.ok(square.theSame(new Square('f5')));
+            assert.ok(!square.theSame(new Square('c2')));
+        });
+
+        it('should check square location', function () {
+            let square = new Square('d5');
+            assert.ok(square.onVertical('d'));
+            assert.ok(!square.onVertical('g'));
+            assert.ok(square.onHorizontal('5'));
+            assert.ok(!square.onHorizontal('2'));
+        });
+
+        it('should check between one square and other square data', function () {
+            let square = new Square('g7');
+            assert.ok(square.getBetweenSquaresNames(new Square('b2')).includes('e5'));
+            assert.ok(square.getBetweenSquaresNames(new Square('b2'), true).includes('b2'));
+            assert.ok(square.getBetweenSquaresCount(new Square('g4')), 2);
+            assert.ok(square.getBetweenSquaresCount(new Square('g4'), true), 3);
+        });
+    });
 });
