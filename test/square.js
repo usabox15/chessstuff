@@ -4,6 +4,7 @@ var SquareName = jschess.square.SquareName;
 var SquareCoordinates = jschess.square.SquareCoordinates;
 var SquareOnEdge = jschess.square.SquareOnEdge;
 var Square = jschess.square.Square;
+var SquaresLine = jschess.square.SquaresLine;
 
 
 describe('Test square', function () {
@@ -70,6 +71,58 @@ describe('Test square', function () {
 
             let e4OE = new SquareOnEdge(new SquareCoordinates([4, 3]));
             assert.ok(!e4OE.up && !e4OE.right && !e4OE.down && !e4OE.left);
+        });
+    });
+    describe('Test SquaresLine', function () {
+        it('should throw error if squares are not on the same line', function () {
+            let e4 = new Square('e4');
+            assert.throws(() => {SquaresLine(e4, new Square('c5'));});
+            assert.throws(() => {SquaresLine(e4, new Square('f8'));});
+            assert.throws(() => {SquaresLine(e4, new Square('h2'));});
+            assert.throws(() => {SquaresLine(e4, new Square('d1'));});
+        });
+
+        it('should get line data between two squares', function () {
+            let c3 = new Square('c3');
+
+            let a5 = new Square('a5');
+            let c3a5 = new SquaresLine(c3, a5);
+            assert.equal(c3a5._direction.x, -1);
+            assert.equal(c3a5._direction.y, 1);
+            assert.ok(c3a5.betweenSquaresNames().includes('b4'));
+            assert.ok(!c3a5.betweenSquaresNames().includes('a5'));
+            assert.equal(c3a5.betweenSquaresCount(), 1);
+            assert.ok(c3a5.betweenSquaresNames(true).includes('b4'));
+            assert.ok(c3a5.betweenSquaresNames(true).includes('a5'));
+            assert.equal(c3a5.betweenSquaresCount(true), 2);
+
+            let f3 = new Square('f3');
+            let c3f3 = new SquaresLine(c3, f3);
+            assert.equal(c3f3._direction.x, 1);
+            assert.equal(c3f3._direction.y, 0);
+            assert.ok(c3f3.betweenSquaresNames().includes('d3'));
+            assert.ok(c3f3.betweenSquaresNames().includes('e3'));
+            assert.ok(!c3f3.betweenSquaresNames().includes('f3'));
+            assert.equal(c3f3.betweenSquaresCount(), 2);
+            assert.ok(c3f3.betweenSquaresNames(true).includes('d3'));
+            assert.ok(c3f3.betweenSquaresNames(true).includes('e3'));
+            assert.ok(c3f3.betweenSquaresNames(true).includes('f3'));
+            assert.equal(c3f3.betweenSquaresCount(true), 3);
+
+            let c7 = new Square('c7');
+            let c3c7 = new SquaresLine(c3, c7);
+            assert.equal(c3c7._direction.x, 0);
+            assert.equal(c3c7._direction.y, 1);
+            assert.ok(c3c7.betweenSquaresNames().includes('c4'));
+            assert.ok(c3c7.betweenSquaresNames().includes('c5'));
+            assert.ok(c3c7.betweenSquaresNames().includes('c6'));
+            assert.ok(!c3c7.betweenSquaresNames().includes('c7'));
+            assert.equal(c3c7.betweenSquaresCount(), 3);
+            assert.ok(c3c7.betweenSquaresNames(true).includes('c4'));
+            assert.ok(c3c7.betweenSquaresNames(true).includes('c5'));
+            assert.ok(c3c7.betweenSquaresNames(true).includes('c6'));
+            assert.ok(c3c7.betweenSquaresNames(true).includes('c7'));
+            assert.equal(c3c7.betweenSquaresCount(true), 4);
         });
     });
 });
