@@ -10,15 +10,24 @@ class Piece {
       - square [square instance] (where piece is placed).
     */
 
+    static WHITE = 'white';
+    static BLACK = 'black';
+
+    #colors = [Piece.WHITE, Piece.BLACK];
+
     constructor(color, square) {
-        this.color = color;
+        this._setColor(color);
         this.getPlace(square);
-        this.squares = new relations.PieceSquares(this, 'squares');
-        this.refreshSquareFinder();
+        this.squares = new relations.PieceSquares(this, 'pieces');
+        this._refreshSquareFinder();
         this.getInitState();
-        this.getKind();
-        this.isLinear = false;
+        this._getKind();
+        this._isLinear = false;
         this._kind = null;
+    }
+
+    get color() {
+        return this._color;
     }
 
     get stuck() {
@@ -30,22 +39,29 @@ class Piece {
         return this._kind;
     }
 
-    refreshSquareFinder() {
+    get isLinear() {
+        return this._isLinear;
+    }
+
+    _setColor(color) {
+        if (!this.#colors.includes(color)) {
+            throw Error(`'${color}' is wrong piece color value.`);
+        }
+        this._color = color;
+    }
+
+    _refreshSquareFinder() {
         this.sqrBeforeXray = null; // square before xray (always occupied by piece)
         this.xrayControl = false; // control square behind checked king (inline of piece attack)
         this.endOfALine = false;
     }
 
-    refreshSquares() {
+    _refreshSquares() {
         this.squares.refresh();
-        this.refreshSquareFinder();
+        this._refreshSquareFinder();
     }
 
-    getInitState() {
-        this.binder = null;
-    }
-
-    getKind() {
+    _getKind() {
         this.isPawn = false;
         this.isKnight = false;
         this.isBishop = false;
@@ -54,24 +70,7 @@ class Piece {
         this.isKing = false;
     }
 
-    getPlace(square) {
-        this.square = square;
-        square.placePiece(this);
-    }
-
-    theSame(otherPiece) {
-        return this.square.theSame(otherPiece.square);
-    }
-
-    sameColor(otherPiece) {
-        return this.color === otherPiece.color;
-    }
-
-    hasColor(color) {
-        return this.color === color;
-    }
-
-    nextSquareAction(nextSquare) {
+    _nextSquareAction(nextSquare) {
         // define next square kinds and handle logic with it
         if (this.sqrBeforeXray) {
             this.squares.add(ar.XRAY, nextSquare);
@@ -108,6 +107,27 @@ class Piece {
         }
     }
 
+    getInitState() {
+        this.binder = null;
+    }
+
+    getPlace(square) {
+        this.square = square;
+        square.placePiece(this);
+    }
+
+    theSame(otherPiece) {
+        return this.square.theSame(otherPiece.square);
+    }
+
+    sameColor(otherPiece) {
+        return this.color === otherPiece.color;
+    }
+
+    hasColor(color) {
+        return this.color === color;
+    }
+
     getTotalImmobilize() {
         this.squares.refresh();
     }
@@ -121,12 +141,12 @@ class Piece {
         }
     }
 
-    getCheck(checker, betweenSquares) {
+    getCheck(checker, betweenSquaresNames) {
         // change Piece action abilities after its king was checked
         this.squares.refresh(ar.COVER);
         this.squares.refresh(ar.XRAY);
         this.squares.limit(ar.ATTACK, [checker.square.name.value]);
-        this.squares.limit(ar.MOVE, betweenSquares);
+        this.squares.limit(ar.MOVE, betweenSquaresNames);
     }
 }
 
@@ -211,7 +231,7 @@ class Pawn extends Piece {
     }
 
     getSquares(boardSquares) {
-        this.refreshSquares();
+        this._refreshSquares();
         this._getMoveSquares(boardSquares);
         this._getAttackSquares(boardSquares);
     }
@@ -223,14 +243,14 @@ class StepPiece extends Piece {
         super(color, square);
     }
 
-    getStepSquares(boardSquares, stepPoints) {
-        this.refreshSquareFinder();
+    _getStepSquares(boardSquares, stepPoints) {
+        this._refreshSquareFinder();
         for (let stepPoint of stepPoints) {
             let x = this.square.coordinates.x + stepPoint.x;
             let y = this.square.coordinates.y + stepPoint.y;
             if (!SquareCoordinates.correctCoordinates(x, y)) continue;
 
-            this.nextSquareAction(boardSquares.getFromCoordinates(x, y));
+            this._nextSquareAction(boardSquares.getFromCoordinates(x, y));
         }
     }
 }
@@ -269,8 +289,8 @@ class Knight extends StepPiece {
     }
 
     getSquares(boardSquares) {
-        this.refreshSquares();
-        this.getStepSquares(boardSquares, this.#stepPoints);
+        this._refreshSquares();
+        this._getStepSquares(boardSquares, this.#stepPoints);
     }
 
     getBind() {
@@ -282,16 +302,16 @@ class Knight extends StepPiece {
 class LinearPiece extends Piece {
     constructor(color, square) {
         super(color, square);
-        this.isLinear = true;
+        this._isLinear = true;
     }
 
-    getLinearSquares(boardSquares, directions) {
+    _getLinearSquares(boardSquares, directions) {
         for (let direction of directions) {
-            this.refreshSquareFinder();
+            this._refreshSquareFinder();
             let x = this.square.coordinates.x + direction.x;
             let y = this.square.coordinates.y + direction.y;
             while (SquareCoordinates.correctCoordinates(x, y)) {
-                this.nextSquareAction(boardSquares.getFromCoordinates(x, y));
+                this._nextSquareAction(boardSquares.getFromCoordinates(x, y));
                 if (this.endOfALine) break;
                 x += direction.x;
                 y += direction.y;
@@ -326,8 +346,8 @@ class Bishop extends LinearPiece {
     }
 
     getSquares(boardSquares) {
-        this.refreshSquares();
-        this.getLinearSquares(boardSquares, Bishop.directions);
+        this._refreshSquares();
+        this._getLinearSquares(boardSquares, Bishop.directions);
     }
 }
 
@@ -358,8 +378,8 @@ class Rook extends LinearPiece {
     }
 
     getSquares(boardSquares) {
-        this.refreshSquares();
-        this.getLinearSquares(boardSquares, Rook.directions);
+        this._refreshSquares();
+        this._getLinearSquares(boardSquares, Rook.directions);
     }
 }
 
@@ -385,9 +405,9 @@ class Queen extends LinearPiece {
     }
 
     getSquares(boardSquares) {
-        this.refreshSquares();
-        this.getLinearSquares(boardSquares, Bishop.directions);
-        this.getLinearSquares(boardSquares, Rook.directions);
+        this._refreshSquares();
+        this._getLinearSquares(boardSquares, Bishop.directions);
+        this._getLinearSquares(boardSquares, Rook.directions);
     }
 }
 
@@ -553,8 +573,8 @@ class King extends StepPiece {
     }
 
     getSquares(boardSquares) {
-        this.refreshSquares();
-        this.getStepSquares(boardSquares, this.#stepPoints);
+        this._refreshSquares();
+        this._getStepSquares(boardSquares, this.#stepPoints);
         this._removeEnemyControlledSquares();
         this._addCastleMoves();
     }
