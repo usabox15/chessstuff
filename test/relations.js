@@ -2,44 +2,17 @@ var assert = require('assert');
 var jschess = require('../');
 var ActionsRelation = jschess.relations.ActionsRelation;
 var PieceSquares = jschess.relations.PieceSquares;
-
-
-class Square {
-    constructor(name) {
-        this._name = name;
-        this.pieces = new ActionsRelation(this, 'squares');
-    }
-
-    get name() {
-        return {value: this._name};
-    }
-
-    theSame(otherSquare) {
-        return this._name == otherSquare._name;
-    }
-}
-
-
-class Piece {
-    constructor(name) {
-        this._name = name;
-        this.squares = new PieceSquares(this, 'pieces');
-    }
-
-    theSame(otherPiece) {
-        return this._name == otherPiece._name;
-    }
-}
-
+var Square = jschess.square.Square;
+var Piece = jschess.pieces.Piece;
 
 var a1 = new Square('a1');
 var b4 = new Square('b4');
 var c8 = new Square('c8');
 var f3 = new Square('f3');
-var knight = new Piece('knight');
-var bishop = new Piece('bishop');
-var rook = new Piece('rook');
-var queen = new Piece('queen');
+var knight = new Piece('white', new Square('b3'));
+var bishop = new Piece('black', new Square('h8'));
+var rook = new Piece('white', new Square('a6'));
+var queen = new Piece('black', new Square('c3'));
 
 
 describe('Test relations', function () {
