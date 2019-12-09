@@ -135,7 +135,7 @@ class Piece {
     getBind(kingSquare) {
         // make piece is binded
         this.squares.refresh(ar.XRAY);
-        let betweenSquares = this.binder.square.getBetweenSquaresNames(kingSquare, true);
+        let betweenSquares = this.binder.square.getBetweenSquaresNames(kingSquare, true, true);
         for (let actonKind of [ar.MOVE, ar.ATTACK, ar.COVER]) {
             this.squares.limit(actonKind, betweenSquares);
         }

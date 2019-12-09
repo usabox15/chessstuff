@@ -202,15 +202,19 @@ class SquaresLine {
         this._betweenSquaresCount = this._betweenSquaresNames.length;
     }
 
-    betweenSquaresNames(includeEnd=false) {
-        if (includeEnd) {
-            return this._betweenSquaresNames.concat([this._endSquare.name.value]);
+    betweenSquaresNames(includeStart=false, includeEnd=false) {
+        let additional = [];
+        if (includeStart) {
+            additional.push(this._startSquare.name.value);
         }
-        return this._betweenSquaresNames;
+        if (includeEnd) {
+            additional.push(this._endSquare.name.value);
+        }
+        return this._betweenSquaresNames.concat(additional);
     }
 
-    betweenSquaresCount(includeEnd=false) {
-        return this._betweenSquaresCount + (includeEnd ? 1 : 0);
+    betweenSquaresCount(includeStart=false, includeEnd=false) {
+        return this._betweenSquaresCount + (includeStart ? 1 : 0) + (includeEnd ? 1 : 0);
     }
 }
 
@@ -280,12 +284,12 @@ class Square {
         return this.name.number == horizontal;
     }
 
-    getBetweenSquaresNames(otherSquare, includeOtherSquare=false) {
-        return new SquaresLine(this, otherSquare).betweenSquaresNames(includeOtherSquare);
+    getBetweenSquaresNames(otherSquare, includeThisSquare=false, includeOtherSquare=false) {
+        return new SquaresLine(this, otherSquare).betweenSquaresNames(includeThisSquare, includeOtherSquare);
     }
 
-    getBetweenSquaresCount(otherSquare, includeOtherSquare=false) {
-        return new SquaresLine(this, otherSquare).betweenSquaresCount(includeOtherSquare);
+    getBetweenSquaresCount(otherSquare, includeThisSquare=false, includeOtherSquare=false) {
+        return new SquaresLine(this, otherSquare).betweenSquaresCount(includeThisSquare, includeOtherSquare);
     }
 }
 
