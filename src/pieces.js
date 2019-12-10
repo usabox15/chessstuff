@@ -412,35 +412,69 @@ class Queen extends LinearPiece {
 }
 
 
+class KingCastleRoad {
+    constructor(horizontal, boardSquares, accepted, squareSign, freeSigns, safeSigns) {
+        this._accepted = accepted;
+        this._horizontal = horizontal;
+        this._square = boardSquares[`${squareSign}${this._horizontal}`];
+        this._free = [];
+        this._safe = [];
+        this._getFree(freeSigns, boardSquares);
+        this._getSafe(safeSigns, boardSquares);
+    }
+
+    get accepted() {
+        return this._accepted;
+    }
+
+    get square() {
+        return this._square;
+    }
+
+    get free() {
+        return this._free;
+    }
+
+    get safe() {
+        return this._safe;
+    }
+
+    _fill(target, signs, boardSquares) {
+        for (let sign of signs) {
+            target.push(boardSquares[`${sign}${this._horizontal}`]);
+        }
+    }
+
+    _getFree(freeSigns, boardSquares) {
+        this._fill(this._free, freeSigns, boardSquares);
+    }
+
+    _getSafe(safeSigns, boardSquares) {
+        this._fill(this._safe, safeSigns, boardSquares);
+    }
+}
+
+
 class KingCastle {
-    constructor(color, boardSquares) {
+    constructor(color, boardSquares, acceptedDefault=null) {
         let horizontal = color == "white" ? "1" : "8";
         this.color = color;
-        this.short = {
-            accepted: true,
-            square: boardSquares[`g${horizontal}`],
-            free: [
-                boardSquares[`f${horizontal}`],
-                boardSquares[`g${horizontal}`]
-            ],
-            safe: [
-                boardSquares[`f${horizontal}`],
-                boardSquares[`g${horizontal}`]
-            ],
-        };
-        this.long = {
-            accepted: true,
-            square: boardSquares[`c${horizontal}`],
-            free: [
-                boardSquares[`b${horizontal}`],
-                boardSquares[`c${horizontal}`],
-                boardSquares[`d${horizontal}`]
-            ],
-            safe: [
-                boardSquares[`c${horizontal}`],
-                boardSquares[`d${horizontal}`]
-            ],
-        };
+        this.short = new KingCastleRoad(
+            horizontal,
+            boardSquares,
+            !acceptedDefault || acceptedDefault.short,
+            'g',
+            ['f', 'g'],
+            ['f', 'g']
+        );
+        this.long = new KingCastleRoad(
+            horizontal,
+            boardSquares,
+            !acceptedDefault || acceptedDefault.long,
+            'c',
+            ['b', 'c', 'd'],
+            ['c', 'd']
+        );
     }
 
     _freeCastleRoad(side) {
