@@ -191,5 +191,35 @@ describe('Test pieces', function () {
             assert.ok(piece2.squares.includes(ar.CONTROL, b2));
             assert.ok(piece2.squares.includes(ar.CONTROL, b1));
         });
+
+        it('should handle check logic', function () {
+            let checkerSquare = new Square('e4');
+            let pieceSquare = new Square('c4');
+            let kingSquare = new Square('e8');
+            let piece1 = new Piece(Piece.WHITE, checkerSquare);
+            let piece2 = new Piece(Piece.BLACK, pieceSquare);
+            piece2.squares.add(ar.ATTACK, checkerSquare);
+            let c1 = new Square('c1');
+            piece2.squares.add(ar.ATTACK, c1);
+            let e6 = new Square('e6');
+            piece2.squares.add(ar.MOVE, e6);
+            let e2 = new Square('e2');
+            piece2.squares.add(ar.MOVE, e2);
+            let a4 = new Square('a4');
+            piece2.squares.add(ar.MOVE, a4);
+            let c7 = new Square('c7');
+            piece2.squares.add(ar.COVER, c7);
+            let c8 = new Square('c8');
+            piece2.squares.add(ar.XRAY, c8);
+            let betweenSquares = piece1.square.getBetweenSquaresNames(kingSquare);
+            piece2.getCheck(piece1, betweenSquares);
+            assert.ok(!piece2.squares[ar.XRAY]);
+            assert.ok(!piece2.squares[ar.COVER]);
+            assert.ok(piece2.squares.includes(ar.ATTACK, checkerSquare));
+            assert.ok(!piece2.squares.includes(ar.ATTACK, c1));
+            assert.ok(piece2.squares.includes(ar.MOVE, e6));
+            assert.ok(!piece2.squares.includes(ar.MOVE, e2));
+            assert.ok(!piece2.squares.includes(ar.MOVE, a4));
+        })
     });
 });
