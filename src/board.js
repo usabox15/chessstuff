@@ -102,26 +102,6 @@ class Board {
         this.squares[squareName].removePiece();
     }
 
-    _castleRookMove(from, to, king) {
-        let horizontal = king.castle.horizontal;
-        if (from == `e${horizontal}`) {
-            if (to == `c${horizontal}`) {
-                this.movePiece(`a${horizontal}`, `d${horizontal}`, false);
-            }
-            else if (to == `g${horizontal}`) {
-                this.movePiece(`h${horizontal}`, `f${horizontal}`, false);
-            }
-        }
-    }
-
-    stopKingCastleRights(color) {
-       this.kings[color].castle.stop();
-    }
-
-    stopRookCastleRights(piece) {
-        this.kings[piece.color].castle.stop(piece.side);
-    }
-
     enPassantMatter(fromSquare, toSquare, pawn) {
         // jump through one square
         if (toSquare.getBetweenSquaresCount(fromSquare) == 1) {
@@ -173,6 +153,12 @@ class Board {
         piece.getPlace(toSquare);
     }
 
+    _rookCastleMove(castleRoad) {
+        let rookFromSquareName = castleRoad.rook.square.name.value;
+        let rookToSquareName = castleRoad.rookToSquare.name.value;
+        this.movePiece(rookFromSquareName, rookToSquareName, false);
+    }
+
     movePiece(from, to, refresh=true) {
         let fromSquare = this.squares[from];
         let toSquare = this.squares[to];
@@ -202,11 +188,16 @@ class Board {
 
         this.transformation = null;
         if (piece.isKing) {
-            this._castleRookMove(from, to, piece);
-            this.stopKingCastleRights(piece.color);
+            let castleRoad = piece.castle.sideHappening(toSquare);
+            if (castleRoad) {
+                this._rookCastleMove(castleRoad);
+            }
+            piece.castle.stop();
         }
         else if (piece.isRook) {
-            this.stopRookCastleRights(piece);
+            if (piece.castleRoad) {
+                this.kings[piece.color].castle.stop(piece.castleRoad.side);
+            }
         }
         else if (piece.isPawn) {
             if (toSquare.onEdge.up || toSquare.onEdge.down) {

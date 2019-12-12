@@ -373,13 +373,25 @@ class Rook extends LinearPiece {
     constructor(color, square) {
         super(color, square);
         this.isRook = true;
-        this.side = square.onVertical("a") ? "long" : "short";
+        this._castleRoad = null;
         this._kind = "rook";
+    }
+
+    get castleRoad() {
+        return this._castleRoad;
     }
 
     getSquares(boardSquares) {
         this._refreshSquares();
         this._getLinearSquares(boardSquares, Rook.directions);
+    }
+
+    setCastleRoad(castleRoad) {
+        this._castleRoad = castleRoad;
+    }
+
+    removeCastleRoad() {
+        this._castleRoad = null;
     }
 }
 
@@ -413,9 +425,17 @@ class Queen extends LinearPiece {
 
 
 class KingCastleRoad {
-    static toSquares = {
+    static toSquaresSigns = {
         KingCastle.SHORT: 'g',
         KingCastle.LONG: 'c'
+    };
+    static rookToSquaresSigns = {
+        KingCastle.SHORT: 'f',
+        KingCastle.LONG: 'd'
+    };
+    static rookSquaresSigns = {
+        KingCastle.SHORT: 'h',
+        KingCastle.LONG: 'a'
     };
     static freeSigns = {
         KingCastle.SHORT: ['f', 'g'],
@@ -426,17 +446,33 @@ class KingCastleRoad {
         KingCastle.LONG: ['c', 'd']
     };
 
-    constructor(horizontal, boardSquares, sideKind) {
+    constructor(horizontal, boardSquares, side) {
         this._horizontal = horizontal;
-        this._toSquare = boardSquares[`${KingCastleRoad.toSquares[sideKind]}${this._horizontal}`];
+        this._toSquare = boardSquares[`${KingCastleRoad.toSquaresSigns[side]}${this._horizontal}`];
+        this._rookToSquare = boardSquares[`${KingCastleRoad.rookToSquaresSigns[side]}${this._horizontal}`];
+        this._rook = boardSquares[`${KingCastleRoad.rookSquaresSigns[side]}${this._horizontal}`].piece;
+        this._rook.setCastleRoad(this);
+        this._side = side;
         this._free = [];
         this._safe = [];
-        this._fill(this._free, KingCastleRoad.freeSigns[sideKind], boardSquares);
-        this._fill(this._safe, KingCastleRoad.safeSigns[sideKind], boardSquares);
+        this._fill(this._free, KingCastleRoad.freeSigns[side], boardSquares);
+        this._fill(this._safe, KingCastleRoad.safeSigns[side], boardSquares);
     }
 
     get toSquare() {
         return this._toSquare;
+    }
+
+    get rookToSquare() {
+        return this._rookToSquare;
+    }
+
+    get rook() {
+        return this._rook;
+    }
+
+    get side() {
+        return this._side;
     }
 
     get isFree() {
@@ -488,8 +524,20 @@ class KingCastle {
     stop(side='all') {
         let sides = side == 'all' ? KingCastle.sides : [side];
         for (let s of sides) {
-            this[s] = null;
+            if (this[s]) {
+                this[s].rook.removeCastleRoad();
+                this[s] = null;
+            }
         }
+    }
+
+    sideHappening(toSquare) {
+        for (let side of KingCastle.sides) {
+            if (this[side] && this[side].toSquare.theSame(toSquare)) {
+                return this[side];
+            }
+        }
+        return null;
     }
 }
 
