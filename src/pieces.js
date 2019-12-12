@@ -494,33 +494,29 @@ class KingCastle {
 }
 
 
-class KingCheckers {
-    constructor() {
-        this._items = [];
-    }
-
+class KingCheckers extends Array {
     get first() {
-        return this._items.length > 0 ? this._items[0] : null;
+        return this.length > 0 ? this[0] : null;
     }
 
     get second() {
-        return this._items.length == 2 ? this._items[1] : null;
+        return this.length == 2 ? this[1] : null;
     }
 
     get exist() {
-        return this._items.length > 0;
+        return this.length > 0;
     }
 
     get single() {
-        return this._items.length == 1;
+        return this.length == 1;
     }
 
     get several() {
-        return this._items.length == 2;
+        return this.length == 2;
     }
 
     add(piece) {
-        this._items.push(piece);
+        this.push(piece);
     }
 }
 
