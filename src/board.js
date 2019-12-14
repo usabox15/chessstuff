@@ -9,8 +9,8 @@ class BoardSquares {
     }
 
     _create() {
-        for (let symbol of SquareName.symbols) {
-            for (let number of SquareName.numbers) {
+        for (let symbol of square.SquareName.symbols) {
+            for (let number of square.SquareName.numbers) {
                 let name = `${symbol}${number}`;
                 this[name] = new square.Square(name);
             }

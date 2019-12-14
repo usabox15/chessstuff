@@ -7,7 +7,9 @@ var Bishop = jschess.pieces.Bishop;
 var Rook = jschess.pieces.Rook;
 var Queen = jschess.pieces.Queen;
 var King = jschess.pieces.King;
+var KingCastle = jschess.pieces.KingCastle;
 var ar = jschess.relations.ActionsRelation;
+var BoardSquares = jschess.board.BoardSquares;
 
 
 describe('Test pieces', function () {
@@ -111,14 +113,7 @@ describe('Test pieces', function () {
             let afterNextSquare = new Square('c5');
             let piece1 = new Piece(Piece.WHITE, pieceSquare);
             piece1._isLinear = true;
-            let piece2 = new Piece(Piece.BLACK, nextSquare);
-            piece2.isKing = true;
-            piece2.checkers = {
-                items: [],
-                add: function(piece) {
-                    this.items.push(piece);
-                }
-            };
+            let piece2 = new King(Piece.BLACK, nextSquare, new BoardSquares(), {short: false, long: false});
             assert.ok(!piece1.squares.includes(ar.CONTROL, afterNextSquare));
             piece1._nextSquareAction(nextSquare);
             assert.ok(!piece1.squares.includes(ar.CONTROL, afterNextSquare));
@@ -133,8 +128,7 @@ describe('Test pieces', function () {
             let piece1 = new Piece(Piece.WHITE, pieceSquare);
             piece1._isLinear = true;
             let piece2 = new Piece(Piece.BLACK, nextSquare);
-            let piece3 = new Piece(Piece.BLACK, kingSquare);
-            piece3.isKing = true;
+            let piece3 = new King(Piece.BLACK, kingSquare, new BoardSquares(), {short: false, long: false});
             assert.ok(!piece2.binder);
             piece1._nextSquareAction(nextSquare);
             assert.ok(!piece2.binder);
