@@ -25,7 +25,7 @@ class BoardSquares {
     }
 
     getFromCoordinates(x, y) {
-        return this[Square.coordinatesToName(x, y)];
+        return this[square.Square.coordinatesToName(x, y)];
     }
 
 }
@@ -115,7 +115,7 @@ class Board {
                     let y = toSquare.coordinates.y;
                     let otherPiece = this.squares.getFromCoordinates(x, y).piece;
                     if (otherPiece && otherPiece.isPawn) {
-                        otherPiece.enPassantSquare = enPassantSquare;
+                        otherPiece.setEnPassantSquare(enPassantSquare);
                     }
                 }
             }

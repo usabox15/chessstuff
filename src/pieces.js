@@ -156,7 +156,7 @@ class Pawn extends Piece {
         super(color, square);
         this.isPawn = true;
         this.direction = color == "white" ? 1 : -1;
-        this.enPassantSquare = null;
+        this._enPassantSquare = null;
         this._kind = "pawn";
     }
 
@@ -224,10 +224,18 @@ class Pawn extends Piece {
                 }
             }
         }
-        if (this.enPassantSquare) {
-            this.squares.add(ar.ATTACK, this.enPassantSquare);
-            this.enPassantSquare = null;
+        if (this._enPassantSquare) {
+            this.squares.add(ar.ATTACK, this._enPassantSquare);
+            this.clearEnPassantSquare();
         }
+    }
+
+    setEnPassantSquare(square) {
+        this._enPassantSquare = square;
+    }
+
+    clearEnPassantSquare() {
+        this.setEnPassantSquare(null);
     }
 
     getSquares(boardSquares) {

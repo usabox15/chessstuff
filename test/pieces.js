@@ -2,6 +2,7 @@ var assert = require('assert');
 var jschess = require('../');
 var Square = jschess.square.Square;
 var Piece = jschess.pieces.Piece;
+var Pawn = jschess.pieces.Pawn;
 var Knight = jschess.pieces.Knight;
 var Bishop = jschess.pieces.Bishop;
 var Rook = jschess.pieces.Rook;
@@ -215,5 +216,129 @@ describe('Test pieces', function () {
             assert.ok(!piece2.squares.includes(ar.MOVE, e2));
             assert.ok(!piece2.squares.includes(ar.MOVE, a4));
         })
+    });
+
+    describe('Test Pawn', function () {
+        it('should check initial pawn data', function () {
+            let pawn = new Pawn(Piece.WHITE, new Square('e2'));
+            assert.ok(pawn.isPawn);
+            assert.equal(pawn.direction, 1);
+            assert.equal(pawn._enPassantSquare, null);
+            assert.equal(pawn.kind, "pawn");
+        });
+
+        it('should check pawn on initial horizontal', function () {
+            let pawn1 = new Pawn(Piece.BLACK, new Square('c7'));
+            assert.ok(pawn1.onInitialHorizontal);
+            let pawn2 = new Pawn(Piece.WHITE, new Square('d3'));
+            assert.ok(!pawn2.onInitialHorizontal);
+            let pawn3 = new Pawn(Piece.BLACK, new Square('h2'));
+            assert.ok(!pawn3.onInitialHorizontal);
+            let pawn4 = new Pawn(Piece.WHITE, new Square('f2'));
+            assert.ok(pawn4.onInitialHorizontal);
+        });
+
+        it('should check pawn move maters', function () {
+            let boardSquares = new BoardSquares();
+
+            let pawn1 = new Pawn(Piece.BLACK, boardSquares.e5);
+            let pawn1MoveCoordinates = pawn1._getMoveCoordinates();
+            assert.equal(pawn1MoveCoordinates.length, 1);
+            assert.equal(pawn1MoveCoordinates[0][0], 4);
+            assert.equal(pawn1MoveCoordinates[0][1], 3);
+            pawn1._getMoveSquares(boardSquares);
+            assert.ok(pawn1.squares.includes(ar.MOVE, boardSquares.e4));
+
+            let pawn2 = new Pawn(Piece.WHITE, boardSquares.a2);
+            let pawn2MoveCoordinates = pawn2._getMoveCoordinates();
+            assert.equal(pawn2MoveCoordinates.length, 2);
+            assert.equal(pawn2MoveCoordinates[0][0], 0);
+            assert.equal(pawn2MoveCoordinates[0][1], 2);
+            assert.equal(pawn2MoveCoordinates[1][0], 0);
+            assert.equal(pawn2MoveCoordinates[1][1], 3);
+            pawn2._getMoveSquares(boardSquares);
+            assert.ok(pawn2.squares.includes(ar.MOVE, boardSquares.a3));
+            assert.ok(pawn2.squares.includes(ar.MOVE, boardSquares.a4));
+
+            new Piece(Piece.WHITE, boardSquares.g5);
+            let pawn3 = new Pawn(Piece.BLACK, boardSquares.g7);
+            let pawn3MoveCoordinates = pawn3._getMoveCoordinates();
+            assert.equal(pawn3MoveCoordinates.length, 2);
+            assert.equal(pawn3MoveCoordinates[0][0], 6);
+            assert.equal(pawn3MoveCoordinates[0][1], 5);
+            assert.equal(pawn3MoveCoordinates[1][0], 6);
+            assert.equal(pawn3MoveCoordinates[1][1], 4);
+            pawn3._getMoveSquares(boardSquares);
+            assert.ok(pawn3.squares.includes(ar.MOVE, boardSquares.g6));
+            assert.ok(!pawn3.squares.includes(ar.MOVE, boardSquares.g5));
+
+            new Piece(Piece.BLACK, boardSquares.f5);
+            let pawn4 = new Pawn(Piece.WHITE, boardSquares.f4);
+            let pawn4MoveCoordinates = pawn4._getMoveCoordinates();
+            assert.equal(pawn4MoveCoordinates.length, 1);
+            assert.equal(pawn4MoveCoordinates[0][0], 5);
+            assert.equal(pawn4MoveCoordinates[0][1], 4);
+            pawn4._getMoveSquares(boardSquares);
+            assert.ok(!pawn4.squares.includes(ar.MOVE, boardSquares.f5));
+        });
+
+        it('should check pawn attack maters', function () {
+            let boardSquares = new BoardSquares();
+
+            let pawn1 = new Pawn(Piece.BLACK, boardSquares.b6);
+            new Piece(Piece.WHITE, boardSquares.c5);
+            let pawn1AttackCoordinates = pawn1._getAttackCoordinates();
+            assert.equal(pawn1AttackCoordinates.length, 2);
+            assert.equal(pawn1AttackCoordinates[0][0], 2);
+            assert.equal(pawn1AttackCoordinates[0][1], 4);
+            assert.equal(pawn1AttackCoordinates[1][0], 0);
+            assert.equal(pawn1AttackCoordinates[1][1], 4);
+            pawn1._getAttackSquares(boardSquares);
+            assert.ok(pawn1.squares.includes(ar.CONTROL, boardSquares.a5));
+            assert.ok(pawn1.squares.includes(ar.CONTROL, boardSquares.c5));
+            assert.ok(!pawn1.squares.includes(ar.ATTACK, boardSquares.a5));
+            assert.ok(pawn1.squares.includes(ar.ATTACK, boardSquares.c5));
+            assert.ok(!pawn1.squares.includes(ar.COVER, boardSquares.a5));
+            assert.ok(!pawn1.squares.includes(ar.COVER, boardSquares.c5));
+
+            let pawn2 = new Pawn(Piece.WHITE, boardSquares.f2);
+            new Piece(Piece.BLACK, boardSquares.e3);
+            new Piece(Piece.WHITE, boardSquares.g3);
+            let pawn2AttackCoordinates = pawn2._getAttackCoordinates();
+            assert.equal(pawn2AttackCoordinates.length, 2);
+            assert.equal(pawn2AttackCoordinates[0][0], 6);
+            assert.equal(pawn2AttackCoordinates[0][1], 2);
+            assert.equal(pawn2AttackCoordinates[1][0], 4);
+            assert.equal(pawn2AttackCoordinates[1][1], 2);
+            pawn2._getAttackSquares(boardSquares);
+            assert.ok(pawn2.squares.includes(ar.CONTROL, boardSquares.e3));
+            assert.ok(pawn2.squares.includes(ar.CONTROL, boardSquares.g3));
+            assert.ok(pawn2.squares.includes(ar.ATTACK, boardSquares.e3));
+            assert.ok(!pawn2.squares.includes(ar.ATTACK, boardSquares.g3));
+            assert.ok(!pawn2.squares.includes(ar.COVER, boardSquares.e3));
+            assert.ok(pawn2.squares.includes(ar.COVER, boardSquares.g3));
+
+            let pawn3 = new Pawn(Piece.BLACK, boardSquares.a3);
+            let pawn3AttackCoordinates = pawn3._getAttackCoordinates();
+            assert.equal(pawn3AttackCoordinates.length, 1);
+            assert.equal(pawn3AttackCoordinates[0][0], 1);
+            assert.equal(pawn3AttackCoordinates[0][1], 1);
+            pawn3._getAttackSquares(boardSquares);
+            assert.ok(pawn3.squares.includes(ar.CONTROL, boardSquares.b2));
+            assert.ok(!pawn3.squares.includes(ar.ATTACK, boardSquares.b2));
+            assert.ok(!pawn3.squares.includes(ar.COVER, boardSquares.b2));
+
+            let pawn4 = new Pawn(Piece.WHITE, boardSquares.h5);
+            pawn4.setEnPassantSquare(boardSquares.g6)
+            let pawn4AttackCoordinates = pawn4._getAttackCoordinates();
+            assert.equal(pawn4AttackCoordinates.length, 1);
+            assert.equal(pawn4AttackCoordinates[0][0], 6);
+            assert.equal(pawn4AttackCoordinates[0][1], 5);
+            pawn4._getAttackSquares(boardSquares);
+            assert.equal(pawn4._enPassantSquare, null);
+            assert.ok(pawn4.squares.includes(ar.CONTROL, boardSquares.g6));
+            assert.ok(pawn4.squares.includes(ar.ATTACK, boardSquares.g6));
+            assert.ok(!pawn4.squares.includes(ar.COVER, boardSquares.g6));
+        });
     });
 });
