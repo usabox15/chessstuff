@@ -1,5 +1,7 @@
 var relations = require('./relations');
+var square = require('./square');
 var ar = relations.ActionsRelation;
+var SquareCoordinates = square.SquareCoordinates;
 
 
 class Piece {

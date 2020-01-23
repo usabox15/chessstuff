@@ -341,4 +341,89 @@ describe('Test pieces', function () {
             assert.ok(!pawn4.squares.includes(ar.COVER, boardSquares.g6));
         });
     });
+
+    describe('Test Knight', function () {
+        it('should check initial knight data', function () {
+            let knight = new Knight(Piece.BLACK, new Square('b1'));
+            assert.ok(knight.isKnight);
+            assert.equal(knight.kind, "knight");
+        });
+
+        it('should check knight squares', function () {
+            let boardSquares = new BoardSquares();
+            let knight = new Knight(Piece.WHITE, boardSquares.d5);
+
+            new Piece(Piece.BLACK, boardSquares.e7);
+            new Piece(Piece.WHITE, boardSquares.e6);
+            new Piece(Piece.BLACK, boardSquares.d6);
+            new Piece(Piece.WHITE, boardSquares.f4);
+            new Piece(Piece.BLACK, boardSquares.c3);
+            new Piece(Piece.WHITE, boardSquares.b6);
+
+            knight.getSquares(boardSquares);
+
+            assert.equal(knight.squares[ar.MOVE].length, 4);
+            assert.ok(!knight.squares.includes(ar.MOVE, boardSquares.b6));
+            assert.ok(knight.squares.includes(ar.MOVE, boardSquares.c7));
+            assert.ok(!knight.squares.includes(ar.MOVE, boardSquares.e7));
+            assert.ok(knight.squares.includes(ar.MOVE, boardSquares.f6));
+            assert.ok(!knight.squares.includes(ar.MOVE, boardSquares.f4));
+            assert.ok(knight.squares.includes(ar.MOVE, boardSquares.e3));
+            assert.ok(!knight.squares.includes(ar.MOVE, boardSquares.c3));
+            assert.ok(knight.squares.includes(ar.MOVE, boardSquares.b4));
+
+            assert.equal(knight.squares[ar.ATTACK].length, 2);
+            assert.ok(!knight.squares.includes(ar.ATTACK, boardSquares.b6));
+            assert.ok(!knight.squares.includes(ar.ATTACK, boardSquares.c7));
+            assert.ok(knight.squares.includes(ar.ATTACK, boardSquares.e7));
+            assert.ok(!knight.squares.includes(ar.ATTACK, boardSquares.f6));
+            assert.ok(!knight.squares.includes(ar.ATTACK, boardSquares.f4));
+            assert.ok(!knight.squares.includes(ar.ATTACK, boardSquares.e3));
+            assert.ok(knight.squares.includes(ar.ATTACK, boardSquares.c3));
+            assert.ok(!knight.squares.includes(ar.ATTACK, boardSquares.b4));
+
+            assert.equal(knight.squares[ar.COVER].length, 2);
+            assert.ok(knight.squares.includes(ar.COVER, boardSquares.b6));
+            assert.ok(!knight.squares.includes(ar.COVER, boardSquares.c7));
+            assert.ok(!knight.squares.includes(ar.COVER, boardSquares.e7));
+            assert.ok(!knight.squares.includes(ar.COVER, boardSquares.f6));
+            assert.ok(knight.squares.includes(ar.COVER, boardSquares.f4));
+            assert.ok(!knight.squares.includes(ar.COVER, boardSquares.e3));
+            assert.ok(!knight.squares.includes(ar.COVER, boardSquares.c3));
+            assert.ok(!knight.squares.includes(ar.COVER, boardSquares.b4));
+
+            assert.equal(knight.squares[ar.CONTROL].length, 8);
+            assert.ok(knight.squares.includes(ar.CONTROL, boardSquares.b6));
+            assert.ok(knight.squares.includes(ar.CONTROL, boardSquares.c7));
+            assert.ok(knight.squares.includes(ar.CONTROL, boardSquares.e7));
+            assert.ok(knight.squares.includes(ar.CONTROL, boardSquares.f6));
+            assert.ok(knight.squares.includes(ar.CONTROL, boardSquares.f4));
+            assert.ok(knight.squares.includes(ar.CONTROL, boardSquares.e3));
+            assert.ok(knight.squares.includes(ar.CONTROL, boardSquares.c3));
+            assert.ok(knight.squares.includes(ar.CONTROL, boardSquares.b4));
+
+            assert.equal(knight.squares[ar.XRAY], null);
+        });
+
+        it('should check knight get bind', function () {
+            let boardSquares = new BoardSquares();
+            let knight = new Knight(Piece.BLACK, boardSquares.f6);
+
+            knight.getSquares(boardSquares);
+
+            assert.equal(knight.squares[ar.MOVE].length, 8);
+            assert.equal(knight.squares[ar.ATTACK], null);
+            assert.equal(knight.squares[ar.COVER], null);
+            assert.equal(knight.squares[ar.CONTROL].length, 8);
+            assert.equal(knight.squares[ar.XRAY], null);
+
+            knight.getBind();
+
+            assert.equal(knight.squares[ar.MOVE], null);
+            assert.equal(knight.squares[ar.ATTACK], null);
+            assert.equal(knight.squares[ar.COVER], null);
+            assert.equal(knight.squares[ar.CONTROL], null);
+            assert.equal(knight.squares[ar.XRAY], null);
+        });
+    });
 });
