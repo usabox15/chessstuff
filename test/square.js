@@ -174,6 +174,11 @@ describe('Test square', function () {
             assert.throws(() => {new Square();});
         });
 
+        it('should check cretion with coordinates', function () {
+            let square = new Square([3, 5]);
+            assert.equal(square.name.value, 'd6');
+        });
+
         it('should check piece placement', function () {
             let square = new Square('a1');
             assert.equal(square.piece, null);

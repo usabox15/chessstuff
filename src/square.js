@@ -223,9 +223,8 @@ class Square {
     /*
     Chess board square.
     There are create params:
-      - name [string] (SquareName class create param);
-      - board [Board Object] (link to the Board);
-      - coordinates [Array] (SquareCoordinates class create param).
+      - identifier [string or Array] (SquareName or SquareCoordinates create param);
+      - board [Board Object] (link to the Board).
     To create instance you need to pass one of this params.
     */
 
@@ -236,18 +235,23 @@ class Square {
         return Square.numberToSymbol[x] + (y + 1);
     }
 
-    constructor(name=null, board=null, coordinates=null) {
-        if (name) {
-            this._name = new SquareName(name);
+    constructor(identifier=null, board=null) {
+        if (!identifier) {
+            throw Error("To create Square instance you need to pass identifier param (name or coordinates)");
+        }
+
+        if (typeof(identifier) === 'string') {
+            this._name = new SquareName(identifier);
             this._coordinates = new SquareCoordinates([Square.symbolToNumber[this._name.symbol], +(this._name.number - 1)]);
         }
-        else if (coordinates) {
-            this._coordinates = new SquareCoordinates(coordinates);
+        else if (Array.isArray(identifier)) {
+            this._coordinates = new SquareCoordinates(identifier);
             this._name = new SquareName(Square.numberToSymbol[this._coordinates.x] + (this._coordinates.y + 1));
         }
         else {
-            throw Error("To create Square instance you need to pass either name or coordinates param");
+            throw Error("Wrong identifier passed. It need to be SquareName or SquareCoordinates create param.");
         }
+
         this._board = board;
         this._piece = null;
         this.pieces = new relations.ActionsRelation(this, 'squares');
