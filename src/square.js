@@ -224,6 +224,7 @@ class Square {
     Chess board square.
     There are create params:
       - name [string] (SquareName class create param);
+      - board [Board Object] (link to the Board);
       - coordinates [Array] (SquareCoordinates class create param).
     To create instance you need to pass one of this params.
     */
@@ -235,7 +236,7 @@ class Square {
         return Square.numberToSymbol[x] + (y + 1);
     }
 
-    constructor(name=null, coordinates=null) {
+    constructor(name=null, board=null, coordinates=null) {
         if (name) {
             this._name = new SquareName(name);
             this._coordinates = new SquareCoordinates([Square.symbolToNumber[this._name.symbol], +(this._name.number - 1)]);
@@ -247,6 +248,7 @@ class Square {
         else {
             throw Error("To create Square instance you need to pass either name or coordinates param");
         }
+        this._board = board;
         this._piece = null;
         this.pieces = new relations.ActionsRelation(this, 'squares');
         this.onEdge = new SquareOnEdge(this.coordinates);
@@ -258,6 +260,10 @@ class Square {
 
     get coordinates() {
         return this._coordinates;
+    }
+
+    get board() {
+        return this._board;
     }
 
     get piece() {

@@ -4,15 +4,15 @@ var ar = require('./relations').ActionsRelation;
 
 
 class BoardSquares {
-    constructor() {
-        this._create();
+    constructor(board) {
+        this._create(board);
     }
 
-    _create() {
+    _create(board) {
         for (let symbol of square.SquareName.symbols) {
             for (let number of square.SquareName.numbers) {
                 let name = `${symbol}${number}`;
-                this[name] = new square.Square(name);
+                this[name] = new square.Square(name, board);
             }
         }
     }
@@ -71,7 +71,7 @@ class Board {
     };
 
     constructor() {
-        this.squares = new BoardSquares;
+        this.squares = new BoardSquares(this);
         this.colors = new BoardColors;
         this.result = null;
         this.transformation = null;
@@ -92,7 +92,7 @@ class Board {
     }
 
     placePiece(color, kind, squareName) {
-        let piece = new this.#piecesBox[kind](color, this.squares[squareName], this.squares);
+        let piece = new this.#piecesBox[kind](color, this.squares[squareName]);
         if (piece.isKing) {
             this.kings[color] = piece;
         }
@@ -230,13 +230,13 @@ class Board {
             piece.getInitState();
         }
         for (let piece of this.allPieces.filter(p => !p.isKing)) {
-            piece.getSquares(this.squares);
+            piece.getSquares();
         }
         for (let piece of this.allPieces.filter(p => p.binder)) {
             piece.getBind(this.kings[piece.color].square);
         }
         for (let piece of this.allPieces.filter(p => p.isKing)) {
-            piece.getSquares(this.squares);
+            piece.getSquares();
         }
         let oppKing = this.kings[this.colors.opponent];
         if (oppKing.checkers.single) {

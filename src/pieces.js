@@ -45,6 +45,10 @@ class Piece {
         return this._isLinear;
     }
 
+    get board() {
+        return this.square.board;
+    }
+
     _setColor(color) {
         if (!this.#colors.includes(color)) {
             throw Error(`'${color}' is wrong piece color value.`);
@@ -185,9 +189,9 @@ class Pawn extends Piece {
         return moveSquaresCoordinates;
     }
 
-    _getMoveSquares(boardSquares) {
+    _getMoveSquares() {
         for (let [x, y] of this._getMoveCoordinates()) {
-            let square = boardSquares.getFromCoordinates(x, y);
+            let square = this.board.squares.getFromCoordinates(x, y);
             if (square.piece) break;
             this.squares.add(ar.MOVE, square);
         }
@@ -210,9 +214,9 @@ class Pawn extends Piece {
         return attackSquaresCoordinates;
     }
 
-    _getAttackSquares(boardSquares) {
+    _getAttackSquares() {
         for (let [x, y] of this._getAttackCoordinates()) {
-            let square = boardSquares.getFromCoordinates(x, y);
+            let square = this.board.squares.getFromCoordinates(x, y);
             this.squares.add(ar.CONTROL, square);
             if (square.piece) {
                 if (this.sameColor(square.piece)) {
@@ -240,10 +244,10 @@ class Pawn extends Piece {
         this.setEnPassantSquare(null);
     }
 
-    getSquares(boardSquares) {
+    getSquares() {
         this._refreshSquares();
-        this._getMoveSquares(boardSquares);
-        this._getAttackSquares(boardSquares);
+        this._getMoveSquares();
+        this._getAttackSquares();
     }
 }
 
@@ -253,14 +257,14 @@ class StepPiece extends Piece {
         super(color, square);
     }
 
-    _getStepSquares(boardSquares, stepPoints) {
+    _getStepSquares(stepPoints) {
         this._refreshSquareFinder();
         for (let stepPoint of stepPoints) {
             let x = this.square.coordinates.x + stepPoint.x;
             let y = this.square.coordinates.y + stepPoint.y;
             if (!SquareCoordinates.correctCoordinates(x, y)) continue;
 
-            this._nextSquareAction(boardSquares.getFromCoordinates(x, y));
+            this._nextSquareAction(this.board.squares.getFromCoordinates(x, y));
         }
     }
 }
@@ -298,9 +302,9 @@ class Knight extends StepPiece {
         this._kind = "knight";
     }
 
-    getSquares(boardSquares) {
+    getSquares() {
         this._refreshSquares();
-        this._getStepSquares(boardSquares, this.#stepPoints);
+        this._getStepSquares(this.#stepPoints);
     }
 
     getBind() {
@@ -315,13 +319,13 @@ class LinearPiece extends Piece {
         this._isLinear = true;
     }
 
-    _getLinearSquares(boardSquares, directions) {
+    _getLinearSquares(directions) {
         for (let direction of directions) {
             this._refreshSquareFinder();
             let x = this.square.coordinates.x + direction.x;
             let y = this.square.coordinates.y + direction.y;
             while (SquareCoordinates.correctCoordinates(x, y)) {
-                this._nextSquareAction(boardSquares.getFromCoordinates(x, y));
+                this._nextSquareAction(this.board.squares.getFromCoordinates(x, y));
                 if (this.endOfALine) break;
                 x += direction.x;
                 y += direction.y;
@@ -355,9 +359,9 @@ class Bishop extends LinearPiece {
         this._kind = "bishop";
     }
 
-    getSquares(boardSquares) {
+    getSquares() {
         this._refreshSquares();
-        this._getLinearSquares(boardSquares, Bishop.directions);
+        this._getLinearSquares(Bishop.directions);
     }
 }
 
@@ -391,9 +395,9 @@ class Rook extends LinearPiece {
         return this._castleRoad;
     }
 
-    getSquares(boardSquares) {
+    getSquares() {
         this._refreshSquares();
-        this._getLinearSquares(boardSquares, Rook.directions);
+        this._getLinearSquares(Rook.directions);
     }
 
     setCastleRoad(castleRoad) {
@@ -426,10 +430,10 @@ class Queen extends LinearPiece {
         this._kind = "queen";
     }
 
-    getSquares(boardSquares) {
+    getSquares() {
         this._refreshSquares();
-        this._getLinearSquares(boardSquares, Bishop.directions);
-        this._getLinearSquares(boardSquares, Rook.directions);
+        this._getLinearSquares(Bishop.directions);
+        this._getLinearSquares(Rook.directions);
     }
 }
 
@@ -441,17 +445,17 @@ class KingCastleRoad {
     static freeSigns = {short: ['f', 'g'], long: ['b', 'c', 'd']};
     static safeSigns = {short: ['f', 'g'], long: ['c', 'd']};
 
-    constructor(horizontal, boardSquares, side) {
+    constructor(horizontal, side) {
         this._horizontal = horizontal;
-        this._toSquare = boardSquares[`${KingCastleRoad.toSquaresSigns[side]}${this._horizontal}`];
-        this._rookToSquare = boardSquares[`${KingCastleRoad.rookToSquaresSigns[side]}${this._horizontal}`];
-        this._rook = boardSquares[`${KingCastleRoad.rookSquaresSigns[side]}${this._horizontal}`].piece;
+        this._toSquare = this.board.squares[`${KingCastleRoad.toSquaresSigns[side]}${this._horizontal}`];
+        this._rookToSquare = this.board.squares[`${KingCastleRoad.rookToSquaresSigns[side]}${this._horizontal}`];
+        this._rook = this.board.squares[`${KingCastleRoad.rookSquaresSigns[side]}${this._horizontal}`].piece;
         this._rook.setCastleRoad(this);
         this._side = side;
         this._free = [];
         this._safe = [];
-        this._fill(this._free, KingCastleRoad.freeSigns[side], boardSquares);
-        this._fill(this._safe, KingCastleRoad.safeSigns[side], boardSquares);
+        this._fill(this._free, KingCastleRoad.freeSigns[side]);
+        this._fill(this._safe, KingCastleRoad.safeSigns[side]);
     }
 
     get toSquare() {
@@ -490,9 +494,9 @@ class KingCastleRoad {
         return this.isFree && this.isSafe;
     }
 
-    _fill(target, signs, boardSquares) {
+    _fill(target, signs) {
         for (let sign of signs) {
-            target.push(boardSquares[`${sign}${this._horizontal}`]);
+            target.push(this.board.squares[`${sign}${this._horizontal}`]);
         }
     }
 }
@@ -501,13 +505,13 @@ class KingCastleRoad {
 class KingCastle {
     static SIDES = ['short', 'long'];
 
-    constructor(color, boardSquares, acceptedDefault=null) {
+    constructor(color, acceptedDefault=null) {
         let accepted = acceptedDefault || {short: true, long: true};
         let horizontal = color == "white" ? "1" : "8";
         this.color = color;
         for (let side of KingCastle.SIDES) {
             if (accepted[side]) {
-                this[side] = new KingCastleRoad(horizontal, boardSquares, side);
+                this[side] = new KingCastleRoad(horizontal, side);
             } else {
                 this[side] = null;
             }
@@ -574,7 +578,6 @@ class King extends StepPiece {
           -1   0   1
 
     There are additional create params:
-      - boardSquares [BoardSquares];
       - castleAccepted [Object] (example {short: false, long: true}).
     */
 
@@ -589,9 +592,9 @@ class King extends StepPiece {
         {x: -1, y: 0},  // H
     ];
 
-    constructor(color, square, boardSquares, castleAccepted=null) {
+    constructor(color, square, castleAccepted=null) {
         super(color, square);
-        this.castle = new KingCastle(color, boardSquares, castleAccepted);
+        this.castle = new KingCastle(color, castleAccepted);
         this.isKing = true;
         this._kind = "king";
     }
@@ -632,9 +635,9 @@ class King extends StepPiece {
         }
     }
 
-    getSquares(boardSquares) {
+    getSquares() {
         this._refreshSquares();
-        this._getStepSquares(boardSquares, this.#stepPoints);
+        this._getStepSquares(this.#stepPoints);
         this._removeEnemyControlledSquares();
         this._addCastleMoves();
     }
