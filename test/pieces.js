@@ -510,4 +510,75 @@ describe('Test pieces', function () {
             assert.ok(rook.squares.includes(ar.XRAY, board.squares.c1));
         });
     });
+
+    describe('Test Queen', function () {
+        it('should check initial queen data', function () {
+            let queen = new Queen(Piece.WHITE, new Square('d8'));
+            assert.ok(queen.isQueen);
+            assert.equal(queen.kind, "queen");
+        });
+
+        it('should check queen squares', function () {
+            let board = new Board();
+            let queen = new Queen(Piece.BLACK, board.squares.e2);
+
+            new Piece(Piece.WHITE, board.squares.g4);
+            new Piece(Piece.BLACK, board.squares.f1);
+            new Piece(Piece.WHITE, board.squares.b2);
+            new Piece(Piece.BLACK, board.squares.e5);
+            new Piece(Piece.WHITE, board.squares.b5);
+
+            queen.getSquares();
+
+            assert.equal(queen.squares[ar.MOVE].length, 12);
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.e1));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.d1));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.d2));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.c2));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.d3));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.c4));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.e3));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.e4));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.f3));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.f2));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.g2));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.h2));
+
+            assert.equal(queen.squares[ar.ATTACK].length, 3);
+            assert.ok(queen.squares.includes(ar.ATTACK, board.squares.g4));
+            assert.ok(queen.squares.includes(ar.ATTACK, board.squares.b2));
+            assert.ok(queen.squares.includes(ar.ATTACK, board.squares.b5));
+
+            assert.equal(queen.squares[ar.COVER].length, 2);
+            assert.ok(queen.squares.includes(ar.COVER, board.squares.f1));
+            assert.ok(queen.squares.includes(ar.COVER, board.squares.e5));
+
+            assert.equal(queen.squares[ar.CONTROL].length, 17);
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.e1));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.d1));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.d2));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.c2));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.d3));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.c4));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.e3));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.e4));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.f3));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.f2));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.g2));
+            assert.ok(queen.squares.includes(ar.MOVE, board.squares.h2));
+            assert.ok(queen.squares.includes(ar.ATTACK, board.squares.g4));
+            assert.ok(queen.squares.includes(ar.ATTACK, board.squares.b2));
+            assert.ok(queen.squares.includes(ar.ATTACK, board.squares.b5));
+            assert.ok(queen.squares.includes(ar.COVER, board.squares.f1));
+            assert.ok(queen.squares.includes(ar.COVER, board.squares.e5));
+
+            assert.equal(queen.squares[ar.XRAY].length, 6);
+            assert.ok(queen.squares.includes(ar.XRAY, board.squares.h5));
+            assert.ok(queen.squares.includes(ar.XRAY, board.squares.a2));
+            assert.ok(queen.squares.includes(ar.XRAY, board.squares.e6));
+            assert.ok(queen.squares.includes(ar.XRAY, board.squares.e7));
+            assert.ok(queen.squares.includes(ar.XRAY, board.squares.e8));
+            assert.ok(queen.squares.includes(ar.XRAY, board.squares.a6));
+        });
+    });
 });
