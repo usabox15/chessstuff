@@ -455,4 +455,59 @@ describe('Test pieces', function () {
             assert.ok(bishop.squares.includes(ar.XRAY, board.squares.b8));
         });
     });
+
+    describe('Test Rook', function () {
+        it('should check initial rook data', function () {
+            let rook = new Rook(Piece.WHITE, new Square('h1'));
+            assert.ok(rook.isRook);
+            assert.equal(rook.castleRoad, null);
+            assert.equal(rook.kind, "rook");
+        });
+
+        it('should check rook squares', function () {
+            let board = new Board();
+            let rook = new Rook(Piece.BLACK, board.squares.c5);
+
+            new Piece(Piece.WHITE, board.squares.f5);
+            new Piece(Piece.BLACK, board.squares.c7);
+            new Piece(Piece.WHITE, board.squares.c2);
+            new Piece(Piece.BLACK, board.squares.c1);
+
+            rook.getSquares();
+
+            assert.equal(rook.squares[ar.MOVE].length, 7);
+            assert.ok(rook.squares.includes(ar.MOVE, board.squares.c6));
+            assert.ok(rook.squares.includes(ar.MOVE, board.squares.d5));
+            assert.ok(rook.squares.includes(ar.MOVE, board.squares.e5));
+            assert.ok(rook.squares.includes(ar.MOVE, board.squares.c4));
+            assert.ok(rook.squares.includes(ar.MOVE, board.squares.c3));
+            assert.ok(rook.squares.includes(ar.MOVE, board.squares.b5));
+            assert.ok(rook.squares.includes(ar.MOVE, board.squares.a5));
+
+            assert.equal(rook.squares[ar.ATTACK].length, 2);
+            assert.ok(rook.squares.includes(ar.ATTACK, board.squares.f5));
+            assert.ok(rook.squares.includes(ar.ATTACK, board.squares.c2));
+
+            assert.equal(rook.squares[ar.COVER].length, 1);
+            assert.ok(rook.squares.includes(ar.COVER, board.squares.c7));
+
+            assert.equal(rook.squares[ar.CONTROL].length, 10);
+            assert.ok(rook.squares.includes(ar.MOVE, board.squares.c6));
+            assert.ok(rook.squares.includes(ar.MOVE, board.squares.d5));
+            assert.ok(rook.squares.includes(ar.MOVE, board.squares.e5));
+            assert.ok(rook.squares.includes(ar.MOVE, board.squares.c4));
+            assert.ok(rook.squares.includes(ar.MOVE, board.squares.c3));
+            assert.ok(rook.squares.includes(ar.MOVE, board.squares.b5));
+            assert.ok(rook.squares.includes(ar.MOVE, board.squares.a5));
+            assert.ok(rook.squares.includes(ar.ATTACK, board.squares.f5));
+            assert.ok(rook.squares.includes(ar.ATTACK, board.squares.c2));
+            assert.ok(rook.squares.includes(ar.COVER, board.squares.c7));
+
+            assert.equal(rook.squares[ar.XRAY].length, 4);
+            assert.ok(rook.squares.includes(ar.XRAY, board.squares.c8));
+            assert.ok(rook.squares.includes(ar.XRAY, board.squares.g5));
+            assert.ok(rook.squares.includes(ar.XRAY, board.squares.h5));
+            assert.ok(rook.squares.includes(ar.XRAY, board.squares.c1));
+        });
+    });
 });
