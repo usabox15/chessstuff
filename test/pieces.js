@@ -359,34 +359,18 @@ describe('Test pieces', function () {
             knight.getSquares();
 
             assert.equal(knight.squares[ar.MOVE].length, 4);
-            assert.ok(!knight.squares.includes(ar.MOVE, board.squares.b6));
             assert.ok(knight.squares.includes(ar.MOVE, board.squares.c7));
-            assert.ok(!knight.squares.includes(ar.MOVE, board.squares.e7));
             assert.ok(knight.squares.includes(ar.MOVE, board.squares.f6));
-            assert.ok(!knight.squares.includes(ar.MOVE, board.squares.f4));
             assert.ok(knight.squares.includes(ar.MOVE, board.squares.e3));
-            assert.ok(!knight.squares.includes(ar.MOVE, board.squares.c3));
             assert.ok(knight.squares.includes(ar.MOVE, board.squares.b4));
 
             assert.equal(knight.squares[ar.ATTACK].length, 2);
-            assert.ok(!knight.squares.includes(ar.ATTACK, board.squares.b6));
-            assert.ok(!knight.squares.includes(ar.ATTACK, board.squares.c7));
             assert.ok(knight.squares.includes(ar.ATTACK, board.squares.e7));
-            assert.ok(!knight.squares.includes(ar.ATTACK, board.squares.f6));
-            assert.ok(!knight.squares.includes(ar.ATTACK, board.squares.f4));
-            assert.ok(!knight.squares.includes(ar.ATTACK, board.squares.e3));
             assert.ok(knight.squares.includes(ar.ATTACK, board.squares.c3));
-            assert.ok(!knight.squares.includes(ar.ATTACK, board.squares.b4));
 
             assert.equal(knight.squares[ar.COVER].length, 2);
             assert.ok(knight.squares.includes(ar.COVER, board.squares.b6));
-            assert.ok(!knight.squares.includes(ar.COVER, board.squares.c7));
-            assert.ok(!knight.squares.includes(ar.COVER, board.squares.e7));
-            assert.ok(!knight.squares.includes(ar.COVER, board.squares.f6));
             assert.ok(knight.squares.includes(ar.COVER, board.squares.f4));
-            assert.ok(!knight.squares.includes(ar.COVER, board.squares.e3));
-            assert.ok(!knight.squares.includes(ar.COVER, board.squares.c3));
-            assert.ok(!knight.squares.includes(ar.COVER, board.squares.b4));
 
             assert.equal(knight.squares[ar.CONTROL].length, 8);
             assert.ok(knight.squares.includes(ar.CONTROL, board.squares.b6));
@@ -420,6 +404,55 @@ describe('Test pieces', function () {
             assert.equal(knight.squares[ar.COVER], null);
             assert.equal(knight.squares[ar.CONTROL], null);
             assert.equal(knight.squares[ar.XRAY], null);
+        });
+    });
+
+    describe('Test Bishop', function () {
+        it('should check initial bishop data', function () {
+            let bishop = new Bishop(Piece.WHITE, new Square('f8'));
+            assert.ok(bishop.isBishop);
+            assert.equal(bishop.kind, "bishop");
+        });
+
+        it('should check bishop squares', function () {
+            let board = new Board();
+            let bishop = new Bishop(Piece.BLACK, board.squares.f4);
+
+            new Piece(Piece.WHITE, board.squares.g5);
+            new Piece(Piece.BLACK, board.squares.h2);
+            new Piece(Piece.WHITE, board.squares.b8);
+            new Piece(Piece.BLACK, board.squares.d6);
+
+            bishop.getSquares();
+
+            assert.equal(bishop.squares[ar.MOVE].length, 5);
+            assert.ok(bishop.squares.includes(ar.MOVE, board.squares.e5));
+            assert.ok(bishop.squares.includes(ar.MOVE, board.squares.g3));
+            assert.ok(bishop.squares.includes(ar.MOVE, board.squares.e3));
+            assert.ok(bishop.squares.includes(ar.MOVE, board.squares.d2));
+            assert.ok(bishop.squares.includes(ar.MOVE, board.squares.c1));
+
+            assert.equal(bishop.squares[ar.ATTACK].length, 1);
+            assert.ok(bishop.squares.includes(ar.ATTACK, board.squares.g5));
+
+            assert.equal(bishop.squares[ar.COVER].length, 2);
+            assert.ok(bishop.squares.includes(ar.COVER, board.squares.d6));
+            assert.ok(bishop.squares.includes(ar.COVER, board.squares.h2));
+
+            assert.equal(bishop.squares[ar.CONTROL].length, 8);
+            assert.ok(bishop.squares.includes(ar.CONTROL, board.squares.e5));
+            assert.ok(bishop.squares.includes(ar.CONTROL, board.squares.g3));
+            assert.ok(bishop.squares.includes(ar.CONTROL, board.squares.e3));
+            assert.ok(bishop.squares.includes(ar.CONTROL, board.squares.d2));
+            assert.ok(bishop.squares.includes(ar.CONTROL, board.squares.c1));
+            assert.ok(bishop.squares.includes(ar.CONTROL, board.squares.g5));
+            assert.ok(bishop.squares.includes(ar.CONTROL, board.squares.d6));
+            assert.ok(bishop.squares.includes(ar.CONTROL, board.squares.h2));
+
+            assert.equal(bishop.squares[ar.XRAY].length, 3);
+            assert.ok(bishop.squares.includes(ar.XRAY, board.squares.h6));
+            assert.ok(bishop.squares.includes(ar.XRAY, board.squares.c7));
+            assert.ok(bishop.squares.includes(ar.XRAY, board.squares.b8));
         });
     });
 });
