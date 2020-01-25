@@ -198,8 +198,8 @@ describe('Test square', function () {
             let square = new Square('d5');
             assert.ok(square.onVertical('d'));
             assert.ok(!square.onVertical('g'));
-            assert.ok(square.onHorizontal('5'));
-            assert.ok(!square.onHorizontal('2'));
+            assert.ok(square.onRank('5'));
+            assert.ok(!square.onRank('2'));
         });
 
         it('should check between one square and other square data', function () {

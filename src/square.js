@@ -290,8 +290,8 @@ class Square {
         return this.name.symbol === vertical;
     }
 
-    onHorizontal(horizontal) {
-        return this.name.number == horizontal;
+    onRank(rank) {
+        return this.name.number == rank;
     }
 
     getBetweenSquaresNames(otherSquare, includeThisSquare=false, includeOtherSquare=false) {

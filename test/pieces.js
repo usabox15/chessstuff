@@ -223,15 +223,15 @@ describe('Test pieces', function () {
             assert.equal(pawn.kind, "pawn");
         });
 
-        it('should check pawn on initial horizontal', function () {
+        it('should check pawn on initial rank', function () {
             let pawn1 = new Pawn(Piece.BLACK, new Square('c7'));
-            assert.ok(pawn1.onInitialHorizontal);
+            assert.ok(pawn1.onInitialRank);
             let pawn2 = new Pawn(Piece.WHITE, new Square('d3'));
-            assert.ok(!pawn2.onInitialHorizontal);
+            assert.ok(!pawn2.onInitialRank);
             let pawn3 = new Pawn(Piece.BLACK, new Square('h2'));
-            assert.ok(!pawn3.onInitialHorizontal);
+            assert.ok(!pawn3.onInitialRank);
             let pawn4 = new Pawn(Piece.WHITE, new Square('f2'));
-            assert.ok(pawn4.onInitialHorizontal);
+            assert.ok(pawn4.onInitialRank);
         });
 
         it('should check pawn move maters', function () {

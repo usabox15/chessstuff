@@ -158,20 +158,22 @@ class Piece {
 
 
 class Pawn extends Piece {
+    static DIRECTIONS = {[Piece.WHITE]: 1, [Piece.BLACK]: -1};
+    static INITIAL_RANKS = {[Piece.WHITE]: "2", [Piece.BLACK]: "7"};
+
     constructor(color, square) {
         super(color, square);
         this.isPawn = true;
-        this.direction = color == "white" ? 1 : -1;
         this._enPassantSquare = null;
         this._kind = "pawn";
     }
 
-    get onInitialHorizontal() {
-        return (
-            this.color == "white" && this.square.coordinates.y == 1
-            ||
-            this.color == "black" && this.square.coordinates.y == 6
-        )
+    get direction() {
+        return Pawn.DIRECTIONS[this.color];
+    }
+
+    get onInitialRank() {
+        return this.square.onRank(Pawn.INITIAL_RANKS[this.color]);
     }
 
     _getMoveCoordinates() {
@@ -180,7 +182,7 @@ class Pawn extends Piece {
             this.square.coordinates.x,
             this.square.coordinates.y + 1 * this.direction
         ]);
-        if (this.onInitialHorizontal) {
+        if (this.onInitialRank) {
             moveSquaresCoordinates.push([
                 this.square.coordinates.x,
                 this.square.coordinates.y + 2 * this.direction
