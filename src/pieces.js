@@ -441,23 +441,29 @@ class Queen extends LinearPiece {
 
 
 class KingCastleRoad {
-    static toSquaresSigns = {short: 'g', long: 'c'};
-    static rookToSquaresSigns = {short: 'f', long: 'd'};
-    static rookSquaresSigns = {short: 'h', long: 'a'};
-    static freeSigns = {short: ['f', 'g'], long: ['b', 'c', 'd']};
-    static safeSigns = {short: ['f', 'g'], long: ['c', 'd']};
+    static SHORT = 'short';
+    static LONG = 'long';
+    static toSquaresSigns = {[KingCastleRoad.SHORT]: 'g', [KingCastleRoad.LONG]: 'c'};
+    static rookToSquaresSigns = {[KingCastleRoad.SHORT]: 'f', [KingCastleRoad.LONG]: 'd'};
+    static rookSquaresSigns = {[KingCastleRoad.SHORT]: 'h', [KingCastleRoad.LONG]: 'a'};
+    static freeSigns = {[KingCastleRoad.SHORT]: ['f', 'g'], [KingCastleRoad.LONG]: ['b', 'c', 'd']};
+    static safeSigns = {[KingCastleRoad.SHORT]: ['f', 'g'], [KingCastleRoad.LONG]: ['c', 'd']};
 
-    constructor(horizontal, side) {
-        this._horizontal = horizontal;
-        this._toSquare = this.board.squares[`${KingCastleRoad.toSquaresSigns[side]}${this._horizontal}`];
-        this._rookToSquare = this.board.squares[`${KingCastleRoad.rookToSquaresSigns[side]}${this._horizontal}`];
-        this._rook = this.board.squares[`${KingCastleRoad.rookSquaresSigns[side]}${this._horizontal}`].piece;
-        this._rook.setCastleRoad(this);
+    constructor(castle, rank, side) {
+        this._rank = rank;
         this._side = side;
-        this._free = [];
-        this._safe = [];
-        this._fill(this._free, KingCastleRoad.freeSigns[side]);
-        this._fill(this._safe, KingCastleRoad.safeSigns[side]);
+        this._castle = castle;
+        let kingToSquareName = `${KingCastleRoad.toSquaresSigns[side]}${this._rank}`;
+        this._toSquare = castle.king.board.squares[kingToSquareName];
+        let rookToSquareName = `${KingCastleRoad.rookToSquaresSigns[side]}${this._rank}`;
+        this._rookToSquare = castle.king.board.squares[rookToSquareName];
+        let rookSquareName = `${KingCastleRoad.rookSquaresSigns[side]}${this._rank}`;
+        this._rook = castle.king.board.squares[rookSquareName].piece;
+        this._checkRook();
+        this._rook.setCastleRoad(this);
+        this._needToBeFreeSquares = [];
+        this._needToBeSafeSquares = [];
+        this._fill();
     }
 
     get toSquare() {
@@ -477,14 +483,11 @@ class KingCastleRoad {
     }
 
     get isFree() {
-        for (let square of this._free) {
-            if (square.piece) return false;
-        }
-        return true;
+        return this._needToBeFreeSquares.filter(square => square.piece).length == 0;
     }
 
     get isSafe() {
-        for (let square of this._safe) {
+        for (let square of this._needToBeSafeSquares) {
             if (square.pieces[ar.CONTROL].filter(p => !p.hasColor(this.color)).length > 0) {
                 return false;
             }
@@ -496,28 +499,44 @@ class KingCastleRoad {
         return this.isFree && this.isSafe;
     }
 
-    _fill(target, signs) {
-        for (let sign of signs) {
-            target.push(this.board.squares[`${sign}${this._horizontal}`]);
+    _checkRook() {
+        if (!this._rook || !this._rook.isRook || !this._castle.king.sameColor(this._rook)) {
+            throw Error(`Fail to assign rook to ${this._castle.king.color} king ${this._side} castle road.`);
+        }
+    }
+
+    _fill() {
+        let data = [
+            [this._needToBeFreeSquares, KingCastleRoad.freeSigns[this._side]],
+            [this._needToBeSafeSquares, KingCastleRoad.safeSigns[this._side]]
+        ];
+        for (let [target, signs] of data) {
+            for (let sign of signs) {
+                target.push(this._castle.king.board.squares[`${sign}${this._rank}`]);
+            }
         }
     }
 }
 
 
 class KingCastle {
-    static SIDES = ['short', 'long'];
+    static SIDES = [KingCastleRoad.SHORT, KingCastleRoad.LONG];
+    static RANKS = {[Piece.WHITE]: "1", [Piece.BLACK]: "8"};
 
-    constructor(color, acceptedDefault=null) {
-        let accepted = acceptedDefault || {short: true, long: true};
-        let horizontal = color == "white" ? "1" : "8";
-        this.color = color;
+    constructor(king, acceptedDefault=null) {
+        this._king = king;
+        let accepted = acceptedDefault || {[KingCastleRoad.SHORT]: true, [KingCastleRoad.LONG]: true};
         for (let side of KingCastle.SIDES) {
             if (accepted[side]) {
-                this[side] = new KingCastleRoad(horizontal, side);
+                this[side] = new KingCastleRoad(this, KingCastle.RANKS[king.color], side);
             } else {
                 this[side] = null;
             }
         }
+    }
+
+    get king() {
+        return this._king;
     }
 
     stop(side='all') {
@@ -580,7 +599,7 @@ class King extends StepPiece {
           -1   0   1
 
     There are additional create params:
-      - castleAccepted [Object] (example {short: false, long: true}).
+      - castleAccepted [Object] (example {[KingCastleRoad.SHORT]: false, [KingCastleRoad.LONG]: true}).
     */
 
     #stepPoints = [
@@ -596,7 +615,7 @@ class King extends StepPiece {
 
     constructor(color, square, castleAccepted=null) {
         super(color, square);
-        this.castle = new KingCastle(color, castleAccepted);
+        this.castle = new KingCastle(this, castleAccepted);
         this.isKing = true;
         this._kind = "king";
     }
@@ -659,6 +678,7 @@ module.exports = {
     Bishop: Bishop,
     Rook: Rook,
     Queen: Queen,
+    KingCastleRoad: KingCastleRoad,
     KingCastle: KingCastle,
     KingCheckers: KingCheckers,
     King: King
