@@ -850,5 +850,34 @@ describe('Test pieces', function () {
             assert.ok(!shortSideRook._castleRoad);
             assert.ok(!longSideRook._castleRoad);
         });
+
+        it('should check King checkers', function () {
+            let board = new Board();
+            let king = new King(Piece.WHITE, board.squares.g3);
+
+            assert.ok(!king.checkers.first);
+            assert.ok(!king.checkers.second);
+            assert.ok(!king.checkers.exist);
+            assert.ok(!king.checkers.single);
+            assert.ok(!king.checkers.several);
+
+            knight = new Knight(Piece.BLACK, board.squares.h5);
+            knight.getSquares();
+
+            assert.equal(king.checkers.first, knight);
+            assert.ok(!king.checkers.second);
+            assert.ok(king.checkers.exist);
+            assert.ok(king.checkers.single);
+            assert.ok(!king.checkers.several);
+
+            queen = new Queen(Piece.BLACK, board.squares.d6);
+            queen.getSquares();
+
+            assert.equal(king.checkers.first, knight);
+            assert.equal(king.checkers.second, queen);
+            assert.ok(king.checkers.exist);
+            assert.ok(!king.checkers.single);
+            assert.ok(king.checkers.several);
+        });
     });
 });
