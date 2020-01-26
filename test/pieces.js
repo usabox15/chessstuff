@@ -851,7 +851,7 @@ describe('Test pieces', function () {
             assert.ok(!longSideRook._castleRoad);
         });
 
-        it('should check King checkers', function () {
+        it('should check king checkers', function () {
             let board = new Board();
             let king = new King(Piece.WHITE, board.squares.g3);
 
@@ -878,6 +878,73 @@ describe('Test pieces', function () {
             assert.ok(king.checkers.exist);
             assert.ok(!king.checkers.single);
             assert.ok(king.checkers.several);
+        });
+
+        it('should check remove enemy controlled squares', function () {
+            let board = new Board();
+            let king = new King(Piece.BLACK, board.squares.d4);
+            let knight = new Knight(Piece.WHITE, board.squares.e4);
+            let pawn = new Pawn(Piece.WHITE, board.squares.d5);
+
+            knight.getSquares();
+            pawn.getSquares();
+            king.getSquares();
+
+            assert.equal(king.squares[ar.MOVE].length, 4);
+            assert.ok(king.squares.includes(ar.MOVE, board.squares.e5));
+            assert.ok(king.squares.includes(ar.MOVE, board.squares.c4));
+            assert.ok(king.squares.includes(ar.MOVE, board.squares.d3));
+            assert.ok(king.squares.includes(ar.MOVE, board.squares.e3));
+
+            assert.equal(king.squares[ar.ATTACK].length, 2);
+            assert.ok(king.squares.includes(ar.ATTACK, board.squares.d5));
+            assert.ok(king.squares.includes(ar.ATTACK, board.squares.e4));
+
+            let bishop = new Bishop(Piece.WHITE, board.squares.a6);
+            bishop.getSquares();
+            king.getSquares();
+
+            assert.equal(king.squares[ar.MOVE].length, 2);
+            assert.ok(king.squares.includes(ar.MOVE, board.squares.e5));
+            assert.ok(king.squares.includes(ar.MOVE, board.squares.e3));
+
+            assert.equal(king.squares[ar.ATTACK].length, 2);
+            assert.ok(king.squares.includes(ar.ATTACK, board.squares.d5));
+            assert.ok(king.squares.includes(ar.ATTACK, board.squares.e4));
+
+            let rook = new Rook(Piece.WHITE, board.squares.e2);
+            rook.getSquares();
+            king.getSquares();
+
+            assert.equal(king.squares[ar.MOVE].length, 1);
+            assert.ok(king.squares.includes(ar.MOVE, board.squares.e5));
+
+            assert.equal(king.squares[ar.ATTACK].length, 1);
+            assert.ok(king.squares.includes(ar.ATTACK, board.squares.d5));
+
+            let queen = new Queen(Piece.WHITE, board.squares.g5);
+            queen.getSquares();
+            king.getSquares();
+
+            assert.equal(king.squares[ar.MOVE], null);
+            assert.equal(king.squares[ar.ATTACK], null);
+        });
+
+        it('should check castle moves handle', function () {
+            let board = new Board();
+            new Rook(Piece.WHITE, board.squares.h1);
+            new Rook(Piece.WHITE, board.squares.a1);
+            let king = new King(Piece.WHITE, board.squares.e1);
+
+            king.getSquares();
+
+            assert.ok(king.squares.includes(ar.MOVE, board.squares.g1));
+            assert.ok(king.squares.includes(ar.MOVE, board.squares.c1));
+
+            king.getCheck();
+
+            assert.ok(!king.squares.includes(ar.MOVE, board.squares.g1));
+            assert.ok(!king.squares.includes(ar.MOVE, board.squares.c1));
         });
     });
 });

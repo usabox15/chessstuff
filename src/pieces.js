@@ -490,7 +490,7 @@ class KingCastleRoad {
         for (let square of this._needToBeSafeSquares) {
             let controlledByOppositeColorPeace = (
                 square.pieces[ar.CONTROL] &&
-                square.pieces[ar.CONTROL].filter(p => !p.hasColor(this.color)).length > 0
+                square.pieces[ar.CONTROL].filter(p => !p.hasColor(this._castle.king.color)).length > 0
             )
             if (controlledByOppositeColorPeace) return false;
         }
