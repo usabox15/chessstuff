@@ -188,7 +188,7 @@ class Board {
 
         this.transformation = null;
         if (piece.isKing) {
-            let castleRoad = piece.castle.sideHappening(toSquare);
+            let castleRoad = piece.castle.getRoad(toSquare);
             if (castleRoad) {
                 this._rookCastleMove(castleRoad);
             }

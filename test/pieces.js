@@ -115,7 +115,7 @@ describe('Test pieces', function () {
             let board = new Board();
             let piece1 = new Piece(Piece.WHITE, board.squares.g1);
             piece1._isLinear = true;
-            let piece2 = new King(Piece.BLACK, board.squares.d4, {short: false, long: false});
+            let piece2 = new King(Piece.BLACK, board.squares.d4);
             assert.ok(!piece1.squares.includes(ar.CONTROL, board.squares.c5));
             piece1._nextSquareAction(board.squares.d4);
             assert.ok(!piece1.squares.includes(ar.CONTROL, board.squares.c5));
@@ -128,7 +128,7 @@ describe('Test pieces', function () {
             let piece1 = new Piece(Piece.WHITE, board.squares.h8);
             piece1._isLinear = true;
             let piece2 = new Piece(Piece.BLACK, board.squares.f6);
-            let piece3 = new King(Piece.BLACK, board.squares.a1, {short: false, long: false});
+            let piece3 = new King(Piece.BLACK, board.squares.a1);
             assert.ok(!piece2.binder);
             piece1._nextSquareAction(board.squares.f6);
             assert.ok(!piece2.binder);
@@ -650,6 +650,7 @@ describe('Test pieces', function () {
             assert.equal(king.castle[KingCastleRoad.SHORT]._needToBeSafeSquares.length, 2);
             assert.ok(king.castle[KingCastleRoad.SHORT]._needToBeSafeSquares[0].theSame(board.squares.f1));
             assert.ok(king.castle[KingCastleRoad.SHORT]._needToBeSafeSquares[1].theSame(board.squares.g1));
+            assert.equal(shortSideRook._castleRoad, king.castle[KingCastleRoad.SHORT]);
 
             assert.equal(king.castle[KingCastleRoad.LONG]._rank, KingCastle.RANKS[Piece.WHITE]);
             assert.equal(king.castle[KingCastleRoad.LONG]._side, KingCastleRoad.LONG);
@@ -663,6 +664,7 @@ describe('Test pieces', function () {
             assert.equal(king.castle[KingCastleRoad.LONG]._needToBeSafeSquares.length, 2);
             assert.ok(king.castle[KingCastleRoad.LONG]._needToBeSafeSquares[0].theSame(board.squares.c1));
             assert.ok(king.castle[KingCastleRoad.LONG]._needToBeSafeSquares[1].theSame(board.squares.d1));
+            assert.equal(longSideRook._castleRoad, king.castle[KingCastleRoad.LONG]);
         });
 
         it('should check KingCastleRoad free', function () {
@@ -749,6 +751,104 @@ describe('Test pieces', function () {
 
             assert.ok(king.castle[KingCastleRoad.SHORT].isSafe);
             assert.ok(king.castle[KingCastleRoad.LONG].isSafe);
+        });
+
+        it('should check initial KingCastle data', function () {
+            let board = new Board();
+            let king = new King(Piece.BLACK, board.squares.c5);
+
+            assert.ok(!king.castle[KingCastleRoad.SHORT]);
+            assert.ok(!king.castle[KingCastleRoad.LONG]);
+
+            board.squares.c5.removePiece();
+
+            king = new King(
+                Piece.BLACK,
+                board.squares.e8,
+                {[KingCastleRoad.SHORT]: false, [KingCastleRoad.LONG]: false}
+            );
+
+            assert.ok(!king.castle[KingCastleRoad.SHORT]);
+            assert.ok(!king.castle[KingCastleRoad.LONG]);
+
+            new Rook(Piece.BLACK, board.squares.h8);
+            king = new King(
+                Piece.BLACK,
+                board.squares.e8,
+                {[KingCastleRoad.SHORT]: true, [KingCastleRoad.LONG]: false}
+            );
+
+            assert.ok(king.castle[KingCastleRoad.SHORT]);
+            assert.ok(!king.castle[KingCastleRoad.LONG]);
+
+            new Rook(Piece.BLACK, board.squares.a8);
+            king = new King(
+                Piece.BLACK,
+                board.squares.e8,
+                {[KingCastleRoad.SHORT]: false, [KingCastleRoad.LONG]: true}
+            );
+
+            assert.ok(!king.castle[KingCastleRoad.SHORT]);
+            assert.ok(king.castle[KingCastleRoad.LONG]);
+
+            king = new King(Piece.BLACK, board.squares.e8);
+
+            assert.ok(king.castle[KingCastleRoad.SHORT]);
+            assert.ok(king.castle[KingCastleRoad.LONG]);
+        });
+
+        it('should check KingCastle get road', function () {
+            let board = new Board();
+            let king = new King(Piece.WHITE, board.squares.f2);
+
+            assert.ok(!king.castle.getRoad(board.squares.g1));
+            assert.ok(!king.castle.getRoad(board.squares.c1));
+
+            new Rook(Piece.WHITE, board.squares.h1);
+            new Rook(Piece.WHITE, board.squares.a1);
+            king = new King(Piece.WHITE, board.squares.e1);
+
+            assert.ok(king.castle.getRoad(board.squares.g1));
+            assert.equal(king.castle.getRoad(board.squares.g1), king.castle[KingCastleRoad.SHORT]);
+            assert.ok(king.castle.getRoad(board.squares.c1));
+            assert.equal(king.castle.getRoad(board.squares.c1), king.castle[KingCastleRoad.LONG]);
+        });
+
+        it('should check KingCastle stop', function () {
+            let board = new Board();
+            let shortSideRook = new Rook(Piece.BLACK, board.squares.h8);
+            let longSideRook = new Rook(Piece.BLACK, board.squares.a8);
+            let king = new King(Piece.BLACK, board.squares.e8);
+
+            assert.ok(king.castle[KingCastleRoad.SHORT]);
+            assert.ok(king.castle[KingCastleRoad.LONG]);
+            assert.ok(shortSideRook._castleRoad);
+            assert.ok(longSideRook._castleRoad);
+
+            king.castle.stop(KingCastleRoad.SHORT);
+
+            assert.ok(!king.castle[KingCastleRoad.SHORT]);
+            assert.ok(king.castle[KingCastleRoad.LONG]);
+            assert.ok(!shortSideRook._castleRoad);
+            assert.ok(longSideRook._castleRoad);
+
+            king = new King(Piece.BLACK, board.squares.e8);
+
+            king.castle.stop(KingCastleRoad.LONG);
+
+            assert.ok(king.castle[KingCastleRoad.SHORT]);
+            assert.ok(!king.castle[KingCastleRoad.LONG]);
+            assert.ok(shortSideRook._castleRoad);
+            assert.ok(!longSideRook._castleRoad);
+
+            king = new King(Piece.BLACK, board.squares.e8);
+
+            king.castle.stop();
+
+            assert.ok(!king.castle[KingCastleRoad.SHORT]);
+            assert.ok(!king.castle[KingCastleRoad.LONG]);
+            assert.ok(!shortSideRook._castleRoad);
+            assert.ok(!longSideRook._castleRoad);
         });
     });
 });

@@ -527,7 +527,12 @@ class KingCastle {
 
     constructor(king, acceptedDefault=null) {
         this._king = king;
-        let accepted = acceptedDefault || {[KingCastleRoad.SHORT]: true, [KingCastleRoad.LONG]: true};
+        let accepted;
+        if (king.onInitialSquare) {
+            accepted = acceptedDefault || {[KingCastleRoad.SHORT]: true, [KingCastleRoad.LONG]: true};
+        } else {
+            accepted = {[KingCastleRoad.SHORT]: false, [KingCastleRoad.LONG]: false};
+        }
         for (let side of KingCastle.SIDES) {
             if (accepted[side]) {
                 this[side] = new KingCastleRoad(this, KingCastle.RANKS[king.color], side);
@@ -551,7 +556,7 @@ class KingCastle {
         }
     }
 
-    sideHappening(toSquare) {
+    getRoad(toSquare) {
         for (let side of KingCastle.SIDES) {
             if (this[side] && this[side].toSquare.theSame(toSquare)) {
                 return this[side];
@@ -604,6 +609,8 @@ class King extends StepPiece {
       - castleAccepted [Object] (example {[KingCastleRoad.SHORT]: false, [KingCastleRoad.LONG]: true}).
     */
 
+    static INITIAL_SQUARE_NAMES = {[Piece.WHITE]: "e1", [Piece.BLACK]: "e8"};
+
     #stepPoints = [
         {x: -1, y: 1},  // A
         {x: 0, y: 1},   // B
@@ -620,6 +627,10 @@ class King extends StepPiece {
         this.castle = new KingCastle(this, castleAccepted);
         this.isKing = true;
         this._kind = "king";
+    }
+
+    get onInitialSquare() {
+        return this.square.name.value == King.INITIAL_SQUARE_NAMES[this.color];
     }
 
     getInitState() {
