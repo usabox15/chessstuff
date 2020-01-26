@@ -51,7 +51,7 @@ class Piece {
 
     _setColor(color) {
         if (!this.#colors.includes(color)) {
-            throw Error(`'${color}' is wrong piece color value.`);
+            throw Error(`'${color}' is wrong piece color value. Use Piece.WHITE or Piece.BLACK.`);
         }
         this._color = color;
     }
@@ -450,9 +450,9 @@ class KingCastleRoad {
     static safeSigns = {[KingCastleRoad.SHORT]: ['f', 'g'], [KingCastleRoad.LONG]: ['c', 'd']};
 
     constructor(castle, rank, side) {
+        this._castle = castle;
         this._rank = rank;
         this._side = side;
-        this._castle = castle;
         let kingToSquareName = `${KingCastleRoad.toSquaresSigns[side]}${this._rank}`;
         this._toSquare = castle.king.board.squares[kingToSquareName];
         let rookToSquareName = `${KingCastleRoad.rookToSquaresSigns[side]}${this._rank}`;
@@ -488,9 +488,11 @@ class KingCastleRoad {
 
     get isSafe() {
         for (let square of this._needToBeSafeSquares) {
-            if (square.pieces[ar.CONTROL].filter(p => !p.hasColor(this.color)).length > 0) {
-                return false;
-            }
+            let controlledByOppositeColorPeace = (
+                square.pieces[ar.CONTROL] &&
+                square.pieces[ar.CONTROL].filter(p => !p.hasColor(this.color)).length > 0
+            )
+            if (controlledByOppositeColorPeace) return false;
         }
         return true;
     }

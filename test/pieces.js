@@ -7,6 +7,9 @@ var Knight = jschess.pieces.Knight;
 var Bishop = jschess.pieces.Bishop;
 var Rook = jschess.pieces.Rook;
 var Queen = jschess.pieces.Queen;
+var KingCastleRoad = jschess.pieces.KingCastleRoad;
+var KingCastle = jschess.pieces.KingCastle;
+var KingCheckers = jschess.pieces.KingCheckers;
 var King = jschess.pieces.King;
 var KingCastle = jschess.pieces.KingCastle;
 var ar = jschess.relations.ActionsRelation;
@@ -579,6 +582,173 @@ describe('Test pieces', function () {
             assert.ok(queen.squares.includes(ar.XRAY, board.squares.e7));
             assert.ok(queen.squares.includes(ar.XRAY, board.squares.e8));
             assert.ok(queen.squares.includes(ar.XRAY, board.squares.a6));
+        });
+    });
+
+    describe('Test King', function () {
+        it('should throw error by creating castle road without a rook', function () {
+            assert.throws(() => {
+                let board = new Board();
+                new King(Piece.BLACK, board.squares.e8);
+            });
+            assert.throws(() => {
+                let board = new Board();
+                new Rook(Piece.BLACK, board.squares.a8);
+                new King(Piece.BLACK, board.squares.e8);
+            });
+            assert.throws(() => {
+                let board = new Board();
+                new Rook(Piece.BLACK, board.squares.h8);
+                new King(Piece.BLACK, board.squares.e8);
+            });
+        });
+
+        it('should throw error by creating castle road with other piece insead of a rook', function () {
+            assert.throws(() => {
+                let board = new Board();
+                new Piece(Piece.BLACK, board.squares.a8);
+                new Piece(Piece.BLACK, board.squares.h8);
+                new King(Piece.BLACK, board.squares.e8);
+            });
+        });
+
+        it('should throw error by creating castle road without right color rook', function () {
+            assert.throws(() => {
+                let board = new Board();
+                new Rook(Piece.WHITE, board.squares.a8);
+                new Rook(Piece.WHITE, board.squares.h8);
+                new King(Piece.BLACK, board.squares.e8);
+            });
+            assert.throws(() => {
+                let board = new Board();
+                new Rook(Piece.BLACK, board.squares.a8);
+                new Rook(Piece.WHITE, board.squares.h8);
+                new King(Piece.BLACK, board.squares.e8);
+            });
+            assert.throws(() => {
+                let board = new Board();
+                new Rook(Piece.WHITE, board.squares.a8);
+                new Rook(Piece.BLACK, board.squares.h8);
+                new King(Piece.BLACK, board.squares.e8);
+            });
+        });
+
+        it('should check initial KingCastleRoad data', function () {
+            let board = new Board();
+            let shortSideRook = new Rook(Piece.WHITE, board.squares.h1);
+            let longSideRook = new Rook(Piece.WHITE, board.squares.a1);
+            let king = new King(Piece.WHITE, board.squares.e1);
+
+            assert.equal(king.castle[KingCastleRoad.SHORT]._rank, KingCastle.RANKS[Piece.WHITE]);
+            assert.equal(king.castle[KingCastleRoad.SHORT]._side, KingCastleRoad.SHORT);
+            assert.ok(king.castle[KingCastleRoad.SHORT]._toSquare.theSame(board.squares.g1));
+            assert.ok(king.castle[KingCastleRoad.SHORT]._rookToSquare.theSame(board.squares.f1));
+            assert.ok(king.castle[KingCastleRoad.SHORT]._rook.theSame(shortSideRook));
+            assert.equal(king.castle[KingCastleRoad.SHORT]._needToBeFreeSquares.length, 2);
+            assert.ok(king.castle[KingCastleRoad.SHORT]._needToBeFreeSquares[0].theSame(board.squares.f1));
+            assert.ok(king.castle[KingCastleRoad.SHORT]._needToBeFreeSquares[1].theSame(board.squares.g1));
+            assert.equal(king.castle[KingCastleRoad.SHORT]._needToBeSafeSquares.length, 2);
+            assert.ok(king.castle[KingCastleRoad.SHORT]._needToBeSafeSquares[0].theSame(board.squares.f1));
+            assert.ok(king.castle[KingCastleRoad.SHORT]._needToBeSafeSquares[1].theSame(board.squares.g1));
+
+            assert.equal(king.castle[KingCastleRoad.LONG]._rank, KingCastle.RANKS[Piece.WHITE]);
+            assert.equal(king.castle[KingCastleRoad.LONG]._side, KingCastleRoad.LONG);
+            assert.ok(king.castle[KingCastleRoad.LONG]._toSquare.theSame(board.squares.c1));
+            assert.ok(king.castle[KingCastleRoad.LONG]._rookToSquare.theSame(board.squares.d1));
+            assert.ok(king.castle[KingCastleRoad.LONG]._rook.theSame(longSideRook));
+            assert.equal(king.castle[KingCastleRoad.LONG]._needToBeFreeSquares.length, 3);
+            assert.ok(king.castle[KingCastleRoad.LONG]._needToBeFreeSquares[0].theSame(board.squares.b1));
+            assert.ok(king.castle[KingCastleRoad.LONG]._needToBeFreeSquares[1].theSame(board.squares.c1));
+            assert.ok(king.castle[KingCastleRoad.LONG]._needToBeFreeSquares[2].theSame(board.squares.d1));
+            assert.equal(king.castle[KingCastleRoad.LONG]._needToBeSafeSquares.length, 2);
+            assert.ok(king.castle[KingCastleRoad.LONG]._needToBeSafeSquares[0].theSame(board.squares.c1));
+            assert.ok(king.castle[KingCastleRoad.LONG]._needToBeSafeSquares[1].theSame(board.squares.d1));
+        });
+
+        it('should check KingCastleRoad free', function () {
+            let board = new Board();
+            new Rook(Piece.BLACK, board.squares.h8);
+            new Rook(Piece.BLACK, board.squares.a8);
+            let king = new King(Piece.BLACK, board.squares.e8);
+
+            assert.ok(king.castle[KingCastleRoad.SHORT].isFree);
+            assert.ok(king.castle[KingCastleRoad.LONG].isFree);
+
+            new Piece(Piece.BLACK, board.squares.f8);
+            new Piece(Piece.BLACK, board.squares.c8);
+            king = new King(Piece.BLACK, board.squares.e8);
+
+            assert.ok(!king.castle[KingCastleRoad.SHORT].isFree);
+            assert.ok(!king.castle[KingCastleRoad.LONG].isFree);
+
+            board.squares.f8.removePiece();
+            board.squares.c8.removePiece();
+            king = new King(Piece.BLACK, board.squares.e8);
+
+            assert.ok(king.castle[KingCastleRoad.SHORT].isFree);
+            assert.ok(king.castle[KingCastleRoad.LONG].isFree);
+
+            new Piece(Piece.BLACK, board.squares.g8);
+            new Piece(Piece.BLACK, board.squares.d8);
+            king = new King(Piece.BLACK, board.squares.e8);
+
+            assert.ok(!king.castle[KingCastleRoad.SHORT].isFree);
+            assert.ok(!king.castle[KingCastleRoad.LONG].isFree);
+
+            board.squares.g8.removePiece();
+            board.squares.d8.removePiece();
+            king = new King(Piece.BLACK, board.squares.e8);
+
+            assert.ok(king.castle[KingCastleRoad.SHORT].isFree);
+            assert.ok(king.castle[KingCastleRoad.LONG].isFree);
+
+            new Piece(Piece.BLACK, board.squares.b8);
+            king = new King(Piece.BLACK, board.squares.e8);
+
+            assert.ok(!king.castle[KingCastleRoad.LONG].isFree);
+
+            board.squares.b8.removePiece();
+            king = new King(Piece.BLACK, board.squares.e8);
+
+            assert.ok(king.castle[KingCastleRoad.LONG].isFree);
+        });
+
+        it('should check KingCastleRoad safe', function () {
+            let board = new Board();
+            new Rook(Piece.WHITE, board.squares.h1);
+            new Rook(Piece.WHITE, board.squares.a1);
+            let king = new King(Piece.WHITE, board.squares.e1);
+
+            assert.ok(king.castle[KingCastleRoad.SHORT].isSafe);
+            assert.ok(king.castle[KingCastleRoad.LONG].isSafe);
+
+            roadController = new Bishop(Piece.BLACK, board.squares.e2);
+            roadController.getSquares();
+            king = new King(Piece.WHITE, board.squares.e1);
+
+            assert.ok(!king.castle[KingCastleRoad.SHORT].isSafe);
+            assert.ok(!king.castle[KingCastleRoad.LONG].isSafe);
+
+            roadController._refreshSquares();
+            board.squares.e2.removePiece();
+            king = new King(Piece.WHITE, board.squares.e1);
+
+            assert.ok(king.castle[KingCastleRoad.SHORT].isSafe);
+            assert.ok(king.castle[KingCastleRoad.LONG].isSafe);
+
+            roadController = new Bishop(Piece.BLACK, board.squares.e3);
+            roadController.getSquares();
+            king = new King(Piece.WHITE, board.squares.e1);
+
+            assert.ok(!king.castle[KingCastleRoad.SHORT].isSafe);
+            assert.ok(!king.castle[KingCastleRoad.LONG].isSafe);
+
+            roadController._refreshSquares();
+            board.squares.e3.removePiece();
+            king = new King(Piece.WHITE, board.squares.e1);
+
+            assert.ok(king.castle[KingCastleRoad.SHORT].isSafe);
+            assert.ok(king.castle[KingCastleRoad.LONG].isSafe);
         });
     });
 });
