@@ -102,7 +102,7 @@ class Board {
         this.squares[squareName].removePiece();
     }
 
-    enPassantMatter(fromSquare, toSquare, pawn) {
+    _enPassantMatter(fromSquare, toSquare, pawn) {
         // jump through one square
         if (toSquare.getBetweenSquaresCount(fromSquare) == 1) {
             let enPassantSquare = this.squares.getFromCoordinates(
@@ -159,6 +159,26 @@ class Board {
         this.movePiece(rookFromSquareName, rookToSquareName, false);
     }
 
+    setInitialPosition() {
+        for (let [color, firstRank, secondRank] of [["white", "1", "2"], ["black", "8", "7"]]) {
+            piecesData = [
+                ["pawn", "abcdefgh", secondRank],
+                ["knight", "bg", firstRank],
+                ["bishop", "cf", firstRank],
+                ["rook", "ah", firstRank],
+                ["queen", "d", firstRank],
+                ["king", "e", firstRank],
+            ];
+            for (let [name, signs, rank] of piecesData) {
+                for (let sign of signs) {
+                    this.placePiece(color, name, `${sign}${rank}`);
+                }
+            }
+        }
+
+        this.refreshAllSquares();
+    }
+
     movePiece(from, to, refresh=true) {
         let fromSquare = this.squares[from];
         let toSquare = this.squares[to];
@@ -211,7 +231,7 @@ class Board {
                     "description": `Pawn is ready to transform on ${to} square.`
                 };
             }
-            this.enPassantMatter(fromSquare, toSquare, piece);
+            this._enPassantMatter(fromSquare, toSquare, piece);
         }
 
         this._replacePiece(fromSquare, toSquare, piece);
