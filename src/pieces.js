@@ -134,6 +134,10 @@ class Piece {
         return this.color === color;
     }
 
+    canBeReplacedTo(square) {
+        return this.squares.includes(ar.MOVE, square) || this.squares.includes(ar.ATTACK, square);
+    }
+
     getTotalImmobilize() {
         this.squares.refresh();
     }

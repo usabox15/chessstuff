@@ -62,6 +62,21 @@ describe('Test pieces', function () {
             assert.ok(!whitePiece1.sameColor(blackPiece));
         })
 
+        it('should check piece can be replaced to some squares', function () {
+            let piece = new Piece(Piece.WHITE, new Square('d2'));
+
+            let notMoveOrAttackSquare = new Square('d3');
+            assert.ok(!piece.canBeReplacedTo(notMoveOrAttackSquare));
+
+            let moveSquare = new Square('c3');
+            piece.squares.add(ar.MOVE, moveSquare);
+            assert.ok(piece.canBeReplacedTo(moveSquare));
+
+            let attackSquare = new Square('e3');
+            piece.squares.add(ar.ATTACK, attackSquare);
+            assert.ok(piece.canBeReplacedTo(attackSquare));
+        })
+
         it('should add empty next square to move and control actions', function () {
             let pieceSquare = new Square('c2');
             let nextSquare = new Square('c3');
