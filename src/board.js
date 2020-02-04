@@ -86,6 +86,15 @@ class Board {
         return pieces;
     }
 
+    _response(description, success=true, transformation=false) {
+        return {
+            "description": description,
+            "success": success,
+            "transformation": transformation,
+            "result": this.result
+        }
+    }
+
     refreshState() {
         this.refreshAllSquares();
         this.colors.changePriority();
@@ -129,23 +138,13 @@ class Board {
     }
 
     pawnTransformation(kind) {
-        if (!this.transformation) {
-            return {
-                "success": false,
-                "transformation": false,
-                "description": "There isn't transformation."
-            };
-        }
+        if (!this.transformation) return this._response("There isn't transformation.", false);
 
         this.placePiece(this.colors.current, kind, this.transformation.transformationSquare);
         this.removePiece(this.transformation.upToTransformationSquare);
         this.transformation = null;
         this.refreshState();
-        return {
-            "success": true,
-            "transformation": false,
-            "description": "Successfully transformed!"
-        };
+        return this._response("Successfully transformed!");
     }
 
     _replacePiece(fromSquare, toSquare, piece) {
@@ -184,27 +183,9 @@ class Board {
         let toSquare = this.squares[to];
         let piece = fromSquare.piece;
 
-        if (!piece) {
-            return {
-                "success": false,
-                "transformation": false,
-                "description": "There isn't a piece to replace."
-            };
-        }
-        if (!piece.hasColor(this.colors.current)) {
-            return {
-                "success": false,
-                "transformation": false,
-                "description": "Wrong color piece."
-            };
-        }
-        if (!piece.squares.includes(ar.MOVE, toSquare) && !piece.squares.includes(ar.ATTACK, toSquare)) {
-            return {
-                "success": false,
-                "transformation": false,
-                "description": "Illegal move."
-            };
-        }
+        if (!piece) return this._response("There isn't a piece to replace.", false);
+        if (!piece.hasColor(this.colors.current)) return this._response("Wrong color piece.", false);
+        if (!piece.canBeReplacedTo(toSquare)) return this._response("Illegal move.", false);
 
         this.transformation = null;
         if (piece.isKing) {
@@ -225,11 +206,7 @@ class Board {
                     upToTransformationSquare: from,
                     transformationSquare: to
                 };
-                return {
-                    "success": true,
-                    "transformation": true,
-                    "description": `Pawn is ready to transform on ${to} square.`
-                };
+                return this._response(`Pawn is ready to transform on ${to} square.`, true, true);
             }
             this._enPassantMatter(fromSquare, toSquare, piece);
         }
@@ -238,11 +215,7 @@ class Board {
 
         if (refresh) this.refreshState();
 
-        return {
-            "success": true,
-            "transformation": false,
-            "description": "Successfully moved!"
-        };
+        return this._response("Successfully moved!");
     }
 
     refreshAllSquares() {
