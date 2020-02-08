@@ -31,10 +31,14 @@ class BoardSquares {
 
 
 class BoardColors {
-    #all = ["white", "black"];
+    #priorities = {
+        [pieces.Piece.WHITE]: [0, 1],
+        [pieces.Piece.BLACK]: [1, 0],
+    }
+    #all = [pieces.Piece.WHITE, pieces.Piece.BLACK];
 
-    constructor(reversePriority=false) {
-        this._priority = reversePriority ? [1, 0] : [0, 1];
+    constructor(currentColor) {
+        this._priority = this.#priorities[currentColor];
     }
 
     get current() {
@@ -71,10 +75,10 @@ class Board {
 
     constructor() {
         this.squares = new BoardSquares(this);
-        this.colors = new BoardColors;
+        this.colors = new BoardColors(pieces.Piece.WHITE);
         this.result = null;
         this.transformation = null;
-        this.kings = {"white": null, "black": null};
+        this.kings = {[pieces.Piece.WHITE]: null, [pieces.Piece.BLACK]: null};
     }
 
     get allPieces() {
@@ -158,14 +162,17 @@ class Board {
     }
 
     setInitialPosition() {
-        for (let [color, firstRank, secondRank] of [["white", "1", "2"], ["black", "8", "7"]]) {
+        let firstRank = {[pieces.Piece.WHITE]: "1", [pieces.Piece.BLACK]: "8"};
+        let secondRank = {[pieces.Piece.WHITE]: "2", [pieces.Piece.BLACK]: "7"};
+
+        for (let color of [pieces.Piece.WHITE, pieces.Piece.BLACK]) {
             piecesData = [
-                ["pawn", "abcdefgh", secondRank],
-                ["knight", "bg", firstRank],
-                ["bishop", "cf", firstRank],
-                ["rook", "ah", firstRank],
-                ["queen", "d", firstRank],
-                ["king", "e", firstRank],
+                ["pawn", "abcdefgh", secondRank[color]],
+                ["knight", "bg", firstRank[color]],
+                ["bishop", "cf", firstRank[color]],
+                ["rook", "ah", firstRank[color]],
+                ["queen", "d", firstRank[color]],
+                ["king", "e", firstRank[color]],
             ];
             for (let [name, signs, rank] of piecesData) {
                 for (let sign of signs) {

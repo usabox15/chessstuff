@@ -41,4 +41,34 @@ describe('Test board', function () {
             assert.ok(board.squares.getFromCoordinates(0, 7).theSame(board.squares.a8));
         });
     });
+
+    describe('Test BoardColors', function () {
+        it('should check initial', function () {
+            let boardColors = new BoardColors(Piece.WHITE);
+            assert.equal(boardColors._priority.length, 2);
+            assert.equal(boardColors._priority[0], 0);
+            assert.equal(boardColors._priority[1], 1);
+
+            boardColors = new BoardColors(Piece.BLACK);
+            assert.equal(boardColors._priority.length, 2);
+            assert.equal(boardColors._priority[0], 1);
+            assert.equal(boardColors._priority[1], 0);
+        });
+
+        it('should check change priority', function () {
+            let boardColors = new BoardColors(Piece.WHITE);
+
+            assert.equal(boardColors.current, Piece.WHITE);
+            assert.equal(boardColors.opponent, Piece.BLACK);
+            assert.equal(boardColors.firstPriority, 0);
+            assert.equal(boardColors.secondPriority, 1);
+
+            boardColors.changePriority();
+
+            assert.equal(boardColors.current, Piece.BLACK);
+            assert.equal(boardColors.opponent, Piece.WHITE);
+            assert.equal(boardColors.firstPriority, 1);
+            assert.equal(boardColors.secondPriority, 0);
+        });
+    });
 });
