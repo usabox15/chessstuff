@@ -122,7 +122,6 @@ class Board {
         }
     */
 
-
     #piecesBox = {
         [Piece.PAWN]: pieces.Pawn,
         [Piece.KNIGHT]: pieces.Knight,
@@ -143,6 +142,7 @@ class Board {
         this.enPassantSquare = null;
         this.transformation = null;
         this.kings = {[Piece.WHITE]: null, [Piece.BLACK]: null};
+        if (initialData.position) this._setPosition(initialData.position);
     }
 
     get allPieces() {
@@ -153,30 +153,53 @@ class Board {
         return pieces;
     }
 
-    _response(description, success=true, transformation=false) {
-        return {
-            "description": description,
-            "success": success,
-            "transformation": transformation,
-            "result": this.result
-        }
-    }
-
-    refreshState() {
-        this.refreshAllSquares();
-        this.colors.changePriority();
-        this.enPassantSquare = null;
-    }
-
-    placePiece(color, kind, squareName) {
+    _placePiece(color, kind, squareName) {
         let piece = new this.#piecesBox[kind](color, this.squares[squareName]);
         if (piece.isKing) {
             this.kings[color] = piece;
         }
     }
 
-    removePiece(squareName) {
+    _removePiece(squareName) {
         this.squares[squareName].removePiece();
+    }
+
+    _replacePiece(fromSquare, toSquare, piece) {
+        fromSquare.removePiece();
+        piece.getPlace(toSquare);
+    }
+
+    _getStandartInitialPositionData() {
+        let positionData = {[Piece.WHITE]: [], [Piece.BLACK]: []};
+        let firstRank = {[Piece.WHITE]: "1", [Piece.BLACK]: "8"};
+        let secondRank = {[Piece.WHITE]: "2", [Piece.BLACK]: "7"};
+
+        for (let color of [Piece.WHITE, Piece.BLACK]) {
+            let piecesData = [
+                [Piece.PAWN, "abcdefgh", secondRank[color]],
+                [Piece.KNIGHT, "bg", firstRank[color]],
+                [Piece.BISHOP, "cf", firstRank[color]],
+                [Piece.ROOK, "ah", firstRank[color]],
+                [Piece.QUEEN, "d", firstRank[color]],
+                [Piece.KING, "e", firstRank[color]],
+            ];
+            for (let [name, signs, rank] of piecesData) {
+                for (let sign of signs) {
+                    positionData[color].push([name, `${sign}${rank}`]);
+                }
+            }
+        }
+
+        return positionData;
+    }
+
+    _setPosition(positionData) {
+        for (let [color, piecesData] of Object.entries(positionData)) {
+            for (let [pieceName, squareName] of piecesData) {
+                this._placePiece(color, pieceName, squareName);
+            }
+        }
+        this._refreshAllSquares();
     }
 
     _enPassantMatter(fromSquare, toSquare, pawn) {
@@ -201,23 +224,8 @@ class Board {
         else if (pawn.squares.includes(ar.ATTACK, toSquare) && !toSquare.piece) {
             let x = toSquare.coordinates.x;
             let y = fromSquare.coordinates.y;
-            this.removePiece(this.squares.getFromCoordinates(x, y).name.value);
+            this._removePiece(this.squares.getFromCoordinates(x, y).name.value);
         }
-    }
-
-    pawnTransformation(kind) {
-        if (!this.transformation) return this._response("There isn't transformation.", false);
-
-        this.placePiece(this.colors.current, kind, this.transformation.transformationSquare);
-        this.removePiece(this.transformation.upToTransformationSquare);
-        this.transformation = null;
-        this.refreshState();
-        return this._response("Successfully transformed!");
-    }
-
-    _replacePiece(fromSquare, toSquare, piece) {
-        fromSquare.removePiece();
-        piece.getPlace(toSquare);
     }
 
     _rookCastleMove(castleRoad) {
@@ -226,72 +234,7 @@ class Board {
         this.movePiece(rookFromSquareName, rookToSquareName, false);
     }
 
-    setInitialPosition() {
-        let firstRank = {[Piece.WHITE]: "1", [Piece.BLACK]: "8"};
-        let secondRank = {[Piece.WHITE]: "2", [Piece.BLACK]: "7"};
-
-        for (let color of [Piece.WHITE, Piece.BLACK]) {
-            piecesData = [
-                [Piece.PAWN, "abcdefgh", secondRank[color]],
-                [Piece.KNIGHT, "bg", firstRank[color]],
-                [Piece.BISHOP, "cf", firstRank[color]],
-                [Piece.ROOK, "ah", firstRank[color]],
-                [Piece.QUEEN, "d", firstRank[color]],
-                [Piece.KING, "e", firstRank[color]],
-            ];
-            for (let [name, signs, rank] of piecesData) {
-                for (let sign of signs) {
-                    this.placePiece(color, name, `${sign}${rank}`);
-                }
-            }
-        }
-
-        this.refreshAllSquares();
-
-        return this._response("Successfully created!");
-    }
-
-    movePiece(from, to, refresh=true) {
-        let fromSquare = this.squares[from];
-        let toSquare = this.squares[to];
-        let piece = fromSquare.piece;
-
-        if (!piece) return this._response("There isn't a piece to replace.", false);
-        if (!piece.hasColor(this.colors.current)) return this._response("Wrong color piece.", false);
-        if (!piece.canBeReplacedTo(toSquare)) return this._response("Illegal move.", false);
-
-        this.transformation = null;
-        if (piece.isKing) {
-            let castleRoad = piece.castle.getRoad(toSquare);
-            if (castleRoad) {
-                this._rookCastleMove(castleRoad);
-            }
-            piece.castle.stop();
-        }
-        else if (piece.isRook) {
-            if (piece.castleRoad) {
-                this.kings[piece.color].castle.stop(piece.castleRoad.side);
-            }
-        }
-        else if (piece.isPawn) {
-            if (toSquare.onEdge.up || toSquare.onEdge.down) {
-                this.transformation = {
-                    upToTransformationSquare: from,
-                    transformationSquare: to
-                };
-                return this._response(`Pawn is ready to transform on ${to} square.`, true, true);
-            }
-            this._enPassantMatter(fromSquare, toSquare, piece);
-        }
-
-        this._replacePiece(fromSquare, toSquare, piece);
-
-        if (refresh) this.refreshState();
-
-        return this._response("Successfully moved!");
-    }
-
-    refreshAllSquares() {
+    _refreshAllSquares() {
         for (let piece of this.allPieces) {
             piece.getInitState();
         }
@@ -331,6 +274,75 @@ class Board {
             }
             if (noMoves) this.result = [0.5, 0.5];
         }
+    }
+
+    _refreshState() {
+        this._refreshAllSquares();
+        this.colors.changePriority();
+        this.enPassantSquare = null;
+    }
+
+    _response(description, success=true, transformation=false) {
+        return {
+            "description": description,
+            "success": success,
+            "transformation": transformation,
+            "result": this.result
+        }
+    }
+
+    setInitialPosition() {
+        this._setPosition(this._getStandartInitialPositionData());
+    }
+
+    pawnTransformation(kind) {
+        if (!this.transformation) return this._response("There isn't transformation.", false);
+
+        this._placePiece(this.colors.current, kind, this.transformation.transformationSquare);
+        this._removePiece(this.transformation.upToTransformationSquare);
+        this.transformation = null;
+        this._refreshState();
+        return this._response("Successfully transformed!");
+    }
+
+    movePiece(from, to, refresh=true) {
+        let fromSquare = this.squares[from];
+        let toSquare = this.squares[to];
+        let piece = fromSquare.piece;
+
+        if (!piece) return this._response("There isn't a piece to replace.", false);
+        if (!piece.hasColor(this.colors.current)) return this._response("Wrong color piece.", false);
+        if (!piece.canBeReplacedTo(toSquare)) return this._response("Illegal move.", false);
+
+        this.transformation = null;
+        if (piece.isKing) {
+            let castleRoad = piece.castle.getRoad(toSquare);
+            if (castleRoad) {
+                this._rookCastleMove(castleRoad);
+            }
+            piece.castle.stop();
+        }
+        else if (piece.isRook) {
+            if (piece.castleRoad) {
+                this.kings[piece.color].castle.stop(piece.castleRoad.side);
+            }
+        }
+        else if (piece.isPawn) {
+            if (toSquare.onEdge.up || toSquare.onEdge.down) {
+                this.transformation = {
+                    upToTransformationSquare: from,
+                    transformationSquare: to
+                };
+                return this._response(`Pawn is ready to transform on ${to} square.`, true, true);
+            }
+            this._enPassantMatter(fromSquare, toSquare, piece);
+        }
+
+        this._replacePiece(fromSquare, toSquare, piece);
+
+        if (refresh) this._refreshState();
+
+        return this._response("Successfully moved!");
     }
 }
 
