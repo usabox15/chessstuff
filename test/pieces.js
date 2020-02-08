@@ -238,7 +238,7 @@ describe('Test pieces', function () {
             assert.ok(pawn.isPawn);
             assert.equal(pawn.direction, 1);
             assert.equal(pawn._enPassantSquare, null);
-            assert.equal(pawn.kind, "pawn");
+            assert.equal(pawn.kind, Piece.PAWN);
         });
 
         it('should check pawn on initial rank', function () {
@@ -360,7 +360,7 @@ describe('Test pieces', function () {
         it('should check initial knight data', function () {
             let knight = new Knight(Piece.BLACK, new Square('b1'));
             assert.ok(knight.isKnight);
-            assert.equal(knight.kind, "knight");
+            assert.equal(knight.kind, Piece.KNIGHT);
         });
 
         it('should check knight squares', function () {
@@ -429,7 +429,7 @@ describe('Test pieces', function () {
         it('should check initial bishop data', function () {
             let bishop = new Bishop(Piece.WHITE, new Square('f8'));
             assert.ok(bishop.isBishop);
-            assert.equal(bishop.kind, "bishop");
+            assert.equal(bishop.kind, Piece.BISHOP);
         });
 
         it('should check bishop squares', function () {
@@ -479,7 +479,7 @@ describe('Test pieces', function () {
             let rook = new Rook(Piece.WHITE, new Square('h1'));
             assert.ok(rook.isRook);
             assert.equal(rook.castleRoad, null);
-            assert.equal(rook.kind, "rook");
+            assert.equal(rook.kind, Piece.ROOK);
         });
 
         it('should check rook squares', function () {
@@ -533,7 +533,7 @@ describe('Test pieces', function () {
         it('should check initial queen data', function () {
             let queen = new Queen(Piece.WHITE, new Square('d8'));
             assert.ok(queen.isQueen);
-            assert.equal(queen.kind, "queen");
+            assert.equal(queen.kind, Piece.QUEEN);
         });
 
         it('should check queen squares', function () {
@@ -864,6 +864,13 @@ describe('Test pieces', function () {
             assert.ok(!king.castle[KingCastleRoad.LONG]);
             assert.ok(!shortSideRook._castleRoad);
             assert.ok(!longSideRook._castleRoad);
+        });
+
+        it('should check initial king data', function () {
+            let board = new Board();
+            let king = new King(Piece.BLACK, board.squares.c4);
+            assert.ok(king.isKing);
+            assert.equal(king.kind, Piece.KING);
         });
 
         it('should check king checkers', function () {

@@ -1,4 +1,5 @@
 var pieces = require('./pieces');
+var Piece = pieces.Piece;
 var square = require('./square');
 var ar = require('./relations').ActionsRelation;
 
@@ -32,10 +33,10 @@ class BoardSquares {
 
 class BoardColors {
     #priorities = {
-        [pieces.Piece.WHITE]: [0, 1],
-        [pieces.Piece.BLACK]: [1, 0],
+        [Piece.WHITE]: [0, 1],
+        [Piece.BLACK]: [1, 0],
     }
-    #all = [pieces.Piece.WHITE, pieces.Piece.BLACK];
+    #all = [Piece.WHITE, Piece.BLACK];
 
     constructor(currentColor) {
         this._priority = this.#priorities[currentColor];
@@ -64,21 +65,84 @@ class BoardColors {
 
 
 class Board {
+    /*
+    Chess board class.
+    There is create param:
+      - initial [Object] {
+            data [Object] {
+                position [Object] {
+                    color: [
+                        [pieceName, squareName],
+                    ],
+                } (pieces placing, not required)
+                currentColor [String] (default is Piece.WHITE, not required)
+                castleRights [Object] {
+                    color: {
+                        kindOfCastleRoad: boolean,
+                    },
+                } (not required)
+                enPassantSquareName [String] (not required)
+                fiftyMovesRuleCounter [Number] (
+                    count of half moves after latest pawn move or latest piece capture
+                    not required
+                )
+                movesCounter [Number] (not required)
+            } (not required)
+        } (not required).
+
+    Initial example with data:
+        initial = {
+            data: {
+                position: {
+                    [Piece.WHITE]: [
+                        [Piece.ROOK, 'h1'],
+                        [Piece.PAWN, 'g4'],
+                        [Piece.KING, 'e1'],
+                    ],
+                    [Piece.BLACK]: [
+                        [Piece.ROOK, 'a8'],
+                        [Piece.KING, 'e8'],
+                    ]
+                },
+                currentColor: Piece.BLACK,
+                castleRights: {
+                    [Piece.WHITE]: {
+                        [KingCastleRoad.SHORT]: true,
+                        [KingCastleRoad.LONG]: false,
+                    }
+                    [Piece.BLACK]: {
+                        [KingCastleRoad.SHORT]: false,
+                        [KingCastleRoad.LONG]: true,
+                    }
+                },
+                enPassantSquareName: 'g3',
+                fiftyMovesRuleCounter: 0,
+                movesCounter: 1,
+            }
+        }
+    */
+
+
     #piecesBox = {
-        "pawn": pieces.Pawn,
-        "knight": pieces.Knight,
-        "bishop": pieces.Bishop,
-        "rook": pieces.Rook,
-        "queen": pieces.Queen,
-        "king": pieces.King,
+        [Piece.PAWN]: pieces.Pawn,
+        [Piece.KNIGHT]: pieces.Knight,
+        [Piece.BISHOP]: pieces.Bishop,
+        [Piece.ROOK]: pieces.Rook,
+        [Piece.QUEEN]: pieces.Queen,
+        [Piece.KING]: pieces.King,
     };
 
-    constructor() {
+    constructor(initial=null) {
+        let initialData = {};
+        if (initial) {
+            initialData = initial.data || initialData;
+        }
         this.squares = new BoardSquares(this);
-        this.colors = new BoardColors(pieces.Piece.WHITE);
+        this.colors = new BoardColors(initialData.currentColor || Piece.WHITE);
         this.result = null;
+        this.enPassantSquare = null;
         this.transformation = null;
-        this.kings = {[pieces.Piece.WHITE]: null, [pieces.Piece.BLACK]: null};
+        this.kings = {[Piece.WHITE]: null, [Piece.BLACK]: null};
     }
 
     get allPieces() {
@@ -101,6 +165,7 @@ class Board {
     refreshState() {
         this.refreshAllSquares();
         this.colors.changePriority();
+        this.enPassantSquare = null;
     }
 
     placePiece(color, kind, squareName) {
@@ -117,7 +182,7 @@ class Board {
     _enPassantMatter(fromSquare, toSquare, pawn) {
         // jump through one square
         if (toSquare.getBetweenSquaresCount(fromSquare) == 1) {
-            let enPassantSquare = this.squares.getFromCoordinates(
+            this.enPassantSquare = this.squares.getFromCoordinates(
                 toSquare.coordinates.x,
                 toSquare.coordinates.y - pawn.direction
             );
@@ -127,7 +192,7 @@ class Board {
                     let y = toSquare.coordinates.y;
                     let otherPiece = this.squares.getFromCoordinates(x, y).piece;
                     if (otherPiece && otherPiece.isPawn) {
-                        otherPiece.setEnPassantSquare(enPassantSquare);
+                        otherPiece.setEnPassantSquare(this.enPassantSquare);
                     }
                 }
             }
@@ -162,17 +227,17 @@ class Board {
     }
 
     setInitialPosition() {
-        let firstRank = {[pieces.Piece.WHITE]: "1", [pieces.Piece.BLACK]: "8"};
-        let secondRank = {[pieces.Piece.WHITE]: "2", [pieces.Piece.BLACK]: "7"};
+        let firstRank = {[Piece.WHITE]: "1", [Piece.BLACK]: "8"};
+        let secondRank = {[Piece.WHITE]: "2", [Piece.BLACK]: "7"};
 
-        for (let color of [pieces.Piece.WHITE, pieces.Piece.BLACK]) {
+        for (let color of [Piece.WHITE, Piece.BLACK]) {
             piecesData = [
-                ["pawn", "abcdefgh", secondRank[color]],
-                ["knight", "bg", firstRank[color]],
-                ["bishop", "cf", firstRank[color]],
-                ["rook", "ah", firstRank[color]],
-                ["queen", "d", firstRank[color]],
-                ["king", "e", firstRank[color]],
+                [Piece.PAWN, "abcdefgh", secondRank[color]],
+                [Piece.KNIGHT, "bg", firstRank[color]],
+                [Piece.BISHOP, "cf", firstRank[color]],
+                [Piece.ROOK, "ah", firstRank[color]],
+                [Piece.QUEEN, "d", firstRank[color]],
+                [Piece.KING, "e", firstRank[color]],
             ];
             for (let [name, signs, rank] of piecesData) {
                 for (let sign of signs) {

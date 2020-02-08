@@ -9,10 +9,10 @@ var a1 = new Square('a1');
 var b4 = new Square('b4');
 var c8 = new Square('c8');
 var f3 = new Square('f3');
-var knight = new Piece('white', new Square('b3'));
-var bishop = new Piece('black', new Square('h8'));
-var rook = new Piece('white', new Square('a6'));
-var queen = new Piece('black', new Square('c3'));
+var knight = new Piece(Piece.WHITE, new Square('b3'));
+var bishop = new Piece(Piece.BLACK, new Square('h8'));
+var rook = new Piece(Piece.WHITE, new Square('a6'));
+var queen = new Piece(Piece.BLACK, new Square('c3'));
 
 
 describe('Test relations', function () {
@@ -56,6 +56,7 @@ describe('Test relations', function () {
             }
         });
     });
+
     describe('Test PieceSquares', function () {
         it('should limit action squares', function () {
             for (let square of [a1, b4, c8, f3]) {

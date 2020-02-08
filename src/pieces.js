@@ -15,6 +15,13 @@ class Piece {
     static WHITE = 'white';
     static BLACK = 'black';
 
+    static PAWN = 'pawn';
+    static KNIGHT = 'knight';
+    static BISHOP = 'bishop';
+    static ROOK = 'rook';
+    static QUEEN = 'queen';
+    static KING = 'king';
+
     #colors = [Piece.WHITE, Piece.BLACK];
 
     constructor(color, square) {
@@ -169,7 +176,7 @@ class Pawn extends Piece {
         super(color, square);
         this.isPawn = true;
         this._enPassantSquare = null;
-        this._kind = "pawn";
+        this._kind = Piece.PAWN;
     }
 
     get direction() {
@@ -305,7 +312,7 @@ class Knight extends StepPiece {
     constructor(color, square) {
         super(color, square);
         this.isKnight = true;
-        this._kind = "knight";
+        this._kind = Piece.KNIGHT;
     }
 
     getSquares() {
@@ -362,7 +369,7 @@ class Bishop extends LinearPiece {
     constructor(color, square) {
         super(color, square);
         this.isBishop = true;
-        this._kind = "bishop";
+        this._kind = Piece.BISHOP;
     }
 
     getSquares() {
@@ -394,7 +401,7 @@ class Rook extends LinearPiece {
         super(color, square);
         this.isRook = true;
         this._castleRoad = null;
-        this._kind = "rook";
+        this._kind = Piece.ROOK;
     }
 
     get castleRoad() {
@@ -433,7 +440,7 @@ class Queen extends LinearPiece {
     constructor(color, square) {
         super(color, square);
         this.isQueen = true;
-        this._kind = "queen";
+        this._kind = Piece.QUEEN;
     }
 
     getSquares() {
@@ -630,7 +637,7 @@ class King extends StepPiece {
         super(color, square);
         this.castle = new KingCastle(this, castleAccepted);
         this.isKing = true;
-        this._kind = "king";
+        this._kind = Piece.KING;
     }
 
     get onInitialSquare() {
