@@ -64,6 +64,42 @@ class BoardColors {
 }
 
 
+class MovesCounter {
+    constructor(initialCount) {
+        this.value = initialCount;
+    }
+
+    update() {
+        this.value++;
+    }
+}
+
+
+class FiftyMovesRuleCounter extends MovesCounter {
+    constructor(initialCount) {
+        super(initialCount);
+        this._turnedOn = false;
+        this._needToRefresh = false;
+    }
+
+    switch() {
+        this._turnedOn = true;
+        this._needToRefresh = true;
+    }
+
+    update() {
+        if (!this._turnedOn) return;
+        if (this._needToRefresh) {
+            this.value = 0;
+            this._needToRefresh = false;
+        }
+        else {
+            this.value++;
+        }
+    }
+}
+
+
 class Board {
     /*
     Chess board class.
@@ -142,6 +178,8 @@ class Board {
         this.enPassantSquare = null;
         this.transformation = null;
         this.kings = {[Piece.WHITE]: null, [Piece.BLACK]: null};
+        this.fiftyMovesRuleCounter = FiftyMovesRuleCounter(initialData.fiftyMovesRuleCounter || 0);
+        this.movesCounter = new MovesCounter(initialData.movesCounter || 1);
         if (initialData.position) this._setPosition(initialData.position);
     }
 
@@ -276,10 +314,22 @@ class Board {
         }
     }
 
+    _updateCounters() {
+        this.fiftyMovesRuleCounter.update();
+        if (this.colors.current == Piece.BLACK) {
+            this.movesCounter.update();
+        }
+    }
+
     _refreshState() {
         this._refreshAllSquares();
         this.colors.changePriority();
         this.enPassantSquare = null;
+    }
+
+    _moveEnd() {
+        this._updateCounters();
+        this._refreshState();
     }
 
     _response(description, success=true, transformation=false) {
@@ -301,7 +351,8 @@ class Board {
         this._placePiece(this.colors.current, kind, this.transformation.transformationSquare);
         this._removePiece(this.transformation.upToTransformationSquare);
         this.transformation = null;
-        this._refreshState();
+        this.fiftyMovesRuleCounter.switch();
+        this._moveEnd();
         return this._response("Successfully transformed!");
     }
 
@@ -340,7 +391,11 @@ class Board {
 
         this._replacePiece(fromSquare, toSquare, piece);
 
-        if (refresh) this._refreshState();
+        if (piece.isPawn || piece.squares.includes(ar.ATTACK, toSquare)) {
+            this.fiftyMovesRuleCounter.switch();
+        }
+
+        if (refresh) this._moveEnd();
 
         return this._response("Successfully moved!");
     }
