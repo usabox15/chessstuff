@@ -27,7 +27,6 @@ class BoardSquares {
     getFromCoordinates(x, y) {
         return this[square.Square.coordinatesToName(x, y)];
     }
-
 }
 
 
@@ -176,6 +175,8 @@ class Board {
         }
 
         this.refreshAllSquares();
+
+        return this._response("Successfully created!");
     }
 
     movePiece(from, to, refresh=true) {
