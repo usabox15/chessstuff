@@ -1,5 +1,6 @@
 var pieces = require('./pieces');
 var Piece = pieces.Piece;
+var KingCastleRoad = pieces.KingCastleRoad;
 var square = require('./square');
 var ar = require('./relations').ActionsRelation;
 
@@ -100,11 +101,94 @@ class FiftyMovesRuleCounter extends MovesCounter {
 }
 
 
+class FENDataParser {
+    /*
+    Parse data from FEN string.
+    */
+
+    #pieces = {
+        'P': [Piece.WHITE, Piece.PAWN],
+        'N': [Piece.WHITE, Piece.KNIGHT],
+        'B': [Piece.WHITE, Piece.BISHOP],
+        'R': [Piece.WHITE, Piece.ROOK],
+        'Q': [Piece.WHITE, Piece.QUEEN],
+        'K': [Piece.WHITE, Piece.KING],
+        'p': [Piece.BLACK, Piece.PAWN],
+        'n': [Piece.BLACK, Piece.KNIGHT],
+        'b': [Piece.BLACK, Piece.BISHOP],
+        'r': [Piece.BLACK, Piece.ROOK],
+        'q': [Piece.BLACK, Piece.QUEEN],
+        'k': [Piece.BLACK, Piece.KING],
+    };
+    #colors = {'w': Piece.WHITE, 'b': Piece.BLACK};
+    #castleRights = {
+        'K': [Piece.WHITE, KingCastleRoad.SHORT],
+        'Q': [Piece.WHITE, KingCastleRoad.LONG],
+        'k': [Piece.BLACK, KingCastleRoad.SHORT],
+        'q': [Piece.BLACK, KingCastleRoad.LONG],
+    };
+
+    constructor(data) {
+        let [
+            positionData,
+            currentColorData,
+            castleRightsData,
+            enPassantData,
+            fiftyMovesRuleData,
+            movesCounterData,
+        ] = data.split(' ');
+        this.position = {[Piece.WHITE]: [], [Piece.BLACK]: []};
+        this._getPosition(positionData);
+        this.currentColor = this.#colors[currentColorData];
+        this.castleRights = {
+            [Piece.WHITE]: {
+                [KingCastleRoad.SHORT]: false,
+                [KingCastleRoad.LONG]: false,
+            },
+            [Piece.BLACK]: {
+                [KingCastleRoad.SHORT]: false,
+                [KingCastleRoad.LONG]: false,
+            }
+        };
+        this._castleRights(castleRightsData);
+        this.enPassantSquareName = enPassantData == '-' ? null : enPassantData;
+        this.fiftyMovesRuleCounter = parseInt(fiftyMovesRuleData);
+        this.movesCounter = parseInt(movesCounterData);
+    }
+
+    _getPosition(positionData) {
+        let rows = (
+            positionData
+            .replace(/\d/g, n => {return '1'.repeat(parseInt(n))})
+            .split('/')
+            .reverse()
+        );
+        for (let y = 0; y < 8; y++) {
+            for (let x = 0; x < 8; x++) {
+                if (rows[y][x] == '1') continue;
+                let [color, pieceName] = this.#pieces[rows[y][x]];
+                let squareName = square.Square.coordinatesToName(x, y);
+                this.position[color].push([pieceName, squareName]);
+            }
+        }
+    }
+
+    _castleRights(castleRightsData) {
+        for (let sign of castleRightsData) {
+            if (sign == '-') continue;
+            let [color, roadKind] = this.#castleRights[sign];
+            this.castleRights[color][roadKind] = true;
+        }
+    }
+}
+
+
 class Board {
     /*
     Chess board class.
     There is create param:
       - initial [Object] {
+            FEN [String] (FEN data string, not required)
             data [Object] {
                 position [Object] {
                     color: [
@@ -125,6 +209,11 @@ class Board {
                 movesCounter [Number] (not required)
             } (not required)
         } (not required).
+
+    Initial example with FEN:
+        initial = {
+            FEN: 'r3k3/8/8/8/6P1/8/8/4K2R b K--q g3 0 1'
+        }
 
     Initial example with data:
         initial = {
@@ -168,15 +257,23 @@ class Board {
     };
 
     constructor(initial=null) {
-        let initialData = {};
+        let initialData;
         if (initial) {
-            initialData = initial.data || initialData;
+            if (initial.FEN) {
+                initialData = new FENDataParser(initial.FEN);
+            } else {
+                initialData = initial.data || {};
+            }
         }
         this.squares = new BoardSquares(this);
         this.colors = new BoardColors(initialData.currentColor || Piece.WHITE);
         this.result = null;
         this.enPassantSquare = null;
+        if (initialData.enPassantSquareName) {
+            this.enPassantSquare = this.squares[initialData.enPassantSquareName];
+        }
         this.transformation = null;
+        this.initialCastleRights = initialData.castleRights || null;
         this.kings = {[Piece.WHITE]: null, [Piece.BLACK]: null};
         this.fiftyMovesRuleCounter = FiftyMovesRuleCounter(initialData.fiftyMovesRuleCounter || 0);
         this.movesCounter = new MovesCounter(initialData.movesCounter || 1);
@@ -192,7 +289,11 @@ class Board {
     }
 
     _placePiece(color, kind, squareName) {
-        let piece = new this.#piecesBox[kind](color, this.squares[squareName]);
+        let data = [color, this.squares[squareName]];
+        if (kind == Piece.KING && this.initialCastleRights && this.initialCastleRights[color]) {
+            data.push(this.initialCastleRights[color]);
+        }
+        let piece = new this.#piecesBox[kind](...data);
         if (piece.isKing) {
             this.kings[color] = piece;
         }
@@ -405,5 +506,8 @@ class Board {
 module.exports = {
     Board: Board,
     BoardColors: BoardColors,
-    BoardSquares: BoardSquares
+    BoardSquares: BoardSquares,
+    FENDataParser: FENDataParser,
+    FiftyMovesRuleCounter: FiftyMovesRuleCounter,
+    MovesCounter: MovesCounter
 };
