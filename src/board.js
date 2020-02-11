@@ -67,11 +67,15 @@ class BoardColors {
 
 class MovesCounter {
     constructor(initialCount) {
-        this.value = initialCount;
+        this._value = initialCount;
+    }
+
+    get value() {
+        return this._value;
     }
 
     update() {
-        this.value++;
+        this._value++;
     }
 }
 
@@ -91,11 +95,11 @@ class FiftyMovesRuleCounter extends MovesCounter {
     update() {
         if (!this._turnedOn) return;
         if (this._needToRefresh) {
-            this.value = 0;
+            this._value = 0;
             this._needToRefresh = false;
         }
         else {
-            this.value++;
+            this._value++;
         }
     }
 }
@@ -257,12 +261,12 @@ class Board {
     };
 
     constructor(initial=null) {
-        let initialData;
+        let initialData = {};
         if (initial) {
             if (initial.FEN) {
                 initialData = new FENDataParser(initial.FEN);
-            } else {
-                initialData = initial.data || {};
+            } else if (initial.data) {
+                initialData = initial.data;
             }
         }
         this.squares = new BoardSquares(this);
@@ -275,7 +279,7 @@ class Board {
         this.transformation = null;
         this.initialCastleRights = initialData.castleRights || null;
         this.kings = {[Piece.WHITE]: null, [Piece.BLACK]: null};
-        this.fiftyMovesRuleCounter = FiftyMovesRuleCounter(initialData.fiftyMovesRuleCounter || 0);
+        this.fiftyMovesRuleCounter = new FiftyMovesRuleCounter(initialData.fiftyMovesRuleCounter || 0);
         this.movesCounter = new MovesCounter(initialData.movesCounter || 1);
         if (initialData.position) this._setPosition(initialData.position);
     }

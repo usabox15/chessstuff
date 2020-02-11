@@ -5,6 +5,9 @@ var Piece = jschess.pieces.Piece;
 var Board = jschess.board.Board;
 var BoardColors = jschess.board.BoardColors;
 var BoardSquares = jschess.board.BoardSquares;
+var FENDataParser = jschess.board.FENDataParser;
+var FiftyMovesRuleCounter = jschess.board.FiftyMovesRuleCounter;
+var MovesCounter = jschess.board.MovesCounter;
 
 
 describe('Test board', function () {
@@ -69,6 +72,59 @@ describe('Test board', function () {
             assert.equal(boardColors.opponent, Piece.WHITE);
             assert.equal(boardColors.firstPriority, 1);
             assert.equal(boardColors.secondPriority, 0);
+        });
+    });
+
+    describe('Test MovesCounter', function () {
+        it('should check update', function () {
+            let counter = new MovesCounter(5);
+            assert.equal(counter.value, 5);
+            counter.update();
+            assert.equal(counter.value, 6);
+            counter.update();
+            assert.equal(counter.value, 7);
+        });
+    });
+
+    describe('Test FiftyMovesRuleCounter', function () {
+        it('should check update', function () {
+            let counter = new FiftyMovesRuleCounter(15);
+            assert.equal(counter.value, 15);
+            assert.ok(!counter._turnedOn);
+            assert.ok(!counter._needToRefresh);
+
+            counter.update();
+            assert.equal(counter.value, 15);
+
+            counter.switch();
+            assert.equal(counter.value, 15);
+            assert.ok(counter._turnedOn);
+            assert.ok(counter._needToRefresh);
+
+            counter.update();
+            assert.equal(counter.value, 0);
+            assert.ok(counter._turnedOn);
+            assert.ok(!counter._needToRefresh);
+
+            counter.update();
+            assert.equal(counter.value, 1);
+            assert.ok(counter._turnedOn);
+            assert.ok(!counter._needToRefresh);
+
+            counter.update();
+            assert.equal(counter.value, 2);
+            assert.ok(counter._turnedOn);
+            assert.ok(!counter._needToRefresh);
+
+            counter.switch();
+            assert.equal(counter.value, 2);
+            assert.ok(counter._turnedOn);
+            assert.ok(counter._needToRefresh);
+
+            counter.update();
+            assert.equal(counter.value, 0);
+            assert.ok(counter._turnedOn);
+            assert.ok(!counter._needToRefresh);
         });
     });
 });
