@@ -2,6 +2,7 @@ var assert = require('assert');
 var jschess = require('../');
 var SquareName = jschess.square.SquareName;
 var Piece = jschess.pieces.Piece;
+var KingCastleRoad = jschess.pieces.KingCastleRoad;
 var Board = jschess.board.Board;
 var BoardColors = jschess.board.BoardColors;
 var BoardSquares = jschess.board.BoardSquares;
@@ -125,6 +126,96 @@ describe('Test board', function () {
             assert.equal(counter.value, 0);
             assert.ok(counter._turnedOn);
             assert.ok(!counter._needToRefresh);
+        });
+    });
+
+    describe('Test FENDataParser', function () {
+        it('should check position', function () {
+            let data = new FENDataParser('2kr4/1bp3q1/1pn5/p7/5Q2/5N1P/5PPB/5RK1 w - a6 0 25');
+
+            assert.equal(data.position[Piece.WHITE].length, 8);
+            assert.equal(data.position[Piece.WHITE][0][0], Piece.ROOK);
+            assert.equal(data.position[Piece.WHITE][0][1], 'f1');
+            assert.equal(data.position[Piece.WHITE][1][0], Piece.KING);
+            assert.equal(data.position[Piece.WHITE][1][1], 'g1');
+            assert.equal(data.position[Piece.WHITE][2][0], Piece.PAWN);
+            assert.equal(data.position[Piece.WHITE][2][1], 'f2');
+            assert.equal(data.position[Piece.WHITE][3][0], Piece.PAWN);
+            assert.equal(data.position[Piece.WHITE][3][1], 'g2');
+            assert.equal(data.position[Piece.WHITE][4][0], Piece.BISHOP);
+            assert.equal(data.position[Piece.WHITE][4][1], 'h2');
+            assert.equal(data.position[Piece.WHITE][5][0], Piece.KNIGHT);
+            assert.equal(data.position[Piece.WHITE][5][1], 'f3');
+            assert.equal(data.position[Piece.WHITE][6][0], Piece.PAWN);
+            assert.equal(data.position[Piece.WHITE][6][1], 'h3');
+            assert.equal(data.position[Piece.WHITE][7][0], Piece.QUEEN);
+            assert.equal(data.position[Piece.WHITE][7][1], 'f4');
+
+            assert.equal(data.position[Piece.BLACK].length, 8);
+            assert.equal(data.position[Piece.BLACK][0][0], Piece.PAWN);
+            assert.equal(data.position[Piece.BLACK][0][1], 'a5');
+            assert.equal(data.position[Piece.BLACK][1][0], Piece.PAWN);
+            assert.equal(data.position[Piece.BLACK][1][1], 'b6');
+            assert.equal(data.position[Piece.BLACK][2][0], Piece.KNIGHT);
+            assert.equal(data.position[Piece.BLACK][2][1], 'c6');
+            assert.equal(data.position[Piece.BLACK][3][0], Piece.BISHOP);
+            assert.equal(data.position[Piece.BLACK][3][1], 'b7');
+            assert.equal(data.position[Piece.BLACK][4][0], Piece.PAWN);
+            assert.equal(data.position[Piece.BLACK][4][1], 'c7');
+            assert.equal(data.position[Piece.BLACK][5][0], Piece.QUEEN);
+            assert.equal(data.position[Piece.BLACK][5][1], 'g7');
+            assert.equal(data.position[Piece.BLACK][6][0], Piece.KING);
+            assert.equal(data.position[Piece.BLACK][6][1], 'c8');
+            assert.equal(data.position[Piece.BLACK][7][0], Piece.ROOK);
+            assert.equal(data.position[Piece.BLACK][7][1], 'd8');
+        });
+
+        it('should check currentColor', function () {
+            let data = new FENDataParser('5r2/8/3k4/8/5K2/8/R7/8 w - - 0 1');
+            assert.equal(data.currentColor, Piece.WHITE);
+
+            data = new FENDataParser('5r2/8/3k4/8/4K3/8/R7/8 b - - 0 1');
+            assert.equal(data.currentColor, Piece.BLACK);
+        });
+
+        it('should check castleRights', function () {
+            let data = new FENDataParser('r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1');
+            assert.ok(data.castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
+            assert.ok(data.castleRights[Piece.WHITE][KingCastleRoad.LONG]);
+            assert.ok(data.castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
+            assert.ok(data.castleRights[Piece.BLACK][KingCastleRoad.LONG]);
+
+            data = new FENDataParser('r3k3/pppppppp/8/8/8/8/PPPPPPPP/4K2R w Kq - 0 1');
+            assert.ok(data.castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
+            assert.ok(!data.castleRights[Piece.WHITE][KingCastleRoad.LONG]);
+            assert.ok(!data.castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
+            assert.ok(data.castleRights[Piece.BLACK][KingCastleRoad.LONG]);
+
+            data = new FENDataParser('4k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K3 w Qk - 0 1');
+            assert.ok(!data.castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
+            assert.ok(data.castleRights[Piece.WHITE][KingCastleRoad.LONG]);
+            assert.ok(data.castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
+            assert.ok(!data.castleRights[Piece.BLACK][KingCastleRoad.LONG]);
+
+            data = new FENDataParser('4k3/pppppppp/8/8/8/8/PPPPPPPP/4K3 w - - 0 1');
+            assert.ok(!data.castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
+            assert.ok(!data.castleRights[Piece.WHITE][KingCastleRoad.LONG]);
+            assert.ok(!data.castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
+            assert.ok(!data.castleRights[Piece.BLACK][KingCastleRoad.LONG]);
+        });
+
+        it('should check enPassantSquareName', function () {
+            let data = new FENDataParser('4k3/pppppppp/8/8/8/8/PPPPPPPP/4K3 w - - 0 1');
+            assert.equal(data.enPassantSquareName, null);
+
+            data = new FENDataParser('4k3/pppppppp/8/8/4P3/8/PPPP1PPP/4K3 w - e3 0 1');
+            assert.equal(data.enPassantSquareName, 'e3');
+        });
+
+        it('should check moves counters', function () {
+            let data = new FENDataParser('rnbq1bnr/pppkpppp/8/3p4/4P3/5N2/PPPP1PPP/RNBQKB1R w KQ - 2 3 ');
+            assert.equal(data.fiftyMovesRuleCounter, 2);
+            assert.equal(data.movesCounter, 3);
         });
     });
 });
