@@ -216,7 +216,7 @@ class Board {
 
     Initial example with FEN:
         initial = {
-            FEN: 'r3k3/8/8/8/6P1/8/8/4K2R b K--q g3 0 1'
+            FEN: 'r3k3/8/8/8/6P1/8/8/4K2R b Kq g3 0 1'
         }
 
     Initial example with data:
@@ -259,6 +259,7 @@ class Board {
         [Piece.QUEEN]: pieces.Queen,
         [Piece.KING]: pieces.King,
     };
+    #initialFEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
     constructor(initial=null) {
         let initialData = {};
@@ -310,30 +311,6 @@ class Board {
     _replacePiece(fromSquare, toSquare, piece) {
         fromSquare.removePiece();
         piece.getPlace(toSquare);
-    }
-
-    _getStandartInitialPositionData() {
-        let positionData = {[Piece.WHITE]: [], [Piece.BLACK]: []};
-        let firstRank = {[Piece.WHITE]: "1", [Piece.BLACK]: "8"};
-        let secondRank = {[Piece.WHITE]: "2", [Piece.BLACK]: "7"};
-
-        for (let color of [Piece.WHITE, Piece.BLACK]) {
-            let piecesData = [
-                [Piece.PAWN, "abcdefgh", secondRank[color]],
-                [Piece.KNIGHT, "bg", firstRank[color]],
-                [Piece.BISHOP, "cf", firstRank[color]],
-                [Piece.ROOK, "ah", firstRank[color]],
-                [Piece.QUEEN, "d", firstRank[color]],
-                [Piece.KING, "e", firstRank[color]],
-            ];
-            for (let [name, signs, rank] of piecesData) {
-                for (let sign of signs) {
-                    positionData[color].push([name, `${sign}${rank}`]);
-                }
-            }
-        }
-
-        return positionData;
     }
 
     _setPosition(positionData) {
@@ -447,7 +424,7 @@ class Board {
     }
 
     setInitialPosition() {
-        this._setPosition(this._getStandartInitialPositionData());
+        this._setPosition(new FENDataParser(this.#initialFEN));
     }
 
     pawnTransformation(kind) {
