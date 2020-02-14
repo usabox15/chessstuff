@@ -142,7 +142,19 @@ class Piece {
     }
 
     canBeReplacedTo(square) {
-        return this.squares.includes(ar.MOVE, square) || this.squares.includes(ar.ATTACK, square);
+        return (
+            !square.piece
+            &&
+            this.squares.includes(ar.MOVE, square)
+        ||
+            square.piece
+            &&
+            !square.piece.isKing
+            &&
+            !this.sameColor(square.piece)
+            &&
+            this.squares.includes(ar.ATTACK, square)
+        );
     }
 
     getTotalImmobilize() {

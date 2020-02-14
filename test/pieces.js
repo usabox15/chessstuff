@@ -74,7 +74,13 @@ describe('Test pieces', function () {
 
             let attackSquare = new Square('e3');
             piece.squares.add(ar.ATTACK, attackSquare);
+            assert.ok(!piece.canBeReplacedTo(attackSquare));
+            new Piece(Piece.BLACK, attackSquare);
             assert.ok(piece.canBeReplacedTo(attackSquare));
+            new Piece(Piece.WHITE, attackSquare);
+            assert.ok(!piece.canBeReplacedTo(attackSquare));
+            new King(Piece.BLACK, attackSquare);
+            assert.ok(!piece.canBeReplacedTo(attackSquare));
         })
 
         it('should add empty next square to move and control actions', function () {
