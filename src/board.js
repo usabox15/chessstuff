@@ -293,6 +293,31 @@ class Board {
         return pieces;
     }
 
+    get positionIsLegal() {
+        return (
+            this.allPieces.filter(p => p.isKing && p.hasColor(Piece.WHITE)).length == 1
+        &&
+            this.allPieces.filter(p => p.isKing && p.hasColor(Piece.BLACK)).length == 1
+        );
+    }
+
+    get insufficientMaterial() {
+        let allPieces = this.allPieces;
+        return this.positionIsLegal && !(
+            allPieces.filter(p => p.isPawn || p.isRook || p.isQueen).length > 0
+        ||
+            allPieces.filter(p => p.isKnight).length > 0
+            &&
+            allPieces.filter(p => p.isBishop).length > 0
+        ||
+            allPieces.filter(p => p.isKnight).length > 1
+        ||
+            allPieces.filter(p => p.isBishop && p.square.isLight).length > 0
+            &&
+            allPieces.filter(p => p.isBishop && !p.square.isLight).length > 0
+        );
+    }
+
     _placePiece(color, kind, squareName) {
         let data = [color, this.squares[squareName]];
         if (kind == Piece.KING && this.initialCastleRights && this.initialCastleRights[color]) {
@@ -383,6 +408,9 @@ class Board {
                 piece.getTotalImmobilize();
             }
             if (oppKing.stuck) this.result = [this.colors.secondPriority, this.colors.firstPriority];
+        }
+        else if (this.insufficientMaterial) {
+            this.result = [0.5, 0.5];
         }
         else {
             let noMoves = true;
