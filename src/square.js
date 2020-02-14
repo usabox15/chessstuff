@@ -256,6 +256,7 @@ class Square {
         this._piece = null;
         this.pieces = new relations.ActionsRelation(this, 'squares');
         this.onEdge = new SquareOnEdge(this.coordinates);
+        this._isLight = this._getIsLight();
     }
 
     get name() {
@@ -272,6 +273,16 @@ class Square {
 
     get piece() {
         return this._piece;
+    }
+
+    get isLight() {
+        return this._isLight;
+    }
+
+    _getIsLight() {
+        let xIsEven = this.coordinates.x % 2 == 0;
+        let yIsEven = this.coordinates.y % 2 == 0;
+        return xIsEven && !yIsEven || !xIsEven && yIsEven;
     }
 
     placePiece(piece) {

@@ -21,6 +21,7 @@ describe('Test square', function () {
             assert.equal(a1.value, 'a1');
         });
     });
+
     describe('Test SquareCoordinates', function () {
         it('should check correct coordinates', function () {
             assert.ok(SquareCoordinates.correctCoordinate(2));
@@ -43,6 +44,7 @@ describe('Test square', function () {
             assert.ok(a6.value.includes(5));
         });
     });
+
     describe('Test SquareOnEdge', function () {
         it('should define location', function () {
             let a1OE = new SquareOnEdge(new SquareCoordinates([0, 0]));
@@ -73,6 +75,7 @@ describe('Test square', function () {
             assert.ok(!e4OE.up && !e4OE.right && !e4OE.down && !e4OE.left);
         });
     });
+
     describe('Test SquaresLine', function () {
         it('should throw error if squares are not on the same line', function () {
             let e4 = new Square('e4');
@@ -161,6 +164,7 @@ describe('Test square', function () {
             assert.equal(c3c7.betweenSquaresCount(true, true), 5);
         });
     });
+
     describe('Test Square', function () {
         it('should get square name value by square coordinates value', function () {
             assert.equal(Square.coordinatesToName(1, 5), 'b6');
@@ -177,6 +181,13 @@ describe('Test square', function () {
         it('should check cretion with coordinates', function () {
             let square = new Square([3, 5]);
             assert.equal(square.name.value, 'd6');
+        });
+
+        it('should check is light', function () {
+            let square = new Square('c4');
+            assert.ok(square.isLight);
+            square = new Square('f2');
+            assert.ok(!square.isLight);
         });
 
         it('should check piece placement', function () {
