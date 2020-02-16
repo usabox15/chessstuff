@@ -282,6 +282,7 @@ class Board {
         this.kings = {[Piece.WHITE]: null, [Piece.BLACK]: null};
         this.fiftyMovesRuleCounter = new FiftyMovesRuleCounter(initialData.fiftyMovesRuleCounter || 0);
         this.movesCounter = new MovesCounter(initialData.movesCounter || 1);
+        this.positionIsLegal = true;
         if (initialData.position) this._setPosition(initialData.position);
     }
 
@@ -291,14 +292,6 @@ class Board {
             pieces.push(square.piece);
         }
         return pieces;
-    }
-
-    get positionIsLegal() {
-        return (
-            this.allPieces.filter(p => p.isKing && p.hasColor(Piece.WHITE)).length == 1
-        &&
-            this.allPieces.filter(p => p.isKing && p.hasColor(Piece.BLACK)).length == 1
-        );
     }
 
     get insufficientMaterial() {
@@ -318,33 +311,65 @@ class Board {
         );
     }
 
-    _placePiece(color, kind, squareName) {
+    _checkPieceCountLegal(color, allPieces) {
+        return (
+            allPieces.filter(p => p.isKing && p.hasColor(color)).length == 1
+        &&
+            allPieces.filter(p => p.isQueen && p.hasColor(color)).length <= 9
+        &&
+            allPieces.filter(p => p.isRook && p.hasColor(color)).length <= 10
+        &&
+            allPieces.filter(p => p.isBishop && p.hasColor(color)).length <= 10
+        &&
+            allPieces.filter(p => p.isKnight && p.hasColor(color)).length <= 10
+        &&
+            allPieces.filter(p => p.isPawn && p.hasColor(color)).length <= 8
+        );
+    }
+
+    _checkPositionIsLegal() {
+        let allPieces = this.allPieces;
+        this.positionIsLegal = (
+            this._checkPieceCountLegal(Piece.WHITE, allPieces)
+        &&
+            this._checkPieceCountLegal(Piece.BLACK, allPieces)
+        &&
+            allPieces.filter(p => p.isPawn && (p.square.onEdge.up || p.square.onEdge.down)).length == 0
+        &&
+            allPieces.filter(p => p.isKing && p.checkers.exist && p.hasColor(this.colors.opponent)).length == 0
+        &&
+            allPieces.filter(p => p.isKing && p.checkers.exist && p.checkers.length > 2).length == 0
+        );
+    }
+
+    _placePiece(color, kind, squareName, refresh=true) {
         let data = [color, this.squares[squareName]];
         if (kind == Piece.KING && this.initialCastleRights && this.initialCastleRights[color]) {
             data.push(this.initialCastleRights[color]);
         }
+        data.push(refresh);
         let piece = new this.#piecesBox[kind](...data);
         if (piece.isKing) {
             this.kings[color] = piece;
         }
     }
 
-    _removePiece(squareName) {
-        this.squares[squareName].removePiece();
+    _removePiece(squareName, refresh=true) {
+        this.squares[squareName].removePiece(refresh);
     }
 
-    _replacePiece(fromSquare, toSquare, piece) {
-        fromSquare.removePiece();
-        piece.getPlace(toSquare);
+    _replacePiece(fromSquare, toSquare, piece, refresh=true) {
+        fromSquare.removePiece(false);
+        piece.getPlace(toSquare, refresh);
     }
 
     _setPosition(positionData) {
         for (let [color, piecesData] of Object.entries(positionData)) {
             for (let [pieceName, squareName] of piecesData) {
-                this._placePiece(color, pieceName, squareName);
+                this._placePiece(color, pieceName, squareName, false);
             }
         }
-        this._refreshAllSquares();
+        this.refreshAllSquares();
     }
 
     _enPassantMatter(fromSquare, toSquare, pawn) {
@@ -369,7 +394,7 @@ class Board {
         else if (pawn.squares.includes(ar.ATTACK, toSquare) && !toSquare.piece) {
             let x = toSquare.coordinates.x;
             let y = fromSquare.coordinates.y;
-            this._removePiece(this.squares.getFromCoordinates(x, y).name.value);
+            this._removePiece(this.squares.getFromCoordinates(x, y).name.value, false);
         }
     }
 
@@ -377,51 +402,6 @@ class Board {
         let rookFromSquareName = castleRoad.rook.square.name.value;
         let rookToSquareName = castleRoad.rookToSquare.name.value;
         this.movePiece(rookFromSquareName, rookToSquareName, false);
-    }
-
-    _refreshAllSquares() {
-        for (let piece of this.allPieces) {
-            piece.getInitState();
-        }
-        for (let piece of this.allPieces.filter(p => !p.isKing)) {
-            piece.getSquares();
-        }
-        for (let piece of this.allPieces.filter(p => p.binder)) {
-            piece.getBind(this.kings[piece.color].square);
-        }
-        for (let piece of this.allPieces.filter(p => p.isKing)) {
-            piece.getSquares();
-        }
-        let oppKing = this.kings[this.colors.opponent];
-        if (oppKing.checkers.single) {
-            let noMoves = true;
-            let checker = oppKing.checkers.first;
-            let betweenSquares = checker.isLinear ? checker.square.getBetweenSquaresNames(oppKing.square) : [];
-            for (let piece of this.allPieces.filter(p => p.sameColor(oppKing))) {
-                piece.getCheck(checker, betweenSquares);
-                if (!piece.stuck) noMoves = false;
-            }
-            if (noMoves) this.result = [this.colors.secondPriority, this.colors.firstPriority];
-        }
-        else if (oppKing.checkers.several) {
-            for (let piece of this.allPieces.filter(p => p.sameColor(oppKing) && !p.isKing)) {
-                piece.getTotalImmobilize();
-            }
-            if (oppKing.stuck) this.result = [this.colors.secondPriority, this.colors.firstPriority];
-        }
-        else if (this.insufficientMaterial) {
-            this.result = [0.5, 0.5];
-        }
-        else {
-            let noMoves = true;
-            for (let piece of this.allPieces.filter(p => p.sameColor(oppKing))) {
-                if (!piece.stuck) {
-                    noMoves = false;
-                    break;
-                }
-            }
-            if (noMoves) this.result = [0.5, 0.5];
-        }
     }
 
     _updateCounters() {
@@ -432,7 +412,7 @@ class Board {
     }
 
     _refreshState() {
-        this._refreshAllSquares();
+        this.refreshAllSquares();
         this.colors.changePriority();
         this.enPassantSquare = null;
     }
@@ -451,6 +431,56 @@ class Board {
         }
     }
 
+    refreshAllSquares() {
+        for (let piece of this.allPieces) {
+            piece.getInitState();
+        }
+        for (let piece of this.allPieces.filter(p => !p.isKing)) {
+            piece.getSquares();
+        }
+        for (let piece of this.allPieces.filter(p => p.binder)) {
+            piece.getBind(this.kings[piece.color].square);
+        }
+        for (let piece of this.allPieces.filter(p => p.isKing)) {
+            piece.getSquares();
+        }
+
+        let oppKing = this.kings[this.colors.opponent];
+        if (oppKing) {
+            if (oppKing.checkers.single) {
+                let noMoves = true;
+                let checker = oppKing.checkers.first;
+                let betweenSquares = checker.isLinear ? checker.square.getBetweenSquaresNames(oppKing.square) : [];
+                for (let piece of this.allPieces.filter(p => p.sameColor(oppKing))) {
+                    piece.getCheck(checker, betweenSquares);
+                    if (!piece.stuck) noMoves = false;
+                }
+                if (noMoves) this.result = [this.colors.secondPriority, this.colors.firstPriority];
+            }
+            else if (oppKing.checkers.several) {
+                for (let piece of this.allPieces.filter(p => p.sameColor(oppKing) && !p.isKing)) {
+                    piece.getTotalImmobilize();
+                }
+                if (oppKing.stuck) this.result = [this.colors.secondPriority, this.colors.firstPriority];
+            }
+            else if (this.insufficientMaterial) {
+                this.result = [0.5, 0.5];
+            }
+            else {
+                let noMoves = true;
+                for (let piece of this.allPieces.filter(p => p.sameColor(oppKing))) {
+                    if (!piece.stuck) {
+                        noMoves = false;
+                        break;
+                    }
+                }
+                if (noMoves) this.result = [0.5, 0.5];
+            }
+        }
+
+        this._checkPositionIsLegal();
+    }
+
     setInitialPosition() {
         this._setPosition(new FENDataParser(this.#initialFEN));
     }
@@ -458,8 +488,8 @@ class Board {
     pawnTransformation(kind) {
         if (!this.transformation) return this._response("There isn't transformation.", false);
 
-        this._placePiece(this.colors.current, kind, this.transformation.transformationSquare);
-        this._removePiece(this.transformation.upToTransformationSquare);
+        this._placePiece(this.colors.current, kind, this.transformation.transformationSquare, false);
+        this._removePiece(this.transformation.upToTransformationSquare, false);
         this.transformation = null;
         this.fiftyMovesRuleCounter.switch();
         this._moveEnd();
@@ -499,7 +529,7 @@ class Board {
             this._enPassantMatter(fromSquare, toSquare, piece);
         }
 
-        this._replacePiece(fromSquare, toSquare, piece);
+        this._replacePiece(fromSquare, toSquare, piece, false);
 
         if (piece.isPawn || piece.squares.includes(ar.ATTACK, toSquare)) {
             this.fiftyMovesRuleCounter.switch();
