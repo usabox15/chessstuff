@@ -9,7 +9,8 @@ class Piece {
     Base chess piece class.
     There are create params:
       - color [string] (white or black);
-      - square [square instance] (where piece is placed).
+      - square [square instance] (where piece is placed)
+      - refresh [boolean] (whether refresh board after piece placed or not).
     */
 
     static WHITE = 'white';
@@ -22,17 +23,19 @@ class Piece {
     static QUEEN = 'queen';
     static KING = 'king';
 
-    #colors = [Piece.WHITE, Piece.BLACK];
+    static ALL_KINDS = [Piece.PAWN, Piece.KNIGHT, Piece.BISHOP, Piece.ROOK, Piece.QUEEN, Piece.KING];
+    static ALL_COLORS = [Piece.WHITE, Piece.BLACK];
+    static ALL_LINEARS = [Piece.BISHOP, Piece.ROOK, Piece.QUEEN];
 
-    constructor(color, square) {
+    constructor(color, square, kind=null, refresh=true) {
+        this._setKind(kind);
         this._setColor(color);
-        this.getPlace(square);
+        this._isLinear = Piece.ALL_LINEARS.includes(kind);
+        this._getKind();
         this.squares = new relations.PieceSquares(this, 'pieces');
         this._refreshSquareFinder();
         this.getInitState();
-        this._getKind();
-        this._isLinear = false;
-        this._kind = null;
+        this.getPlace(square, refresh);
     }
 
     get color() {
@@ -56,9 +59,16 @@ class Piece {
         return this.square.board;
     }
 
+    _setKind(kind) {
+        if (kind != null && !Piece.ALL_KINDS.includes(kind)) {
+            throw Error(`'${kind}' is wrong piece kind value. Use any of Piece.ALL_KINDS.`);
+        }
+        this._kind = kind;
+    }
+
     _setColor(color) {
-        if (!this.#colors.includes(color)) {
-            throw Error(`'${color}' is wrong piece color value. Use Piece.WHITE or Piece.BLACK.`);
+        if (!Piece.ALL_COLORS.includes(color)) {
+            throw Error(`'${color}' is wrong piece color value. Use any of Piece.ALL_COLORS.`);
         }
         this._color = color;
     }
@@ -75,12 +85,12 @@ class Piece {
     }
 
     _getKind() {
-        this.isPawn = false;
-        this.isKnight = false;
-        this.isBishop = false;
-        this.isRook = false;
-        this.isQueen = false;
-        this.isKing = false;
+        this.isPawn = this.kind == Piece.PAWN;
+        this.isKnight = this.kind == Piece.KNIGHT;
+        this.isBishop = this.kind == Piece.BISHOP;
+        this.isRook = this.kind == Piece.ROOK;
+        this.isQueen = this.kind == Piece.QUEEN;
+        this.isKing = this.kind == Piece.KING;
     }
 
     _nextSquareAction(nextSquare) {
@@ -120,13 +130,15 @@ class Piece {
         }
     }
 
+    getSquares() {}
+
     getInitState() {
         this.binder = null;
     }
 
-    getPlace(square) {
+    getPlace(square, refresh=true) {
         this.square = square;
-        square.placePiece(this);
+        square.placePiece(this, refresh);
     }
 
     theSame(otherPiece) {
@@ -184,11 +196,10 @@ class Pawn extends Piece {
     static DIRECTIONS = {[Piece.WHITE]: 1, [Piece.BLACK]: -1};
     static INITIAL_RANKS = {[Piece.WHITE]: "2", [Piece.BLACK]: "7"};
 
-    constructor(color, square) {
-        super(color, square);
-        this.isPawn = true;
+    constructor(color, square, refresh=true) {
+        super(color, square, Piece.PAWN, false);
         this._enPassantSquare = null;
-        this._kind = Piece.PAWN;
+        if (this.board && refresh) this.board.refreshAllSquares();
     }
 
     get direction() {
@@ -278,8 +289,8 @@ class Pawn extends Piece {
 
 
 class StepPiece extends Piece {
-    constructor(color, square) {
-        super(color, square);
+    constructor(color, square, kind, refresh=true) {
+        super(color, square, kind, refresh);
     }
 
     _getStepSquares(stepPoints) {
@@ -310,7 +321,7 @@ class Knight extends StepPiece {
       -2|___|___|___|___|___|
           -2  -1   0   1   2
     */
-    #stepPoints = [
+    static stepPoints = [
         {x: -2, y: 1},  // A
         {x: -1, y: 2},  // B
         {x: 1, y: 2},   // C
@@ -321,15 +332,13 @@ class Knight extends StepPiece {
         {x: -2, y: -1}, // H
     ];
 
-    constructor(color, square) {
-        super(color, square);
-        this.isKnight = true;
-        this._kind = Piece.KNIGHT;
+    constructor(color, square, refresh=true) {
+        super(color, square, Piece.KNIGHT, refresh);
     }
 
     getSquares() {
         this._refreshSquares();
-        this._getStepSquares(this.#stepPoints);
+        this._getStepSquares(Knight.stepPoints);
     }
 
     getBind() {
@@ -339,9 +348,8 @@ class Knight extends StepPiece {
 
 
 class LinearPiece extends Piece {
-    constructor(color, square) {
-        super(color, square);
-        this._isLinear = true;
+    constructor(color, square, kind, refresh=true) {
+        super(color, square, kind, refresh);
     }
 
     _getLinearSquares(directions) {
@@ -378,10 +386,8 @@ class Bishop extends LinearPiece {
         {x: -1, y: -1}, // D (downleft)
     ];
 
-    constructor(color, square) {
-        super(color, square);
-        this.isBishop = true;
-        this._kind = Piece.BISHOP;
+    constructor(color, square, refresh=true) {
+        super(color, square, Piece.BISHOP, refresh);
     }
 
     getSquares() {
@@ -409,11 +415,10 @@ class Rook extends LinearPiece {
         {x: -1, y: 0}, // D (left)
     ];
 
-    constructor(color, square) {
-        super(color, square);
-        this.isRook = true;
+    constructor(color, square, refresh=true) {
+        super(color, square, Piece.ROOK, false);
         this._castleRoad = null;
-        this._kind = Piece.ROOK;
+        if (this.board && refresh) this.board.refreshAllSquares();
     }
 
     get castleRoad() {
@@ -449,10 +454,8 @@ class Queen extends LinearPiece {
         Actualy use Bishop and Rook directions.
     */
 
-    constructor(color, square) {
-        super(color, square);
-        this.isQueen = true;
-        this._kind = Piece.QUEEN;
+    constructor(color, square, refresh=true) {
+        super(color, square, Piece.QUEEN, refresh);
     }
 
     getSquares() {
@@ -633,8 +636,7 @@ class King extends StepPiece {
     */
 
     static INITIAL_SQUARE_NAMES = {[Piece.WHITE]: "e1", [Piece.BLACK]: "e8"};
-
-    #stepPoints = [
+    static stepPoints = [
         {x: -1, y: 1},  // A
         {x: 0, y: 1},   // B
         {x: 1, y: 1},   // C
@@ -645,11 +647,10 @@ class King extends StepPiece {
         {x: -1, y: 0},  // H
     ];
 
-    constructor(color, square, castleAccepted=null) {
-        super(color, square);
+    constructor(color, square, castleAccepted=null, refresh=true) {
+        super(color, square, Piece.KING, false);
         this.castle = new KingCastle(this, castleAccepted);
-        this.isKing = true;
-        this._kind = Piece.KING;
+        if (this.board && refresh) this.board.refreshAllSquares();
     }
 
     get onInitialSquare() {
@@ -694,7 +695,7 @@ class King extends StepPiece {
 
     getSquares() {
         this._refreshSquares();
-        this._getStepSquares(this.#stepPoints);
+        this._getStepSquares(King.stepPoints);
         this._removeEnemyControlledSquares();
         this._addCastleMoves();
     }

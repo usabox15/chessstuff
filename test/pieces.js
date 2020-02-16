@@ -18,6 +18,10 @@ var Board = jschess.board.Board;
 
 describe('Test pieces', function () {
     describe('Test Piece', function () {
+        it('should throw error by wrong piece kind', function () {
+            assert.throws(() => {new Piece(Piece.WHITE, new Square('a1'), 'wrong kind');});
+        });
+
         it('should throw error by wrong piece color', function () {
             assert.throws(() => {new Piece('wrong color', new Square('a1'));});
         });
@@ -380,8 +384,6 @@ describe('Test pieces', function () {
             new Piece(Piece.BLACK, board.squares.c3);
             new Piece(Piece.WHITE, board.squares.b6);
 
-            knight.getSquares();
-
             assert.equal(knight.squares[ar.MOVE].length, 4);
             assert.ok(knight.squares.includes(ar.MOVE, board.squares.c7));
             assert.ok(knight.squares.includes(ar.MOVE, board.squares.f6));
@@ -412,8 +414,6 @@ describe('Test pieces', function () {
         it('should check knight get bind', function () {
             let board = new Board();
             let knight = new Knight(Piece.BLACK, board.squares.f6);
-
-            knight.getSquares();
 
             assert.equal(knight.squares[ar.MOVE].length, 8);
             assert.equal(knight.squares[ar.ATTACK], null);
@@ -446,8 +446,6 @@ describe('Test pieces', function () {
             new Piece(Piece.BLACK, board.squares.h2);
             new Piece(Piece.WHITE, board.squares.b8);
             new Piece(Piece.BLACK, board.squares.d6);
-
-            bishop.getSquares();
 
             assert.equal(bishop.squares[ar.MOVE].length, 5);
             assert.ok(bishop.squares.includes(ar.MOVE, board.squares.e5));
@@ -496,8 +494,6 @@ describe('Test pieces', function () {
             new Piece(Piece.BLACK, board.squares.c7);
             new Piece(Piece.WHITE, board.squares.c2);
             new Piece(Piece.BLACK, board.squares.c1);
-
-            rook.getSquares();
 
             assert.equal(rook.squares[ar.MOVE].length, 7);
             assert.ok(rook.squares.includes(ar.MOVE, board.squares.c6));
@@ -551,8 +547,6 @@ describe('Test pieces', function () {
             new Piece(Piece.WHITE, board.squares.b2);
             new Piece(Piece.BLACK, board.squares.e5);
             new Piece(Piece.WHITE, board.squares.b5);
-
-            queen.getSquares();
 
             assert.equal(queen.squares[ar.MOVE].length, 12);
             assert.ok(queen.squares.includes(ar.MOVE, board.squares.e1));
@@ -746,7 +740,6 @@ describe('Test pieces', function () {
             assert.ok(king.castle[KingCastleRoad.LONG].isSafe);
 
             roadController = new Bishop(Piece.BLACK, board.squares.e2);
-            roadController.getSquares();
             king = new King(Piece.WHITE, board.squares.e1);
 
             assert.ok(!king.castle[KingCastleRoad.SHORT].isSafe);
@@ -760,7 +753,6 @@ describe('Test pieces', function () {
             assert.ok(king.castle[KingCastleRoad.LONG].isSafe);
 
             roadController = new Bishop(Piece.BLACK, board.squares.e3);
-            roadController.getSquares();
             king = new King(Piece.WHITE, board.squares.e1);
 
             assert.ok(!king.castle[KingCastleRoad.SHORT].isSafe);
@@ -890,7 +882,6 @@ describe('Test pieces', function () {
             assert.ok(!king.checkers.several);
 
             knight = new Knight(Piece.BLACK, board.squares.h5);
-            knight.getSquares();
 
             assert.equal(king.checkers.first, knight);
             assert.ok(!king.checkers.second);
@@ -899,10 +890,9 @@ describe('Test pieces', function () {
             assert.ok(!king.checkers.several);
 
             queen = new Queen(Piece.BLACK, board.squares.d6);
-            queen.getSquares();
 
-            assert.equal(king.checkers.first, knight);
-            assert.equal(king.checkers.second, queen);
+            assert.equal(king.checkers.first, queen);
+            assert.equal(king.checkers.second, knight);
             assert.ok(king.checkers.exist);
             assert.ok(!king.checkers.single);
             assert.ok(king.checkers.several);
@@ -913,10 +903,6 @@ describe('Test pieces', function () {
             let king = new King(Piece.BLACK, board.squares.d4);
             let knight = new Knight(Piece.WHITE, board.squares.e4);
             let pawn = new Pawn(Piece.WHITE, board.squares.d5);
-
-            knight.getSquares();
-            pawn.getSquares();
-            king.getSquares();
 
             assert.equal(king.squares[ar.MOVE].length, 4);
             assert.ok(king.squares.includes(ar.MOVE, board.squares.e5));
@@ -929,8 +915,6 @@ describe('Test pieces', function () {
             assert.ok(king.squares.includes(ar.ATTACK, board.squares.e4));
 
             let bishop = new Bishop(Piece.WHITE, board.squares.a6);
-            bishop.getSquares();
-            king.getSquares();
 
             assert.equal(king.squares[ar.MOVE].length, 2);
             assert.ok(king.squares.includes(ar.MOVE, board.squares.e5));
@@ -941,8 +925,6 @@ describe('Test pieces', function () {
             assert.ok(king.squares.includes(ar.ATTACK, board.squares.e4));
 
             let rook = new Rook(Piece.WHITE, board.squares.e2);
-            rook.getSquares();
-            king.getSquares();
 
             assert.equal(king.squares[ar.MOVE].length, 1);
             assert.ok(king.squares.includes(ar.MOVE, board.squares.e5));
@@ -951,8 +933,6 @@ describe('Test pieces', function () {
             assert.ok(king.squares.includes(ar.ATTACK, board.squares.d5));
 
             let queen = new Queen(Piece.WHITE, board.squares.g5);
-            queen.getSquares();
-            king.getSquares();
 
             assert.equal(king.squares[ar.MOVE], null);
             assert.equal(king.squares[ar.ATTACK], null);
@@ -963,8 +943,6 @@ describe('Test pieces', function () {
             new Rook(Piece.WHITE, board.squares.h1);
             new Rook(Piece.WHITE, board.squares.a1);
             let king = new King(Piece.WHITE, board.squares.e1);
-
-            king.getSquares();
 
             assert.ok(king.squares.includes(ar.MOVE, board.squares.g1));
             assert.ok(king.squares.includes(ar.MOVE, board.squares.c1));

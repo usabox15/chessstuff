@@ -285,12 +285,14 @@ class Square {
         return xIsEven && !yIsEven || !xIsEven && yIsEven;
     }
 
-    placePiece(piece) {
+    placePiece(piece, refresh=true) {
         this._piece = piece;
+        if (this.board && refresh) this.board.refreshAllSquares();
     }
 
-    removePiece() {
+    removePiece(refresh=true) {
         this._piece = null;
+        if (this.board && refresh) this.board.refreshAllSquares;
     }
 
     theSame(otherSquare) {
