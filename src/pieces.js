@@ -35,6 +35,7 @@ class Piece {
         this.squares = new relations.PieceSquares(this, 'pieces');
         this._refreshSquareFinder();
         this.getInitState();
+        this._endOfCreate();
         this.getPlace(square, refresh);
     }
 
@@ -72,6 +73,8 @@ class Piece {
         }
         this._color = color;
     }
+
+    _endOfCreate() {}
 
     _refreshSquareFinder() {
         this.sqrBeforeXray = null; // square before xray (always occupied by piece)
@@ -197,9 +200,7 @@ class Pawn extends Piece {
     static INITIAL_RANKS = {[Piece.WHITE]: "2", [Piece.BLACK]: "7"};
 
     constructor(color, square, refresh=true) {
-        super(color, square, Piece.PAWN, false);
-        this._enPassantSquare = null;
-        if (this.board && refresh) this.board.refreshAllSquares();
+        super(color, square, Piece.PAWN, refresh);
     }
 
     get direction() {
@@ -208,6 +209,10 @@ class Pawn extends Piece {
 
     get onInitialRank() {
         return this.square.onRank(Pawn.INITIAL_RANKS[this.color]);
+    }
+
+    _endOfCreate() {
+        this._enPassantSquare = null;
     }
 
     _getMoveCoordinates() {
@@ -416,13 +421,15 @@ class Rook extends LinearPiece {
     ];
 
     constructor(color, square, refresh=true) {
-        super(color, square, Piece.ROOK, false);
-        this._castleRoad = null;
-        if (this.board && refresh) this.board.refreshAllSquares();
+        super(color, square, Piece.ROOK, refresh);
     }
 
     get castleRoad() {
         return this._castleRoad;
+    }
+
+    _endOfCreate() {
+        this._castleRoad = null;
     }
 
     getSquares() {
@@ -648,13 +655,15 @@ class King extends StepPiece {
     ];
 
     constructor(color, square, castleAccepted=null, refresh=true) {
-        super(color, square, Piece.KING, false);
-        this.castle = new KingCastle(this, castleAccepted);
-        if (this.board && refresh) this.board.refreshAllSquares();
+        super(color, square, Piece.KING, refresh);
     }
 
     get onInitialSquare() {
         return this.square.name.value == King.INITIAL_SQUARE_NAMES[this.color];
+    }
+
+    _endOfCreate() {
+        this.castle = new KingCastle(this, castleAccepted);
     }
 
     getInitState() {

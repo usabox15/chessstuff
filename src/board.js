@@ -270,25 +270,30 @@ class Board {
                 initialData = initial.data;
             }
         }
-        this.squares = new BoardSquares(this);
-        this.colors = new BoardColors(initialData.currentColor || Piece.WHITE);
-        this.result = null;
-        this.enPassantSquare = null;
+        this._squares = new BoardSquares(this);
+        this._colors = new BoardColors(initialData.currentColor || Piece.WHITE);
+        this._result = null;
+        this._enPassantSquare = null;
         if (initialData.enPassantSquareName) {
-            this.enPassantSquare = this.squares[initialData.enPassantSquareName];
+            this._enPassantSquare = this._squares[initialData.enPassantSquareName];
         }
-        this.transformation = null;
-        this.initialCastleRights = initialData.castleRights || null;
-        this.kings = {[Piece.WHITE]: null, [Piece.BLACK]: null};
-        this.fiftyMovesRuleCounter = new FiftyMovesRuleCounter(initialData.fiftyMovesRuleCounter || 0);
-        this.movesCounter = new MovesCounter(initialData.movesCounter || 1);
-        this.positionIsLegal = true;
+        this._transformation = null;
+        this._initialCastleRights = initialData.castleRights || null;
+        this._kings = {[Piece.WHITE]: null, [Piece.BLACK]: null};
+        this._fiftyMovesRuleCounter = new FiftyMovesRuleCounter(initialData.fiftyMovesRuleCounter || 0);
+        this._movesCounter = new MovesCounter(initialData.movesCounter || 1);
+        this._positionIsLegal = true;
+        this._positionIsSetted = false;
         if (initialData.position) this._setPosition(initialData.position);
+    }
+
+    get squares() {
+        return this._squares;
     }
 
     get allPieces() {
         let pieces = [];
-        for (let square of Object.values(this.squares.occupied)) {
+        for (let square of Object.values(this._squares.occupied)) {
             pieces.push(square.piece);
         }
         return pieces;
@@ -296,7 +301,7 @@ class Board {
 
     get insufficientMaterial() {
         let allPieces = this.allPieces;
-        return this.positionIsLegal && !(
+        return this._positionIsLegal && !(
             allPieces.filter(p => p.isPawn || p.isRook || p.isQueen).length > 0
         ||
             allPieces.filter(p => p.isKnight).length > 0
@@ -309,6 +314,21 @@ class Board {
             &&
             allPieces.filter(p => p.isBishop && !p.square.isLight).length > 0
         );
+    }
+
+    _setResult(whitePoints, blackPoints) {
+        this._result = [whitePoints, blackPoints];
+    }
+
+    _setTransformation(fromSquareName, toSquareName) {
+        this._transformation = {
+            fromSquareName: fromSquareName,
+            toSquareName: toSquareName
+        };
+    }
+
+    _refreshTransformation() {
+        this._transformation = null;
     }
 
     _checkPieceCountLegal(color, allPieces) {
@@ -329,33 +349,32 @@ class Board {
 
     _checkPositionIsLegal() {
         let allPieces = this.allPieces;
-        this.positionIsLegal = (
+        this._positionIsLegal = (
             this._checkPieceCountLegal(Piece.WHITE, allPieces)
         &&
             this._checkPieceCountLegal(Piece.BLACK, allPieces)
         &&
             allPieces.filter(p => p.isPawn && (p.square.onEdge.up || p.square.onEdge.down)).length == 0
         &&
-            allPieces.filter(p => p.isKing && p.checkers.exist && p.hasColor(this.colors.opponent)).length == 0
+            allPieces.filter(p => p.isKing && p.checkers.exist && p.hasColor(this._colors.opponent)).length == 0
         &&
             allPieces.filter(p => p.isKing && p.checkers.exist && p.checkers.length > 2).length == 0
         );
     }
 
     _placePiece(color, kind, squareName, refresh=true) {
-        let data = [color, this.squares[squareName]];
-        if (kind == Piece.KING && this.initialCastleRights && this.initialCastleRights[color]) {
-            data.push(this.initialCastleRights[color]);
+        let data = [color, this._squares[squareName]];
+        if (kind == Piece.KING && this._initialCastleRights && this._initialCastleRights[color]) {
+            data.push(this._initialCastleRights[color]);
         }
-        data.push(refresh);
-        let piece = new this.#piecesBox[kind](...data);
+        let piece = new this.#piecesBox[kind](...data, refresh);
         if (piece.isKing) {
-            this.kings[color] = piece;
+            this._kings[color] = piece;
         }
     }
 
     _removePiece(squareName, refresh=true) {
-        this.squares[squareName].removePiece(refresh);
+        this._squares[squareName].removePiece(refresh);
     }
 
     _replacePiece(fromSquare, toSquare, piece, refresh=true) {
@@ -370,12 +389,13 @@ class Board {
             }
         }
         this.refreshAllSquares();
+        if (this._positionIsLegal) this._positionIsSetted = true;
     }
 
     _enPassantMatter(fromSquare, toSquare, pawn) {
         // jump through one square
         if (toSquare.getBetweenSquaresCount(fromSquare) == 1) {
-            this.enPassantSquare = this.squares.getFromCoordinates(
+            this._enPassantSquare = this._squares.getFromCoordinates(
                 toSquare.coordinates.x,
                 toSquare.coordinates.y - pawn.direction
             );
@@ -383,9 +403,9 @@ class Board {
                 if (!toSquare.onEdge[state]) {
                     let x = toSquare.coordinates.x + dx;
                     let y = toSquare.coordinates.y;
-                    let otherPiece = this.squares.getFromCoordinates(x, y).piece;
+                    let otherPiece = this._squares.getFromCoordinates(x, y).piece;
                     if (otherPiece && otherPiece.isPawn) {
-                        otherPiece.setEnPassantSquare(this.enPassantSquare);
+                        otherPiece.setEnPassantSquare(this._enPassantSquare);
                     }
                 }
             }
@@ -394,7 +414,7 @@ class Board {
         else if (pawn.squares.includes(ar.ATTACK, toSquare) && !toSquare.piece) {
             let x = toSquare.coordinates.x;
             let y = fromSquare.coordinates.y;
-            this._removePiece(this.squares.getFromCoordinates(x, y).name.value, false);
+            this._removePiece(this._squares.getFromCoordinates(x, y).name.value, false);
         }
     }
 
@@ -404,22 +424,27 @@ class Board {
         this.movePiece(rookFromSquareName, rookToSquareName, false);
     }
 
+    _rollBack() {
+
+    }
+
     _updateCounters() {
-        this.fiftyMovesRuleCounter.update();
-        if (this.colors.current == Piece.BLACK) {
-            this.movesCounter.update();
+        this._fiftyMovesRuleCounter.update();
+        if (this._colors.current == Piece.BLACK) {
+            this._movesCounter.update();
         }
     }
 
-    _refreshState() {
-        this.refreshAllSquares();
-        this.colors.changePriority();
-        this.enPassantSquare = null;
-    }
-
     _moveEnd() {
+        this.refreshAllSquares();
+        if (!this._positionIsLegal) {
+            this._rollBack();
+            return this._response("The position would be illegal after that.", false);
+        }
+        this._colors.changePriority();
+        this._enPassantSquare = null;
         this._updateCounters();
-        this._refreshState();
+        return this._response("Success!");
     }
 
     _response(description, success=true, transformation=false) {
@@ -427,7 +452,7 @@ class Board {
             "description": description,
             "success": success,
             "transformation": transformation,
-            "result": this.result
+            "result": this._result
         }
     }
 
@@ -439,13 +464,13 @@ class Board {
             piece.getSquares();
         }
         for (let piece of this.allPieces.filter(p => p.binder)) {
-            piece.getBind(this.kings[piece.color].square);
+            piece.getBind(this._kings[piece.color].square);
         }
         for (let piece of this.allPieces.filter(p => p.isKing)) {
             piece.getSquares();
         }
 
-        let oppKing = this.kings[this.colors.opponent];
+        let oppKing = this._kings[this._colors.opponent];
         if (oppKing) {
             if (oppKing.checkers.single) {
                 let noMoves = true;
@@ -455,16 +480,16 @@ class Board {
                     piece.getCheck(checker, betweenSquares);
                     if (!piece.stuck) noMoves = false;
                 }
-                if (noMoves) this.result = [this.colors.secondPriority, this.colors.firstPriority];
+                if (noMoves) this._setResult(this._colors.secondPriority, this._colors.firstPriority);
             }
             else if (oppKing.checkers.several) {
                 for (let piece of this.allPieces.filter(p => p.sameColor(oppKing) && !p.isKing)) {
                     piece.getTotalImmobilize();
                 }
-                if (oppKing.stuck) this.result = [this.colors.secondPriority, this.colors.firstPriority];
+                if (oppKing.stuck) this._setResult(this._colors.secondPriority, this._colors.firstPriority);
             }
             else if (this.insufficientMaterial) {
-                this.result = [0.5, 0.5];
+                this._setResult(0.5, 0.5);
             }
             else {
                 let noMoves = true;
@@ -474,38 +499,60 @@ class Board {
                         break;
                     }
                 }
-                if (noMoves) this.result = [0.5, 0.5];
+                if (noMoves) this._setResult(0.5, 0.5);
             }
         }
 
         this._checkPositionIsLegal();
     }
 
+    markPositionAsSetted() {
+        this._checkPositionIsLegal();
+        if (!this._positionIsLegal) return this._response("The position isn't legal.", false);
+        this._positionIsSetted = true;
+        return this._response("Successfully marked!");
+    }
+
+    setPosition(positionData) {
+        if (this._positionIsSetted) return this._response("The position is already setted.", false);
+        this._setPosition(positionData);
+        if (!this._positionIsSetted) return this._response("Fail to set position.", false);
+        return this._response("Successfully setted!");
+    }
+
     setInitialPosition() {
-        this._setPosition(new FENDataParser(this.#initialFEN));
+        return this.setPosition(new FENDataParser(this.#initialFEN));
     }
 
     pawnTransformation(kind) {
-        if (!this.transformation) return this._response("There isn't transformation.", false);
+        if (!this._positionIsSetted) return this._response("The position isn't setted.", false);
+        if (this._result) return this._response("The result is already reached.", false);
+        this._checkPositionIsLegal();
+        if (!this._positionIsLegal) return this._response("The position isn't legal.", false);
+        if (!this._transformation) return this._response("There isn't transformation.", false);
 
-        this._placePiece(this.colors.current, kind, this.transformation.transformationSquare, false);
-        this._removePiece(this.transformation.upToTransformationSquare, false);
-        this.transformation = null;
-        this.fiftyMovesRuleCounter.switch();
-        this._moveEnd();
-        return this._response("Successfully transformed!");
+        this._placePiece(this._colors.current, kind, this._transformation.toSquareName, false);
+        this._removePiece(this._transformation.fromSquareName, false);
+        this._refreshTransformation();
+        this._fiftyMovesRuleCounter.switch();
+        return this._moveEnd();
     }
 
     movePiece(from, to, refresh=true) {
-        let fromSquare = this.squares[from];
-        let toSquare = this.squares[to];
+        if (!this._positionIsSetted) return this._response("The position isn't setted.", false);
+        if (this._result) return this._response("The result is already reached.", false);
+        this._checkPositionIsLegal();
+        if (!this._positionIsLegal) return this._response("The position isn't legal.", false);
+
+        let fromSquare = this._squares[from];
+        let toSquare = this._squares[to];
         let piece = fromSquare.piece;
 
         if (!piece) return this._response("There isn't a piece to replace.", false);
-        if (!piece.hasColor(this.colors.current)) return this._response("Wrong color piece.", false);
+        if (!piece.hasColor(this._colors.current)) return this._response("Wrong color piece.", false);
         if (!piece.canBeReplacedTo(toSquare)) return this._response("Illegal move.", false);
 
-        this.transformation = null;
+        this._refreshTransformation();
         if (piece.isKing) {
             let castleRoad = piece.castle.getRoad(toSquare);
             if (castleRoad) {
@@ -515,15 +562,12 @@ class Board {
         }
         else if (piece.isRook) {
             if (piece.castleRoad) {
-                this.kings[piece.color].castle.stop(piece.castleRoad.side);
+                this._kings[piece.color].castle.stop(piece.castleRoad.side);
             }
         }
         else if (piece.isPawn) {
             if (toSquare.onEdge.up || toSquare.onEdge.down) {
-                this.transformation = {
-                    upToTransformationSquare: from,
-                    transformationSquare: to
-                };
+                this._setTransformation(from, to);
                 return this._response(`Pawn is ready to transform on ${to} square.`, true, true);
             }
             this._enPassantMatter(fromSquare, toSquare, piece);
@@ -532,12 +576,10 @@ class Board {
         this._replacePiece(fromSquare, toSquare, piece, false);
 
         if (piece.isPawn || piece.squares.includes(ar.ATTACK, toSquare)) {
-            this.fiftyMovesRuleCounter.switch();
+            this._fiftyMovesRuleCounter.switch();
         }
 
-        if (refresh) this._moveEnd();
-
-        return this._response("Successfully moved!");
+        if (refresh) return this._moveEnd();
     }
 }
 
