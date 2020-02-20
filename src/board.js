@@ -163,13 +163,13 @@ class FENDataParser {
     _getPosition(positionData) {
         let rows = (
             positionData
-            .replace(/\d/g, n => {return '1'.repeat(parseInt(n))})
+            .replace(/\d/g, n => {return '0'.repeat(parseInt(n))})
             .split('/')
             .reverse()
         );
         for (let y = 0; y < 8; y++) {
             for (let x = 0; x < 8; x++) {
-                if (rows[y][x] == '1') continue;
+                if (rows[y][x] == '0') continue;
                 let [color, pieceName] = this.#pieces[rows[y][x]];
                 let squareName = square.Square.coordinatesToName(x, y);
                 this.position[color].push([pieceName, squareName]);
@@ -183,6 +183,62 @@ class FENDataParser {
             let [color, roadKind] = this.#castleRights[sign];
             this.castleRights[color][roadKind] = true;
         }
+    }
+}
+
+
+class FENDataCreator {
+    /*
+    Create FEN string.
+
+    Create param:
+      - board [Board].
+    */
+
+    #pieces = {
+        [Piece.WHITE]: {
+            [Piece.PAWN]: 'P',
+            [Piece.KNIGHT]: 'N',
+            [Piece.BISHOP]: 'B',
+            [Piece.ROOK]: 'R',
+            [Piece.QUEEN]: 'Q',
+            [Piece.KING]: 'K',
+        },
+        [Piece.BLACK]: {
+            [Piece.PAWN]: 'p',
+            [Piece.KNIGHT]: 'n',
+            [Piece.BISHOP]: 'b',
+            [Piece.ROOK]: 'r',
+            [Piece.QUEEN]: 'q',
+            [Piece.KING]: 'k',
+        },
+    };
+
+    constructor(board) {
+        this.value = [
+            this._getPositionData(board.squares),
+        ].join(' ');
+    }
+
+    _getPositionData(boardSquares) {
+        let data = [];
+        for (let number of square.SquareName.numbers.reverse()) {
+            let rowData = [];
+            for (let symbol of square.SquareName.symbols) {
+                let square = boardSquares[`${symbol}${number}`];
+                if (square.piece) {
+                    rowData.push(this.#pieces[square.piece.color][square.piece.kind]);
+                } else {
+                    rowData.push('0');
+                }
+            }
+            data.push(
+                rowData
+                .join('')
+                .replace(/0+/g, n => {return n.length})
+            );
+        }
+        return data.join('/');
     }
 }
 
@@ -588,6 +644,7 @@ module.exports = {
     Board: Board,
     BoardColors: BoardColors,
     BoardSquares: BoardSquares,
+    FENDataCreator: FENDataCreator,
     FENDataParser: FENDataParser,
     FiftyMovesRuleCounter: FiftyMovesRuleCounter,
     MovesCounter: MovesCounter
