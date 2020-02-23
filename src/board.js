@@ -348,6 +348,7 @@ class Board {
         [Piece.QUEEN]: pieces.Queen,
         [Piece.KING]: pieces.King,
     };
+    #emptyFEN = '8/8/8/8/8/8/8/8 w - - 0 1';
     #initialFEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
     constructor(initial=null) {
@@ -487,6 +488,16 @@ class Board {
         piece.getPlace(toSquare, refresh);
     }
 
+    _setCurrentColor(color) {
+        this.colors = new BoardColors(color);
+        this._checkPositionIsLegal();
+        if (!this._positionIsLegal) {
+            this._rollBack();
+            return false;
+        }
+        return true;
+    }
+
     _setPosition(positionData) {
         for (let [color, piecesData] of Object.entries(positionData)) {
             for (let [pieceName, squareName] of piecesData) {
@@ -494,7 +505,11 @@ class Board {
             }
         }
         this.refreshAllSquares();
-        if (this._positionIsLegal) this._positionIsSetted = true;
+        if (this._positionIsLegal) {
+            this._positionIsSetted = true;
+        } else {
+            this._rollBack();
+        }
     }
 
     _enPassantMatter(fromSquare, toSquare, pawn) {
@@ -618,6 +633,19 @@ class Board {
         return this._response("Successfully marked!");
     }
 
+    setCurrentColor(color) {
+        if (this._positionIsSetted) {
+            return this._response(
+                "Not allowed to set color after position has been setted.",
+                false
+            );
+        }
+        if (!this._setCurrentColor(color)) {
+            return this._response("Fail to set color.", false);
+        }
+        return this._response("Successfully setted!");
+    }
+
     setPosition(positionData) {
         if (this._positionIsSetted) return this._response("The position is already setted.", false);
         this._setPosition(positionData);
@@ -625,8 +653,13 @@ class Board {
         return this._response("Successfully setted!");
     }
 
-    setInitialPosition() {
-        return this.setPosition(new FENDataParser(this.#initialFEN));
+    setInitial(data=null) {
+        let initialData = new FENDataParser(data || this.#initialFEN);
+        let setCurrentColorResponse = this.setCurrentColor(initialData.currentColor);
+        if (!setCurrentColorResponse.success) return setCurrentColorResponse;
+        let setPositionResponse = this.setPosition();
+        if (!setPositionResponse.success) return setPositionResponse;
+        return this._response("Successfully setted!");
     }
 
     pawnTransformation(kind) {
