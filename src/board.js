@@ -1,5 +1,6 @@
 var pieces = require('./pieces');
 var Piece = pieces.Piece;
+var KingCastle = pieces.KingCastle;
 var KingCastleRoad = pieces.KingCastleRoad;
 var square = require('./square');
 var ar = require('./relations').ActionsRelation;
@@ -154,7 +155,7 @@ class FENDataParser {
                 [KingCastleRoad.LONG]: false,
             }
         };
-        this._castleRights(castleRightsData);
+        this._getCastleRights(castleRightsData);
         this.enPassantSquareName = enPassantData == '-' ? null : enPassantData;
         this.fiftyMovesRuleCounter = parseInt(fiftyMovesRuleData);
         this.movesCounter = parseInt(movesCounterData);
@@ -177,7 +178,7 @@ class FENDataParser {
         }
     }
 
-    _castleRights(castleRightsData) {
+    _getCastleRights(castleRightsData) {
         for (let sign of castleRightsData) {
             if (sign == '-') continue;
             let [color, roadKind] = this.#castleRights[sign];
@@ -213,10 +214,26 @@ class FENDataCreator {
             [Piece.KING]: 'k',
         },
     };
+    #colors = {[Piece.WHITE]: 'w', [Piece.BLACK]: 'b'};
+    #castleRights = {
+        [Piece.WHITE]: {
+            [KingCastleRoad.SHORT]: 'K',
+            [KingCastleRoad.LONG]: 'Q',
+        },
+        [Piece.BLACK]: {
+            [KingCastleRoad.SHORT]: 'k',
+            [KingCastleRoad.LONG]: 'q',
+        },
+    };
 
     constructor(board) {
         this.value = [
             this._getPositionData(board.squares),
+            this.#colors[board.colors.current],
+            this._getCastleRightsData(board.kings),
+            board.enPassantSquare ? board.enPassantSquare.name.value : '-',
+            board.fiftyMovesRuleCounter.value.toString(),
+            board.movesCounter.value.toString(),
         ].join(' ');
     }
 
@@ -239,6 +256,19 @@ class FENDataCreator {
             );
         }
         return data.join('/');
+    }
+
+    _getCastleRightsData(kings) {
+        data = [];
+        for (let color of Piece.ALL_COLORS) {
+            let king = kings[color];
+            for (let side of KingCastle.SIDES) {
+                if (king.castle[side]) {
+                    data.push(this.#castleRights[color][side]);
+                }
+            }
+        }
+        return data.join('') || '-';
     }
 }
 
@@ -345,6 +375,22 @@ class Board {
 
     get squares() {
         return this._squares;
+    }
+
+    get kings() {
+        return this._kings;
+    }
+
+    get enPassantSquare() {
+        return this._enPassantSquare;
+    }
+
+    get fiftyMovesRuleCounter() {
+        return this._fiftyMovesRuleCounter;
+    }
+
+    get movesCounter() {
+        return this._movesCounter;
     }
 
     get allPieces() {
