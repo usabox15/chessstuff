@@ -41,6 +41,9 @@ class BoardColors {
     #all = [Piece.WHITE, Piece.BLACK];
 
     constructor(currentColor) {
+        if (!Piece.ALL_COLORS.includes(currentColor)) {
+            throw Error(`'${currentColor}' is wrong color value. Use any of Piece.ALL_COLORS.`);
+        }
         this._priority = this.#priorities[currentColor];
     }
 

@@ -47,6 +47,10 @@ describe('Test board', function () {
     });
 
     describe('Test BoardColors', function () {
+        it('should throw error by wrong color', function () {
+            assert.throws(() => {new BoardColors('wrong color');});
+        });
+
         it('should check initial', function () {
             let boardColors = new BoardColors(Piece.WHITE);
             assert.equal(boardColors._priority.length, 2);
