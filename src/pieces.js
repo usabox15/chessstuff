@@ -601,6 +601,11 @@ class KingCastle {
 
 
 class KingCheckers extends Array {
+    constructor(king) {
+        super();
+        this._king = king;
+    }
+
     get first() {
         return this.length > 0 ? this[0] : null;
     }
@@ -619,6 +624,38 @@ class KingCheckers extends Array {
 
     get several() {
         return this.length == 2;
+    }
+
+    get isLegal() {
+        return !this.exist || _isPiecesLegal() && (this.single || this.several && this._isSeveralLegal());
+    }
+
+    _isPiecesLegal() {
+        return (
+            this.filter(p => p.isKing).length == 0
+        &&
+            this.filter(p => !p.squares.includes(ar.ATTACK, this._king.square)).length == 0
+        );
+    }
+
+    _isDiscoverLegal(discoverer, discoveredAttacker) {
+        // Legality of a discover check that cause a double check
+
+        if (!discoveredAttacker.isLinear) return false;
+
+        let discoveredAttackSquaresNames = discoveredAttacker.square.getBetweenSquaresNames(this._king);
+        for (let squareName of discoveredAttackSquaresNames) {
+            let square = this._king.board[squareName];
+            if (discoverer.squares.includes(ar.MOVE, square)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    _isSeveralLegal() {
+        return _isDiscoverLegal(this.first, this.second) || _isDiscoverLegal(this.second, this.first);
     }
 
     add(piece) {
@@ -667,7 +704,7 @@ class King extends StepPiece {
     }
 
     getInitState() {
-        this.checkers = new KingCheckers;
+        this.checkers = new KingCheckers(this);
     }
 
     _removeEnemyControlledSquares() {
