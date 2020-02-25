@@ -453,19 +453,33 @@ class Board {
         );
     }
 
+    _checkPawnsPlacementLegal(allPieces) {
+        return allPieces.filter(p => p.isPawn && (p.square.onEdge.up || p.square.onEdge.down)).length == 0;
+    }
+
+    _checkKingPlacementLegal(king) {
+        return king.squares[ar.ATTACK].filter(s => s.piece.isKing).length == 0;
+    }
+
+    _checkCheckersLegal(king) {
+        return king.checkers.isLegal && (!king.checkers.exist || king.hasColor(this._colors.current));
+    }
+
     _checkPositionIsLegal() {
+        this._positionIsLegal = true;
         let allPieces = this.allPieces;
-        this._positionIsLegal = (
-            this._checkPieceCountLegal(Piece.WHITE, allPieces)
-        &&
-            this._checkPieceCountLegal(Piece.BLACK, allPieces)
-        &&
-            allPieces.filter(p => p.isPawn && (p.square.onEdge.up || p.square.onEdge.down)).length == 0
-        &&
-            allPieces.filter(p => p.isKing && p.checkers.exist && p.hasColor(this._colors.opponent)).length == 0
-        &&
-            allPieces.filter(p => p.isKing && p.checkers.exist && p.checkers.length > 2).length == 0
-        );
+        for (let color of Piece.ALL_COLORS) {
+            let king = this.kings[color];
+            this._positionIsLegal = this._positionIsLegal && (
+                this._checkPieceCountLegal(color, allPieces)
+            &&
+                this._checkKingPlacementLegal(king)
+            &&
+                this._checkCheckersLegal(king)
+            );
+            if (!this._positionIsLegal) return;
+        }
+        this._positionIsLegal = this._positionIsLegal && this._checkPawnsPlacementLegal(allPieces);
     }
 
     _placePiece(color, kind, squareName, refresh=true) {
