@@ -9,8 +9,10 @@ class Piece {
     Base chess piece class.
     There are create params:
       - color [string] (white or black);
-      - square [square instance] (where piece is placed)
-      - refresh [boolean] (whether refresh board after piece placed or not).
+      - square [square instance] (where piece is placed);
+      - kind [string] (one of Piece.ALL_KINDS);
+      - refresh [boolean] (whether refresh board after piece placed or not);
+      - endOfCreateData [Array] (additional data to end of create functional).
     */
 
     static WHITE = 'white';
@@ -27,7 +29,7 @@ class Piece {
     static ALL_COLORS = [Piece.WHITE, Piece.BLACK];
     static ALL_LINEARS = [Piece.BISHOP, Piece.ROOK, Piece.QUEEN];
 
-    constructor(color, square, kind=null, refresh=true) {
+    constructor(color, square, kind=null, refresh=true, endOfCreateData=null) {
         this._setKind(kind);
         this._setColor(color);
         this._isLinear = Piece.ALL_LINEARS.includes(kind);
@@ -35,8 +37,9 @@ class Piece {
         this.squares = new relations.PieceSquares(this, 'pieces');
         this._refreshSquareFinder();
         this.getInitState();
-        this._endOfCreate();
-        this.getPlace(square, refresh);
+        this.getPlace(square, false);
+        this._endOfCreate(...(endOfCreateData || []));
+        this.square.fireBoardRefresh(refresh);
     }
 
     get color() {
@@ -294,8 +297,8 @@ class Pawn extends Piece {
 
 
 class StepPiece extends Piece {
-    constructor(color, square, kind, refresh=true) {
-        super(color, square, kind, refresh);
+    constructor(color, square, kind, refresh=true, endOfCreateData=null) {
+        super(color, square, kind, refresh, endOfCreateData);
     }
 
     _getStepSquares(stepPoints) {
@@ -353,8 +356,8 @@ class Knight extends StepPiece {
 
 
 class LinearPiece extends Piece {
-    constructor(color, square, kind, refresh=true) {
-        super(color, square, kind, refresh);
+    constructor(color, square, kind, refresh=true, endOfCreateData=null) {
+        super(color, square, kind, refresh, endOfCreateData);
     }
 
     _getLinearSquares(directions) {
@@ -627,7 +630,7 @@ class KingCheckers extends Array {
     }
 
     get isLegal() {
-        return !this.exist || _isPiecesLegal() && (this.single || this.several && this._isSeveralLegal());
+        return !this.exist || this._isPiecesLegal() && (this.single || this.several && this._isSeveralLegal());
     }
 
     _isPiecesLegal() {
@@ -642,20 +645,18 @@ class KingCheckers extends Array {
         // Legality of a discover check that cause a double check
 
         if (!discoveredAttacker.isLinear) return false;
-
-        let discoveredAttackSquaresNames = discoveredAttacker.square.getBetweenSquaresNames(this._king);
+        let discoveredAttackSquaresNames = discoveredAttacker.square.getBetweenSquaresNames(this._king.square);
         for (let squareName of discoveredAttackSquaresNames) {
-            let square = this._king.board[squareName];
+            let square = this._king.board.squares[squareName];
             if (discoverer.squares.includes(ar.MOVE, square)) {
                 return true;
             }
         }
-
         return false;
     }
 
     _isSeveralLegal() {
-        return _isDiscoverLegal(this.first, this.second) || _isDiscoverLegal(this.second, this.first);
+        return this._isDiscoverLegal(this.first, this.second) || this._isDiscoverLegal(this.second, this.first);
     }
 
     add(piece) {
@@ -692,19 +693,15 @@ class King extends StepPiece {
     ];
 
     constructor(color, square, castleAccepted=null, refresh=true) {
-        super(color, square, Piece.KING, refresh);
+        super(color, square, Piece.KING, refresh, [castleAccepted]);
     }
 
     get onInitialSquare() {
         return this.square.name.value == King.INITIAL_SQUARE_NAMES[this.color];
     }
 
-    _endOfCreate() {
-        this.castle = new KingCastle(this, castleAccepted);
-    }
-
-    getInitState() {
-        this.checkers = new KingCheckers(this);
+    _endOfCreate(castleAccepted) {
+        this.setCastle(castleAccepted);
     }
 
     _removeEnemyControlledSquares() {
@@ -737,6 +734,10 @@ class King extends StepPiece {
                 this.squares.remove(ar.MOVE, this.castle[side].toSquare);
             }
         }
+    }
+
+    getInitState() {
+        this.checkers = new KingCheckers(this);
     }
 
     getSquares() {

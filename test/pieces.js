@@ -693,6 +693,7 @@ describe('Test pieces', function () {
 
             new Piece(Piece.BLACK, board.squares.f8);
             new Piece(Piece.BLACK, board.squares.c8);
+            board._kings[Piece.BLACK] = null;
             king = new King(Piece.BLACK, board.squares.e8);
 
             assert.ok(!king.castle[KingCastleRoad.SHORT].isFree);
@@ -700,6 +701,7 @@ describe('Test pieces', function () {
 
             board.squares.f8.removePiece();
             board.squares.c8.removePiece();
+            board._kings[Piece.BLACK] = null;
             king = new King(Piece.BLACK, board.squares.e8);
 
             assert.ok(king.castle[KingCastleRoad.SHORT].isFree);
@@ -707,6 +709,7 @@ describe('Test pieces', function () {
 
             new Piece(Piece.BLACK, board.squares.g8);
             new Piece(Piece.BLACK, board.squares.d8);
+            board._kings[Piece.BLACK] = null;
             king = new King(Piece.BLACK, board.squares.e8);
 
             assert.ok(!king.castle[KingCastleRoad.SHORT].isFree);
@@ -714,17 +717,20 @@ describe('Test pieces', function () {
 
             board.squares.g8.removePiece();
             board.squares.d8.removePiece();
+            board._kings[Piece.BLACK] = null;
             king = new King(Piece.BLACK, board.squares.e8);
 
             assert.ok(king.castle[KingCastleRoad.SHORT].isFree);
             assert.ok(king.castle[KingCastleRoad.LONG].isFree);
 
             new Piece(Piece.BLACK, board.squares.b8);
+            board._kings[Piece.BLACK] = null;
             king = new King(Piece.BLACK, board.squares.e8);
 
             assert.ok(!king.castle[KingCastleRoad.LONG].isFree);
 
             board.squares.b8.removePiece();
+            board._kings[Piece.BLACK] = null;
             king = new King(Piece.BLACK, board.squares.e8);
 
             assert.ok(king.castle[KingCastleRoad.LONG].isFree);
@@ -740,6 +746,7 @@ describe('Test pieces', function () {
             assert.ok(king.castle[KingCastleRoad.LONG].isSafe);
 
             roadController = new Bishop(Piece.BLACK, board.squares.e2);
+            board._kings[Piece.WHITE] = null;
             king = new King(Piece.WHITE, board.squares.e1);
 
             assert.ok(!king.castle[KingCastleRoad.SHORT].isSafe);
@@ -747,12 +754,14 @@ describe('Test pieces', function () {
 
             roadController._refreshSquares();
             board.squares.e2.removePiece();
+            board._kings[Piece.WHITE] = null;
             king = new King(Piece.WHITE, board.squares.e1);
 
             assert.ok(king.castle[KingCastleRoad.SHORT].isSafe);
             assert.ok(king.castle[KingCastleRoad.LONG].isSafe);
 
             roadController = new Bishop(Piece.BLACK, board.squares.e3);
+            board._kings[Piece.WHITE] = null;
             king = new King(Piece.WHITE, board.squares.e1);
 
             assert.ok(!king.castle[KingCastleRoad.SHORT].isSafe);
@@ -760,6 +769,7 @@ describe('Test pieces', function () {
 
             roadController._refreshSquares();
             board.squares.e3.removePiece();
+            board._kings[Piece.WHITE] = null;
             king = new King(Piece.WHITE, board.squares.e1);
 
             assert.ok(king.castle[KingCastleRoad.SHORT].isSafe);
@@ -775,6 +785,7 @@ describe('Test pieces', function () {
 
             board.squares.c5.removePiece();
 
+            board._kings[Piece.BLACK] = null;
             king = new King(
                 Piece.BLACK,
                 board.squares.e8,
@@ -785,6 +796,7 @@ describe('Test pieces', function () {
             assert.ok(!king.castle[KingCastleRoad.LONG]);
 
             new Rook(Piece.BLACK, board.squares.h8);
+            board._kings[Piece.BLACK] = null;
             king = new King(
                 Piece.BLACK,
                 board.squares.e8,
@@ -795,6 +807,7 @@ describe('Test pieces', function () {
             assert.ok(!king.castle[KingCastleRoad.LONG]);
 
             new Rook(Piece.BLACK, board.squares.a8);
+            board._kings[Piece.BLACK] = null;
             king = new King(
                 Piece.BLACK,
                 board.squares.e8,
@@ -804,6 +817,7 @@ describe('Test pieces', function () {
             assert.ok(!king.castle[KingCastleRoad.SHORT]);
             assert.ok(king.castle[KingCastleRoad.LONG]);
 
+            board._kings[Piece.BLACK] = null;
             king = new King(Piece.BLACK, board.squares.e8);
 
             assert.ok(king.castle[KingCastleRoad.SHORT]);
@@ -819,6 +833,7 @@ describe('Test pieces', function () {
 
             new Rook(Piece.WHITE, board.squares.h1);
             new Rook(Piece.WHITE, board.squares.a1);
+            board._kings[Piece.WHITE] = null;
             king = new King(Piece.WHITE, board.squares.e1);
 
             assert.ok(king.castle.getRoad(board.squares.g1));
@@ -845,6 +860,7 @@ describe('Test pieces', function () {
             assert.ok(!shortSideRook._castleRoad);
             assert.ok(longSideRook._castleRoad);
 
+            board._kings[Piece.BLACK] = null;
             king = new King(Piece.BLACK, board.squares.e8);
 
             king.castle.stop(KingCastleRoad.LONG);
@@ -854,6 +870,7 @@ describe('Test pieces', function () {
             assert.ok(shortSideRook._castleRoad);
             assert.ok(!longSideRook._castleRoad);
 
+            board._kings[Piece.BLACK] = null;
             king = new King(Piece.BLACK, board.squares.e8);
 
             king.castle.stop();
