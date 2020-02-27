@@ -458,7 +458,11 @@ class Board {
     }
 
     _checkKingPlacementLegal(king) {
-        return king.squares[ar.ATTACK].filter(s => s.piece.isKing).length == 0;
+        return (
+            !king.squares[ar.ATTACK]
+        ||
+            king.squares[ar.ATTACK].filter(s => s.piece.isKing).length == 0
+        );
     }
 
     _checkCheckersLegal(king) {
@@ -587,6 +591,19 @@ class Board {
             "success": success,
             "transformation": transformation,
             "result": this._result
+        }
+    }
+
+    placeKing(king) {
+        if (!king.isKing) {
+            throw Error(`Piece need to be a king not ${king.kind}.`);
+        }
+        if (this.kings[king.color]) {
+            throw Error(`${king.color} king is already exists on this board.`);
+        }
+        this.kings[king.color] = king;
+        if (this._initialCastleRights && this._initialCastleRights[king.color]) {
+            king.setCastle(this._initialCastleRights[king.color]);
         }
     }
 

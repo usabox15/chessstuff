@@ -749,6 +749,10 @@ class King extends StepPiece {
     getCheck() {
         this._removeCastleMoves();
     }
+
+    setCastle(castleAccepted) {
+        this.castle = new KingCastle(this, castleAccepted);
+    }
 }
 
 
