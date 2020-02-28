@@ -915,6 +915,61 @@ describe('Test pieces', function () {
             assert.ok(king.checkers.several);
         });
 
+        it('should check king checkers legality', function () {
+            let board = new Board();
+            let king = new King(Piece.WHITE, board.squares.d5);
+            assert.ok(king.checkers.isLegal);
+            assert.ok(!king.checkers.exist);
+
+            let king2 = new King(Piece.BLACK, board.squares.f7);
+            king.checkers.add(king2);
+            assert.ok(king.checkers.single);
+            assert.ok(!king.checkers.isLegal);
+
+            new Knight(Piece.BLACK, board.squares.e3);
+            assert.ok(king.checkers.single);
+            assert.ok(king.checkers.isLegal);
+
+            new Knight(Piece.BLACK, board.squares.b4);
+            assert.ok(king.checkers.several);
+            assert.ok(!king.checkers.isLegal);
+
+            board.squares.e3.removePiece();
+            new Rook(Piece.BLACK, board.squares.d2);
+            assert.ok(king.checkers.several);
+            assert.ok(king.checkers.isLegal);
+
+            board.squares.b4.removePiece();
+            new Rook(Piece.BLACK, board.squares.a5);
+            assert.ok(king.checkers.several);
+            assert.ok(!king.checkers.isLegal);
+
+            board.squares.d2.removePiece();
+            new Queen(Piece.BLACK, board.squares.d7);
+            assert.ok(king.checkers.several);
+            assert.ok(king.checkers.isLegal);
+
+            board.squares.a5.removePiece();
+            board.squares.d7.removePiece();
+            new Bishop(Piece.BLACK, board.squares.g2);
+            new Rook(Piece.BLACK, board.squares.f5);
+            assert.ok(king.checkers.several);
+            assert.ok(king.checkers.isLegal);
+
+            let pawn = new Pawn(Piece.BLACK, board.squares.f4);
+            assert.ok(king.checkers.several);
+            assert.ok(!king.checkers.isLegal);
+
+            board.squares.f5.removePiece();
+            king.checkers.add(pawn);
+            assert.ok(king.checkers.several);
+            assert.ok(!king.checkers.isLegal);
+
+            new Knight(Piece.BLACK, board.squares.c3);
+            assert.ok(king.checkers.several);
+            assert.ok(king.checkers.isLegal);
+        });
+
         it('should check remove enemy controlled squares', function () {
             let board = new Board();
             let king = new King(Piece.BLACK, board.squares.d4);
