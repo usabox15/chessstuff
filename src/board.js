@@ -110,6 +110,49 @@ class FiftyMovesRuleCounter extends MovesCounter {
 }
 
 
+class BoardCastleRights {
+    /*
+    Create param:
+      - signs [Array] (BoardCastleRights.ALL_SIGNS items, not required).
+    */
+
+    static WHITE_SHORT = 'K';
+    static WHITE_LONG = 'Q';
+    static BLACK_SHORT = 'k';
+    static BLACK_LONG = 'q';
+    static ALL_SIGNS = [
+        BoardCastleRights.WHITE_SHORT,
+        BoardCastleRights.WHITE_LONG,
+        BoardCastleRights.BLACK_SHORT,
+        BoardCastleRights.BLACK_LONG,
+    ];
+    static VALUES = {
+        [BoardCastleRights.WHITE_SHORT]: [Piece.WHITE, KingCastleRoad.SHORT],
+        [BoardCastleRights.WHITE_LONG]: [Piece.WHITE, KingCastleRoad.LONG],
+        [BoardCastleRights.BLACK_SHORT]: [Piece.BLACK, KingCastleRoad.SHORT],
+        [BoardCastleRights.BLACK_LONG]: [Piece.BLACK, KingCastleRoad.LONG],
+    };
+
+    constructor(signs=null) {
+        signs = signs || [];
+        signs = signs.slice(0, 4);
+        this[Piece.WHITE] = null;
+        this[Piece.BLACK] = null;
+        let roadKinds = {[Piece.WHITE]: [], [Piece.BLACK]: []};
+        for (let sign of signs) {
+            if (!BoardCastleRights.ALL_SIGNS.includes(sign)) {
+                throw Error(`"${sign}" is not a correct castle rights sign. Use one of ${BoardCastleRights.ALL_SIGNS}.`);
+            }
+            let [color, roadKind] = BoardCastleRights.VALUES[sign];
+            roadKinds[color].push(roadKind);
+        }
+        for (let color in roadKinds) {
+            this[color] = new KingCastleInitial(roadKinds[color]);
+        }
+    }
+}
+
+
 class FENDataParser {
     /*
     Parse data from FEN string.
@@ -148,7 +191,7 @@ class FENDataParser {
         ] = data.split(' ');
         this.position = this._getPosition(positionData);
         this.currentColor = this.#colors[currentColorData];
-        this.castleRights = this._getCastleRights(castleRightsData);
+        this.castleRights = new BoardCastleRights(castleRightsData == '-' ? null : castleRightsData.split(''));
         this.enPassantSquareName = enPassantData == '-' ? null : enPassantData;
         this.fiftyMovesRuleCounter = parseInt(fiftyMovesRuleData);
         this.movesCounter = parseInt(movesCounterData);
@@ -169,20 +212,6 @@ class FENDataParser {
                 let squareName = square.Square.coordinatesToName(x, y);
                 data[color].push([pieceName, squareName]);
             }
-        }
-        return data;
-    }
-
-    _getCastleRights(castleRightsData) {
-        let data = {};
-        let roadKinds = {[Piece.WHITE]: [], [Piece.BLACK]: []};
-        for (let sign of castleRightsData) {
-            if (sign == '-') continue;
-            let [color, roadKind] = this.#castleRights[sign];
-            roadKinds[color].push(roadKind);
-        }
-        for (let color in roadKinds) {
-            data[color] = new KingCastleInitial(roadKinds[color]);
         }
         return data;
     }
@@ -747,6 +776,7 @@ class Board {
 
 module.exports = {
     Board: Board,
+    BoardCastleRights: BoardCastleRights,
     BoardColors: BoardColors,
     BoardSquares: BoardSquares,
     FENDataCreator: FENDataCreator,
