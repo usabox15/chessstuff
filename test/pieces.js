@@ -777,6 +777,28 @@ describe('Test pieces', function () {
             assert.ok(king.castle[KingCastleRoad.LONG].isSafe);
         });
 
+        it('should check KingCastleInitial', function () {
+            assert.throws(() => {
+                new KingCastleInitial(['wrong side']);
+            });
+
+            let castleInitial = new KingCastleInitial();
+            assert.ok(!castleInitial[KingCastleRoad.SHORT]);
+            assert.ok(!castleInitial[KingCastleRoad.LONG]);
+
+            castleInitial = new KingCastleInitial([KingCastleRoad.SHORT]);
+            assert.ok(castleInitial[KingCastleRoad.SHORT]);
+            assert.ok(!castleInitial[KingCastleRoad.LONG]);
+
+            castleInitial = new KingCastleInitial([KingCastleRoad.LONG]);
+            assert.ok(!castleInitial[KingCastleRoad.SHORT]);
+            assert.ok(castleInitial[KingCastleRoad.LONG]);
+
+            castleInitial = new KingCastleInitial([KingCastleRoad.SHORT, KingCastleRoad.LONG]);
+            assert.ok(castleInitial[KingCastleRoad.SHORT]);
+            assert.ok(castleInitial[KingCastleRoad.LONG]);
+        });
+
         it('should check initial KingCastle data', function () {
             let board = new Board();
             let king = new King(Piece.BLACK, board.squares.c5);
