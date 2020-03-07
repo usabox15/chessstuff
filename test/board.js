@@ -4,6 +4,7 @@ var SquareName = jschess.square.SquareName;
 var Piece = jschess.pieces.Piece;
 var KingCastleRoad = jschess.pieces.KingCastleRoad;
 var Board = jschess.board.Board;
+var BoardCastleRights = jschess.board.BoardCastleRights;
 var BoardColors = jschess.board.BoardColors;
 var BoardSquares = jschess.board.BoardSquares;
 var FENDataParser = jschess.board.FENDataParser;
@@ -130,6 +131,38 @@ describe('Test board', function () {
             assert.equal(counter.value, 0);
             assert.ok(counter._turnedOn);
             assert.ok(!counter._needToRefresh);
+        });
+    });
+
+    describe('Test BoardCastleRights', function () {
+        it('should check creation', function () {
+            assert.throws(() => {
+                new BoardCastleRights(['wrong sign']);
+            });
+
+            let castleRights = new BoardCastleRights();
+            assert.ok(!castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
+            assert.ok(!castleRights[Piece.WHITE][KingCastleRoad.LONG]);
+            assert.ok(!castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
+            assert.ok(!castleRights[Piece.BLACK][KingCastleRoad.LONG]);
+
+            castleRights = new BoardCastleRights(['K', 'Q']);
+            assert.ok(castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
+            assert.ok(castleRights[Piece.WHITE][KingCastleRoad.LONG]);
+            assert.ok(!castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
+            assert.ok(!castleRights[Piece.BLACK][KingCastleRoad.LONG]);
+
+            castleRights = new BoardCastleRights(['k', 'q']);
+            assert.ok(!castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
+            assert.ok(!castleRights[Piece.WHITE][KingCastleRoad.LONG]);
+            assert.ok(castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
+            assert.ok(castleRights[Piece.BLACK][KingCastleRoad.LONG]);
+
+            castleRights = new BoardCastleRights(['K', 'Q', 'k', 'q']);
+            assert.ok(castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
+            assert.ok(castleRights[Piece.WHITE][KingCastleRoad.LONG]);
+            assert.ok(castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
+            assert.ok(castleRights[Piece.BLACK][KingCastleRoad.LONG]);
         });
     });
 
