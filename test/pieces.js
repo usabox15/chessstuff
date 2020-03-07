@@ -8,6 +8,7 @@ var Bishop = jschess.pieces.Bishop;
 var Rook = jschess.pieces.Rook;
 var Queen = jschess.pieces.Queen;
 var KingCastleRoad = jschess.pieces.KingCastleRoad;
+var KingCastleInitial = jschess.pieces.KingCastleInitial;
 var KingCastle = jschess.pieces.KingCastle;
 var KingCheckers = jschess.pieces.KingCheckers;
 var King = jschess.pieces.King;
@@ -786,33 +787,21 @@ describe('Test pieces', function () {
             board.squares.c5.removePiece();
 
             board._kings[Piece.BLACK] = null;
-            king = new King(
-                Piece.BLACK,
-                board.squares.e8,
-                {[KingCastleRoad.SHORT]: false, [KingCastleRoad.LONG]: false}
-            );
+            king = new King(Piece.BLACK, board.squares.e8, new KingCastleInitial());
 
             assert.ok(!king.castle[KingCastleRoad.SHORT]);
             assert.ok(!king.castle[KingCastleRoad.LONG]);
 
             new Rook(Piece.BLACK, board.squares.h8);
             board._kings[Piece.BLACK] = null;
-            king = new King(
-                Piece.BLACK,
-                board.squares.e8,
-                {[KingCastleRoad.SHORT]: true, [KingCastleRoad.LONG]: false}
-            );
+            king = new King(Piece.BLACK, board.squares.e8, new KingCastleInitial([KingCastleRoad.SHORT]));
 
             assert.ok(king.castle[KingCastleRoad.SHORT]);
             assert.ok(!king.castle[KingCastleRoad.LONG]);
 
             new Rook(Piece.BLACK, board.squares.a8);
             board._kings[Piece.BLACK] = null;
-            king = new King(
-                Piece.BLACK,
-                board.squares.e8,
-                {[KingCastleRoad.SHORT]: false, [KingCastleRoad.LONG]: true}
-            );
+            king = new King(Piece.BLACK, board.squares.e8, new KingCastleInitial([KingCastleRoad.LONG]));
 
             assert.ok(!king.castle[KingCastleRoad.SHORT]);
             assert.ok(king.castle[KingCastleRoad.LONG]);

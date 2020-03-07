@@ -479,6 +479,7 @@ class Queen extends LinearPiece {
 class KingCastleRoad {
     static SHORT = 'short';
     static LONG = 'long';
+    static ALL_SIDES = [KingCastleRoad.SHORT, KingCastleRoad.LONG];
     static toSquaresSigns = {[KingCastleRoad.SHORT]: 'g', [KingCastleRoad.LONG]: 'c'};
     static rookToSquaresSigns = {[KingCastleRoad.SHORT]: 'f', [KingCastleRoad.LONG]: 'd'};
     static rookSquaresSigns = {[KingCastleRoad.SHORT]: 'h', [KingCastleRoad.LONG]: 'a'};
@@ -557,19 +558,43 @@ class KingCastleRoad {
 }
 
 
+class KingCastleInitial {
+    /*
+    Create param:
+      - acceptedSides [Array] (KingCastleRoad.ALL_SIDES items, not required).
+    */
+
+    constructor(acceptedSides=null) {
+        acceptedSides = acceptedSides || [];
+        acceptedSides = acceptedSides.slice(0, 2);
+        this._checkAcceptedSides(acceptedSides);
+        for (let side of KingCastleRoad.ALL_SIDES) {
+            this[side] = acceptedSides.includes(side);
+        }
+    }
+
+    _checkAcceptedSides(acceptedSides) {
+        for (let side of acceptedSides) {
+            if (!KingCastleRoad.ALL_SIDES.includes(side)) {
+                throw Error(`${side} is not a correct castle side name. Use one of ${KingCastleRoad.ALL_SIDES}.`);
+            }
+        }
+    }
+}
+
+
 class KingCastle {
-    static SIDES = [KingCastleRoad.SHORT, KingCastleRoad.LONG];
     static RANKS = {[Piece.WHITE]: "1", [Piece.BLACK]: "8"};
 
-    constructor(king, acceptedDefault=null) {
+    constructor(king, initial=null) {
         this._king = king;
         let accepted;
         if (king.onInitialSquare) {
-            accepted = acceptedDefault || {[KingCastleRoad.SHORT]: true, [KingCastleRoad.LONG]: true};
+            accepted = initial || new KingCastleInitial([KingCastleRoad.SHORT, KingCastleRoad.LONG]);
         } else {
-            accepted = {[KingCastleRoad.SHORT]: false, [KingCastleRoad.LONG]: false};
+            accepted = new KingCastleInitial();
         }
-        for (let side of KingCastle.SIDES) {
+        for (let side of KingCastleRoad.ALL_SIDES) {
             if (accepted[side]) {
                 this[side] = new KingCastleRoad(this, KingCastle.RANKS[king.color], side);
             } else {
@@ -583,7 +608,7 @@ class KingCastle {
     }
 
     stop(side='all') {
-        let sides = side == 'all' ? KingCastle.SIDES : [side];
+        let sides = side == 'all' ? KingCastleRoad.ALL_SIDES : [side];
         for (let s of sides) {
             if (this[s]) {
                 this[s].rook.removeCastleRoad();
@@ -593,7 +618,7 @@ class KingCastle {
     }
 
     getRoad(toSquare) {
-        for (let side of KingCastle.SIDES) {
+        for (let side of KingCastleRoad.ALL_SIDES) {
             if (this[side] && this[side].toSquare.theSame(toSquare)) {
                 return this[side];
             }
@@ -677,7 +702,7 @@ class King extends StepPiece {
           -1   0   1
 
     There are additional create params:
-      - castleAccepted [Object] (example {[KingCastleRoad.SHORT]: false, [KingCastleRoad.LONG]: true}).
+      - castleInitial [KingCastleInitial] (not required).
     */
 
     static INITIAL_SQUARE_NAMES = {[Piece.WHITE]: "e1", [Piece.BLACK]: "e8"};
@@ -692,16 +717,16 @@ class King extends StepPiece {
         {x: -1, y: 0},  // H
     ];
 
-    constructor(color, square, castleAccepted=null, refresh=true) {
-        super(color, square, Piece.KING, refresh, [castleAccepted]);
+    constructor(color, square, castleInitial=null, refresh=true) {
+        super(color, square, Piece.KING, refresh, [castleInitial]);
     }
 
     get onInitialSquare() {
         return this.square.name.value == King.INITIAL_SQUARE_NAMES[this.color];
     }
 
-    _endOfCreate(castleAccepted) {
-        this.setCastle(castleAccepted);
+    _endOfCreate(castleInitial) {
+        this.setCastle(castleInitial);
     }
 
     _removeEnemyControlledSquares() {
@@ -721,7 +746,7 @@ class King extends StepPiece {
     }
 
     _addCastleMoves() {
-        for (let side of KingCastle.SIDES) {
+        for (let side of KingCastleRoad.ALL_SIDES) {
             if (this.castle[side] && this.castle[side].isLegal) {
                 this.squares.add(ar.MOVE, this.castle[side].toSquare);
             }
@@ -729,7 +754,7 @@ class King extends StepPiece {
     }
 
     _removeCastleMoves() {
-        for (let side of KingCastle.SIDES) {
+        for (let side of KingCastleRoad.ALL_SIDES) {
             if (this.castle[side]) {
                 this.squares.remove(ar.MOVE, this.castle[side].toSquare);
             }
@@ -751,8 +776,8 @@ class King extends StepPiece {
         this._removeCastleMoves();
     }
 
-    setCastle(castleAccepted) {
-        this.castle = new KingCastle(this, castleAccepted);
+    setCastle(castleInitial) {
+        this.castle = new KingCastle(this, castleInitial);
     }
 }
 
@@ -767,6 +792,7 @@ module.exports = {
     Rook: Rook,
     Queen: Queen,
     KingCastleRoad: KingCastleRoad,
+    KingCastleInitial: KingCastleInitial,
     KingCastle: KingCastle,
     KingCheckers: KingCheckers,
     King: King

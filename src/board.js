@@ -2,6 +2,7 @@ var pieces = require('./pieces');
 var Piece = pieces.Piece;
 var KingCastle = pieces.KingCastle;
 var KingCastleRoad = pieces.KingCastleRoad;
+var KingCastleInitial = pieces.KingCastleInitial;
 var square = require('./square');
 var ar = require('./relations').ActionsRelation;
 
@@ -145,26 +146,16 @@ class FENDataParser {
             fiftyMovesRuleData,
             movesCounterData,
         ] = data.split(' ');
-        this.position = {[Piece.WHITE]: [], [Piece.BLACK]: []};
-        this._getPosition(positionData);
+        this.position = this._getPosition(positionData);
         this.currentColor = this.#colors[currentColorData];
-        this.castleRights = {
-            [Piece.WHITE]: {
-                [KingCastleRoad.SHORT]: false,
-                [KingCastleRoad.LONG]: false,
-            },
-            [Piece.BLACK]: {
-                [KingCastleRoad.SHORT]: false,
-                [KingCastleRoad.LONG]: false,
-            }
-        };
-        this._getCastleRights(castleRightsData);
+        this.castleRights = this._getCastleRights(castleRightsData);
         this.enPassantSquareName = enPassantData == '-' ? null : enPassantData;
         this.fiftyMovesRuleCounter = parseInt(fiftyMovesRuleData);
         this.movesCounter = parseInt(movesCounterData);
     }
 
     _getPosition(positionData) {
+        let data = {[Piece.WHITE]: [], [Piece.BLACK]: []};
         let rows = (
             positionData
             .replace(/\d/g, n => {return '0'.repeat(parseInt(n))})
@@ -176,17 +167,24 @@ class FENDataParser {
                 if (rows[y][x] == '0') continue;
                 let [color, pieceName] = this.#pieces[rows[y][x]];
                 let squareName = square.Square.coordinatesToName(x, y);
-                this.position[color].push([pieceName, squareName]);
+                data[color].push([pieceName, squareName]);
             }
         }
+        return data;
     }
 
     _getCastleRights(castleRightsData) {
+        let data = {};
+        let roadKinds = {[Piece.WHITE]: [], [Piece.BLACK]: []};
         for (let sign of castleRightsData) {
             if (sign == '-') continue;
             let [color, roadKind] = this.#castleRights[sign];
-            this.castleRights[color][roadKind] = true;
+            roadKinds[color].push(roadKind);
         }
+        for (let color in roadKinds) {
+            data[color] = new KingCastleInitial(roadKinds[color]);
+        }
+        return data;
     }
 }
 
@@ -265,7 +263,7 @@ class FENDataCreator {
         data = [];
         for (let color of Piece.ALL_COLORS) {
             let king = kings[color];
-            for (let side of KingCastle.SIDES) {
+            for (let side of KingCastleRoad.ALL_SIDES) {
                 if (king.castle[side]) {
                     data.push(this.#castleRights[color][side]);
                 }
@@ -324,14 +322,8 @@ class Board {
                 },
                 currentColor: Piece.BLACK,
                 castleRights: {
-                    [Piece.WHITE]: {
-                        [KingCastleRoad.SHORT]: true,
-                        [KingCastleRoad.LONG]: false,
-                    }
-                    [Piece.BLACK]: {
-                        [KingCastleRoad.SHORT]: false,
-                        [KingCastleRoad.LONG]: true,
-                    }
+                    [Piece.WHITE]: new KingCastleInitial([KingCastleRoad.SHORT]),
+                    [Piece.BLACK]: new KingCastleInitial([KingCastleRoad.LONG])
                 },
                 enPassantSquareName: 'g3',
                 fiftyMovesRuleCounter: 0,
