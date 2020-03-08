@@ -560,6 +560,18 @@ class KingCastleRoad {
 
 class KingCastleInitial {
     /*
+    Scheme:
+        {
+            kindOfCastleRoad: Boolean,
+            ...
+        }
+
+    Example:
+        {
+            [KingCastleRoad.SHORT]: true,
+            [KingCastleRoad.LONG]: false
+        }
+
     Create param:
       - acceptedSides [Array] (KingCastleRoad.ALL_SIDES items, not required).
     */

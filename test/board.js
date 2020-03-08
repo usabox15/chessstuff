@@ -4,7 +4,7 @@ var SquareName = jschess.square.SquareName;
 var Piece = jschess.pieces.Piece;
 var KingCastleRoad = jschess.pieces.KingCastleRoad;
 var Board = jschess.board.Board;
-var BoardCastleRights = jschess.board.BoardCastleRights;
+var BoardCastleInitial = jschess.board.BoardCastleInitial;
 var BoardColors = jschess.board.BoardColors;
 var BoardSquares = jschess.board.BoardSquares;
 var FENDataParser = jschess.board.FENDataParser;
@@ -134,31 +134,37 @@ describe('Test board', function () {
         });
     });
 
-    describe('Test BoardCastleRights', function () {
+    describe('Test BoardCastleInitial', function () {
         it('should check creation', function () {
             assert.throws(() => {
-                new BoardCastleRights(['wrong sign']);
+                new BoardCastleInitial('wrong');
             });
 
-            let castleRights = new BoardCastleRights();
+            let castleRights = new BoardCastleInitial();
             assert.ok(!castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
             assert.ok(!castleRights[Piece.WHITE][KingCastleRoad.LONG]);
             assert.ok(!castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
             assert.ok(!castleRights[Piece.BLACK][KingCastleRoad.LONG]);
 
-            castleRights = new BoardCastleRights(['K', 'Q']);
+            castleRights = new BoardCastleInitial('-');
+            assert.ok(!castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
+            assert.ok(!castleRights[Piece.WHITE][KingCastleRoad.LONG]);
+            assert.ok(!castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
+            assert.ok(!castleRights[Piece.BLACK][KingCastleRoad.LONG]);
+
+            castleRights = new BoardCastleInitial('KQ');
             assert.ok(castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
             assert.ok(castleRights[Piece.WHITE][KingCastleRoad.LONG]);
             assert.ok(!castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
             assert.ok(!castleRights[Piece.BLACK][KingCastleRoad.LONG]);
 
-            castleRights = new BoardCastleRights(['k', 'q']);
+            castleRights = new BoardCastleInitial('kq');
             assert.ok(!castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
             assert.ok(!castleRights[Piece.WHITE][KingCastleRoad.LONG]);
             assert.ok(castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
             assert.ok(castleRights[Piece.BLACK][KingCastleRoad.LONG]);
 
-            castleRights = new BoardCastleRights(['K', 'Q', 'k', 'q']);
+            castleRights = new BoardCastleInitial('KQkq');
             assert.ok(castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
             assert.ok(castleRights[Piece.WHITE][KingCastleRoad.LONG]);
             assert.ok(castleRights[Piece.BLACK][KingCastleRoad.SHORT]);

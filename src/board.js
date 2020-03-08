@@ -110,10 +110,22 @@ class FiftyMovesRuleCounter extends MovesCounter {
 }
 
 
-class BoardCastleRights {
+class BoardCastleInitial {
     /*
+    Scheme:
+        {
+            color: KingCastleInitial,
+            ...
+        }
+
+    Example:
+        {
+            [Piece.WHITE]: new KingCastleInitial(),
+            [Piece.BLACK]: new KingCastleInitial()
+        }
+
     Create param:
-      - signs [Array] (BoardCastleRights.ALL_SIGNS items, not required).
+      - signs [String] (FEN castling availability data, not required).
     */
 
     static WHITE_SHORT = 'K';
@@ -121,32 +133,46 @@ class BoardCastleRights {
     static BLACK_SHORT = 'k';
     static BLACK_LONG = 'q';
     static ALL_SIGNS = [
-        BoardCastleRights.WHITE_SHORT,
-        BoardCastleRights.WHITE_LONG,
-        BoardCastleRights.BLACK_SHORT,
-        BoardCastleRights.BLACK_LONG,
+        BoardCastleInitial.WHITE_SHORT,
+        BoardCastleInitial.WHITE_LONG,
+        BoardCastleInitial.BLACK_SHORT,
+        BoardCastleInitial.BLACK_LONG,
     ];
     static VALUES = {
-        [BoardCastleRights.WHITE_SHORT]: [Piece.WHITE, KingCastleRoad.SHORT],
-        [BoardCastleRights.WHITE_LONG]: [Piece.WHITE, KingCastleRoad.LONG],
-        [BoardCastleRights.BLACK_SHORT]: [Piece.BLACK, KingCastleRoad.SHORT],
-        [BoardCastleRights.BLACK_LONG]: [Piece.BLACK, KingCastleRoad.LONG],
+        [BoardCastleInitial.WHITE_SHORT]: [Piece.WHITE, KingCastleRoad.SHORT],
+        [BoardCastleInitial.WHITE_LONG]: [Piece.WHITE, KingCastleRoad.LONG],
+        [BoardCastleInitial.BLACK_SHORT]: [Piece.BLACK, KingCastleRoad.SHORT],
+        [BoardCastleInitial.BLACK_LONG]: [Piece.BLACK, KingCastleRoad.LONG],
     };
 
-    constructor(signs=null) {
-        signs = signs || [];
-        signs = signs.slice(0, 4);
-        this[Piece.WHITE] = null;
-        this[Piece.BLACK] = null;
-        let roadKinds = {[Piece.WHITE]: [], [Piece.BLACK]: []};
-        for (let sign of signs) {
-            if (!BoardCastleRights.ALL_SIGNS.includes(sign)) {
-                throw Error(`"${sign}" is not a correct castle rights sign. Use one of ${BoardCastleRights.ALL_SIGNS}.`);
-            }
-            let [color, roadKind] = BoardCastleRights.VALUES[sign];
-            roadKinds[color].push(roadKind);
+    constructor(signs='-') {
+        this._signs = signs.slice(0, 4);
+        this._fillData();
+    }
+
+    _checkSign(sign) {
+        if (!BoardCastleInitial.ALL_SIGNS.includes(sign)) {
+            throw Error(`"${sign}" is not a correct castle rights sign. Use one of ${BoardCastleInitial.ALL_SIGNS}.`);
         }
-        for (let color in roadKinds) {
+    }
+
+    _getRoadKinds() {
+        let data = {};
+        for (let color of Piece.ALL_COLORS) {
+            data[color] = [];
+        }
+        for (let sign of this._signs) {
+            if (sign == '-') continue;
+            this._checkSign(sign);
+            let [color, roadKind] = BoardCastleInitial.VALUES[sign];
+            data[color].push(roadKind);
+        }
+        return data;
+    }
+
+    _fillData() {
+        let roadKinds = this._getRoadKinds();
+        for (let color of Piece.ALL_COLORS) {
             this[color] = new KingCastleInitial(roadKinds[color]);
         }
     }
@@ -156,6 +182,9 @@ class BoardCastleRights {
 class FENDataParser {
     /*
     Parse data from FEN string.
+
+    Create param:
+      - data [String] (FEN string).
     */
 
     #pieces = {
@@ -173,12 +202,6 @@ class FENDataParser {
         'k': [Piece.BLACK, Piece.KING],
     };
     #colors = {'w': Piece.WHITE, 'b': Piece.BLACK};
-    #castleRights = {
-        'K': [Piece.WHITE, KingCastleRoad.SHORT],
-        'Q': [Piece.WHITE, KingCastleRoad.LONG],
-        'k': [Piece.BLACK, KingCastleRoad.SHORT],
-        'q': [Piece.BLACK, KingCastleRoad.LONG],
-    };
 
     constructor(data) {
         let [
@@ -191,7 +214,7 @@ class FENDataParser {
         ] = data.split(' ');
         this.position = this._getPosition(positionData);
         this.currentColor = this.#colors[currentColorData];
-        this.castleRights = new BoardCastleRights(castleRightsData == '-' ? null : castleRightsData.split(''));
+        this.castleRights = new BoardCastleInitial(castleRightsData);
         this.enPassantSquareName = enPassantData == '-' ? null : enPassantData;
         this.fiftyMovesRuleCounter = parseInt(fiftyMovesRuleData);
         this.movesCounter = parseInt(movesCounterData);
@@ -316,14 +339,10 @@ class Board {
                     ],
                 } (pieces placing, not required)
                 currentColor [String] (default is Piece.WHITE, not required)
-                castleRights [Object] {
-                    color: {
-                        kindOfCastleRoad: boolean,
-                    },
-                } (not required)
+                castleRights [BoardCastleInitial] (not required)
                 enPassantSquareName [String] (not required)
                 fiftyMovesRuleCounter [Number] (
-                    count of half moves after latest pawn move or latest piece capture
+                    count of half moves after latest pawn move or latest piece capture,
                     not required
                 )
                 movesCounter [Number] (not required)
@@ -350,10 +369,7 @@ class Board {
                     ]
                 },
                 currentColor: Piece.BLACK,
-                castleRights: {
-                    [Piece.WHITE]: new KingCastleInitial([KingCastleRoad.SHORT]),
-                    [Piece.BLACK]: new KingCastleInitial([KingCastleRoad.LONG])
-                },
+                castleRights: new BoardCastleInitial('Kq'),
                 enPassantSquareName: 'g3',
                 fiftyMovesRuleCounter: 0,
                 movesCounter: 1,
@@ -776,7 +792,7 @@ class Board {
 
 module.exports = {
     Board: Board,
-    BoardCastleRights: BoardCastleRights,
+    BoardCastleInitial: BoardCastleInitial,
     BoardColors: BoardColors,
     BoardSquares: BoardSquares,
     FENDataCreator: FENDataCreator,
