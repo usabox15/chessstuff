@@ -821,6 +821,7 @@ module.exports = {
     Board: Board,
     BoardCastleInitial: BoardCastleInitial,
     BoardColors: BoardColors,
+    BoardPosition: BoardPosition,
     BoardSquares: BoardSquares,
     FENDataCreator: FENDataCreator,
     FENDataParser: FENDataParser,

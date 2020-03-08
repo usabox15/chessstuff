@@ -6,6 +6,7 @@ var KingCastleRoad = jschess.pieces.KingCastleRoad;
 var Board = jschess.board.Board;
 var BoardCastleInitial = jschess.board.BoardCastleInitial;
 var BoardColors = jschess.board.BoardColors;
+var BoardPosition = jschess.board.BoardPosition;
 var BoardSquares = jschess.board.BoardSquares;
 var FENDataParser = jschess.board.FENDataParser;
 var FiftyMovesRuleCounter = jschess.board.FiftyMovesRuleCounter;
@@ -131,6 +132,48 @@ describe('Test board', function () {
             assert.equal(counter.value, 0);
             assert.ok(counter._turnedOn);
             assert.ok(!counter._needToRefresh);
+        });
+    });
+
+    describe('Test BoardPosition', function () {
+        it('should check creation', function () {
+            let position = new BoardPosition('4k1r1/3n1p2/4p1q1/3bP3/Q1pN1B2/6P1/5P2/4R1K1');
+
+            assert.equal(position[Piece.WHITE].length, 8);
+            assert.equal(position[Piece.WHITE][0][0], Piece.ROOK);
+            assert.equal(position[Piece.WHITE][0][1], 'e1');
+            assert.equal(position[Piece.WHITE][1][0], Piece.KING);
+            assert.equal(position[Piece.WHITE][1][1], 'g1');
+            assert.equal(position[Piece.WHITE][2][0], Piece.PAWN);
+            assert.equal(position[Piece.WHITE][2][1], 'f2');
+            assert.equal(position[Piece.WHITE][3][0], Piece.PAWN);
+            assert.equal(position[Piece.WHITE][3][1], 'g3');
+            assert.equal(position[Piece.WHITE][4][0], Piece.QUEEN);
+            assert.equal(position[Piece.WHITE][4][1], 'a4');
+            assert.equal(position[Piece.WHITE][5][0], Piece.KNIGHT);
+            assert.equal(position[Piece.WHITE][5][1], 'd4');
+            assert.equal(position[Piece.WHITE][6][0], Piece.BISHOP);
+            assert.equal(position[Piece.WHITE][6][1], 'f4');
+            assert.equal(position[Piece.WHITE][7][0], Piece.PAWN);
+            assert.equal(position[Piece.WHITE][7][1], 'e5');
+
+            assert.equal(position[Piece.BLACK].length, 8);
+            assert.equal(position[Piece.BLACK][0][0], Piece.PAWN);
+            assert.equal(position[Piece.BLACK][0][1], 'c4');
+            assert.equal(position[Piece.BLACK][1][0], Piece.BISHOP);
+            assert.equal(position[Piece.BLACK][1][1], 'd5');
+            assert.equal(position[Piece.BLACK][2][0], Piece.PAWN);
+            assert.equal(position[Piece.BLACK][2][1], 'e6');
+            assert.equal(position[Piece.BLACK][3][0], Piece.QUEEN);
+            assert.equal(position[Piece.BLACK][3][1], 'g6');
+            assert.equal(position[Piece.BLACK][4][0], Piece.KNIGHT);
+            assert.equal(position[Piece.BLACK][4][1], 'd7');
+            assert.equal(position[Piece.BLACK][5][0], Piece.PAWN);
+            assert.equal(position[Piece.BLACK][5][1], 'f7');
+            assert.equal(position[Piece.BLACK][6][0], Piece.KING);
+            assert.equal(position[Piece.BLACK][6][1], 'e8');
+            assert.equal(position[Piece.BLACK][7][0], Piece.ROOK);
+            assert.equal(position[Piece.BLACK][7][1], 'g8');
         });
     });
 
