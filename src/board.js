@@ -110,6 +110,76 @@ class FiftyMovesRuleCounter extends MovesCounter {
 }
 
 
+class BoardPosition {
+    /*
+    Scheme:
+        {
+            color: [
+                [pieceName, squareName],
+                ...
+            ],
+            ...
+        }
+
+    Example:
+        {
+            [Piece.WHITE]: [
+                [Piece.KING, 'e1'],
+            ],
+            [Piece.BLACK]: [
+                [Piece.KING, 'e8'],
+            ]
+        }
+
+    Create param:
+      - data [String] (FEN piece placement data).
+    */
+
+    static PIECES = {
+        'P': [Piece.WHITE, Piece.PAWN],
+        'N': [Piece.WHITE, Piece.KNIGHT],
+        'B': [Piece.WHITE, Piece.BISHOP],
+        'R': [Piece.WHITE, Piece.ROOK],
+        'Q': [Piece.WHITE, Piece.QUEEN],
+        'K': [Piece.WHITE, Piece.KING],
+        'p': [Piece.BLACK, Piece.PAWN],
+        'n': [Piece.BLACK, Piece.KNIGHT],
+        'b': [Piece.BLACK, Piece.BISHOP],
+        'r': [Piece.BLACK, Piece.ROOK],
+        'q': [Piece.BLACK, Piece.QUEEN],
+        'k': [Piece.BLACK, Piece.KING],
+    };
+
+    constructor(data) {
+        for (let color of Piece.ALL_COLORS) {
+            this[color] = [];
+        }
+        this._rows = this._getRows(data);
+        this._fillData();
+    }
+
+    _getRows(data) {
+        return (
+            data
+            .replace(/\d/g, n => {return '0'.repeat(parseInt(n))})
+            .split('/')
+            .reverse()
+        );
+    }
+
+    _fillData() {
+        for (let y = 0; y < 8; y++) {
+            for (let x = 0; x < 8; x++) {
+                if (this._rows[y][x] == '0') continue;
+                let [color, pieceName] = BoardPosition.PIECES[this._rows[y][x]];
+                let squareName = square.Square.coordinatesToName(x, y);
+                this[color].push([pieceName, squareName]);
+            }
+        }
+    }
+}
+
+
 class BoardCastleInitial {
     /*
     Scheme:
@@ -187,20 +257,6 @@ class FENDataParser {
       - data [String] (FEN string).
     */
 
-    #pieces = {
-        'P': [Piece.WHITE, Piece.PAWN],
-        'N': [Piece.WHITE, Piece.KNIGHT],
-        'B': [Piece.WHITE, Piece.BISHOP],
-        'R': [Piece.WHITE, Piece.ROOK],
-        'Q': [Piece.WHITE, Piece.QUEEN],
-        'K': [Piece.WHITE, Piece.KING],
-        'p': [Piece.BLACK, Piece.PAWN],
-        'n': [Piece.BLACK, Piece.KNIGHT],
-        'b': [Piece.BLACK, Piece.BISHOP],
-        'r': [Piece.BLACK, Piece.ROOK],
-        'q': [Piece.BLACK, Piece.QUEEN],
-        'k': [Piece.BLACK, Piece.KING],
-    };
     #colors = {'w': Piece.WHITE, 'b': Piece.BLACK};
 
     constructor(data) {
@@ -212,31 +268,12 @@ class FENDataParser {
             fiftyMovesRuleData,
             movesCounterData,
         ] = data.split(' ');
-        this.position = this._getPosition(positionData);
+        this.position = new BoardPosition(positionData);
         this.currentColor = this.#colors[currentColorData];
         this.castleRights = new BoardCastleInitial(castleRightsData);
         this.enPassantSquareName = enPassantData == '-' ? null : enPassantData;
         this.fiftyMovesRuleCounter = parseInt(fiftyMovesRuleData);
         this.movesCounter = parseInt(movesCounterData);
-    }
-
-    _getPosition(positionData) {
-        let data = {[Piece.WHITE]: [], [Piece.BLACK]: []};
-        let rows = (
-            positionData
-            .replace(/\d/g, n => {return '0'.repeat(parseInt(n))})
-            .split('/')
-            .reverse()
-        );
-        for (let y = 0; y < 8; y++) {
-            for (let x = 0; x < 8; x++) {
-                if (rows[y][x] == '0') continue;
-                let [color, pieceName] = this.#pieces[rows[y][x]];
-                let squareName = square.Square.coordinatesToName(x, y);
-                data[color].push([pieceName, squareName]);
-            }
-        }
-        return data;
     }
 }
 
@@ -357,17 +394,7 @@ class Board {
     Initial example with data:
         initial = {
             data: {
-                position: {
-                    [Piece.WHITE]: [
-                        [Piece.ROOK, 'h1'],
-                        [Piece.PAWN, 'g4'],
-                        [Piece.KING, 'e1'],
-                    ],
-                    [Piece.BLACK]: [
-                        [Piece.ROOK, 'a8'],
-                        [Piece.KING, 'e8'],
-                    ]
-                },
+                position: new BoardPosition('r3k3/8/8/8/6P1/8/8/4K2R'),
                 currentColor: Piece.BLACK,
                 castleRights: new BoardCastleInitial('Kq'),
                 enPassantSquareName: 'g3',
