@@ -110,7 +110,7 @@ class FiftyMovesRuleCounter extends MovesCounter {
 }
 
 
-class BoardPosition {
+class BoardInitialPosition {
     /*
     Scheme:
         {
@@ -119,16 +119,6 @@ class BoardPosition {
                 ...
             ],
             ...
-        }
-
-    Example:
-        {
-            [Piece.WHITE]: [
-                [Piece.KING, 'e1'],
-            ],
-            [Piece.BLACK]: [
-                [Piece.KING, 'e8'],
-            ]
         }
 
     Create param:
@@ -171,7 +161,7 @@ class BoardPosition {
         for (let y = 0; y < 8; y++) {
             for (let x = 0; x < 8; x++) {
                 if (this._rows[y][x] == '0') continue;
-                let [color, pieceName] = BoardPosition.PIECES[this._rows[y][x]];
+                let [color, pieceName] = BoardInitialPosition.PIECES[this._rows[y][x]];
                 let squareName = square.Square.coordinatesToName(x, y);
                 this[color].push([pieceName, squareName]);
             }
@@ -180,18 +170,12 @@ class BoardPosition {
 }
 
 
-class BoardCastleInitial {
+class BoardInitialCastle {
     /*
     Scheme:
         {
             color: KingCastleInitial,
             ...
-        }
-
-    Example:
-        {
-            [Piece.WHITE]: new KingCastleInitial(),
-            [Piece.BLACK]: new KingCastleInitial()
         }
 
     Create param:
@@ -203,16 +187,16 @@ class BoardCastleInitial {
     static BLACK_SHORT = 'k';
     static BLACK_LONG = 'q';
     static ALL_SIGNS = [
-        BoardCastleInitial.WHITE_SHORT,
-        BoardCastleInitial.WHITE_LONG,
-        BoardCastleInitial.BLACK_SHORT,
-        BoardCastleInitial.BLACK_LONG,
+        BoardInitialCastle.WHITE_SHORT,
+        BoardInitialCastle.WHITE_LONG,
+        BoardInitialCastle.BLACK_SHORT,
+        BoardInitialCastle.BLACK_LONG,
     ];
     static VALUES = {
-        [BoardCastleInitial.WHITE_SHORT]: [Piece.WHITE, KingCastleRoad.SHORT],
-        [BoardCastleInitial.WHITE_LONG]: [Piece.WHITE, KingCastleRoad.LONG],
-        [BoardCastleInitial.BLACK_SHORT]: [Piece.BLACK, KingCastleRoad.SHORT],
-        [BoardCastleInitial.BLACK_LONG]: [Piece.BLACK, KingCastleRoad.LONG],
+        [BoardInitialCastle.WHITE_SHORT]: [Piece.WHITE, KingCastleRoad.SHORT],
+        [BoardInitialCastle.WHITE_LONG]: [Piece.WHITE, KingCastleRoad.LONG],
+        [BoardInitialCastle.BLACK_SHORT]: [Piece.BLACK, KingCastleRoad.SHORT],
+        [BoardInitialCastle.BLACK_LONG]: [Piece.BLACK, KingCastleRoad.LONG],
     };
 
     constructor(signs='-') {
@@ -221,8 +205,8 @@ class BoardCastleInitial {
     }
 
     _checkSign(sign) {
-        if (!BoardCastleInitial.ALL_SIGNS.includes(sign)) {
-            throw Error(`"${sign}" is not a correct castle rights sign. Use one of ${BoardCastleInitial.ALL_SIGNS}.`);
+        if (!BoardInitialCastle.ALL_SIGNS.includes(sign)) {
+            throw Error(`"${sign}" is not a correct castle rights sign. Use one of ${BoardInitialCastle.ALL_SIGNS}.`);
         }
     }
 
@@ -234,7 +218,7 @@ class BoardCastleInitial {
         for (let sign of this._signs) {
             if (sign == '-') continue;
             this._checkSign(sign);
-            let [color, roadKind] = BoardCastleInitial.VALUES[sign];
+            let [color, roadKind] = BoardInitialCastle.VALUES[sign];
             data[color].push(roadKind);
         }
         return data;
@@ -249,31 +233,62 @@ class BoardCastleInitial {
 }
 
 
-class FENDataParser {
+class FENData {
     /*
     Parse data from FEN string.
 
+    Scheme:
+        {
+            positionData: String,
+            currentColorData: String,
+            castleRightsData: String,
+            enPassantData: String,
+            fiftyMovesRuleData: String,
+            movesCounterData: String
+        }
+
     Create param:
-      - data [String] (FEN string).
+      - data [String] (FEN data string).
+    */
+
+    constructor(data) {
+        [
+            this.positionData,
+            this.currentColorData,
+            this.castleRightsData,
+            this.enPassantData,
+            this.fiftyMovesRuleData,
+            this.movesCounterData,
+        ] = data.split(' ');
+    }
+}
+
+
+class BoardInitial {
+    /*
+    Scheme:
+        {
+            position: BoardInitialPosition,
+            currentColor: String,
+            castleRights: BoardInitialCastle,
+            enPassantSquareName: String or null,
+            fiftyMovesRuleCounter: Number,
+            movesCounter: Number
+        }
+
+    Create param:
+      - data [FENData] (parsed FEN data).
     */
 
     #colors = {'w': Piece.WHITE, 'b': Piece.BLACK};
 
     constructor(data) {
-        let [
-            positionData,
-            currentColorData,
-            castleRightsData,
-            enPassantData,
-            fiftyMovesRuleData,
-            movesCounterData,
-        ] = data.split(' ');
-        this.position = new BoardPosition(positionData);
-        this.currentColor = this.#colors[currentColorData];
-        this.castleRights = new BoardCastleInitial(castleRightsData);
-        this.enPassantSquareName = enPassantData == '-' ? null : enPassantData;
-        this.fiftyMovesRuleCounter = parseInt(fiftyMovesRuleData);
-        this.movesCounter = parseInt(movesCounterData);
+        this.position = new BoardInitialPosition(data.positionData);
+        this.currentColor = this.#colors[data.currentColorData];
+        this.castleRights = new BoardInitialCastle(data.castleRightsData);
+        this.enPassantSquareName = data.enPassantData == '-' ? null : data.enPassantData;
+        this.fiftyMovesRuleCounter = parseInt(data.fiftyMovesRuleData);
+        this.movesCounter = parseInt(data.movesCounterData);
     }
 }
 
@@ -819,12 +834,13 @@ class Board {
 
 module.exports = {
     Board: Board,
-    BoardCastleInitial: BoardCastleInitial,
     BoardColors: BoardColors,
-    BoardPosition: BoardPosition,
+    BoardInitial,
+    BoardInitialCastle: BoardInitialCastle,
+    BoardInitialPosition: BoardInitialPosition,
     BoardSquares: BoardSquares,
+    FENData: FENData,
     FENDataCreator: FENDataCreator,
-    FENDataParser: FENDataParser,
     FiftyMovesRuleCounter: FiftyMovesRuleCounter,
     MovesCounter: MovesCounter
 };
