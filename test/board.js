@@ -4,11 +4,12 @@ var SquareName = jschess.square.SquareName;
 var Piece = jschess.pieces.Piece;
 var KingCastleRoad = jschess.pieces.KingCastleRoad;
 var Board = jschess.board.Board;
-var BoardCastleInitial = jschess.board.BoardCastleInitial;
 var BoardColors = jschess.board.BoardColors;
-var BoardPosition = jschess.board.BoardPosition;
+var BoardInitial = jschess.board.BoardInitial;
+var BoardInitialCastle = jschess.board.BoardInitialCastle;
+var BoardInitialPosition = jschess.board.BoardInitialPosition;
 var BoardSquares = jschess.board.BoardSquares;
-var FENDataParser = jschess.board.FENDataParser;
+var FENData = jschess.board.FENData;
 var FiftyMovesRuleCounter = jschess.board.FiftyMovesRuleCounter;
 var MovesCounter = jschess.board.MovesCounter;
 
@@ -135,9 +136,9 @@ describe('Test board', function () {
         });
     });
 
-    describe('Test BoardPosition', function () {
+    describe('Test BoardInitialPosition', function () {
         it('should check creation', function () {
-            let position = new BoardPosition('4k1r1/3n1p2/4p1q1/3bP3/Q1pN1B2/6P1/5P2/4R1K1');
+            let position = new BoardInitialPosition('4k1r1/3n1p2/4p1q1/3bP3/Q1pN1B2/6P1/5P2/4R1K1');
 
             assert.equal(position[Piece.WHITE].length, 8);
             assert.equal(position[Piece.WHITE][0][0], Piece.ROOK);
@@ -177,37 +178,37 @@ describe('Test board', function () {
         });
     });
 
-    describe('Test BoardCastleInitial', function () {
+    describe('Test BoardInitialCastle', function () {
         it('should check creation', function () {
             assert.throws(() => {
-                new BoardCastleInitial('wrong');
+                new BoardInitialCastle('wrong');
             });
 
-            let castleRights = new BoardCastleInitial();
+            let castleRights = new BoardInitialCastle();
             assert.ok(!castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
             assert.ok(!castleRights[Piece.WHITE][KingCastleRoad.LONG]);
             assert.ok(!castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
             assert.ok(!castleRights[Piece.BLACK][KingCastleRoad.LONG]);
 
-            castleRights = new BoardCastleInitial('-');
+            castleRights = new BoardInitialCastle('-');
             assert.ok(!castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
             assert.ok(!castleRights[Piece.WHITE][KingCastleRoad.LONG]);
             assert.ok(!castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
             assert.ok(!castleRights[Piece.BLACK][KingCastleRoad.LONG]);
 
-            castleRights = new BoardCastleInitial('KQ');
+            castleRights = new BoardInitialCastle('KQ');
             assert.ok(castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
             assert.ok(castleRights[Piece.WHITE][KingCastleRoad.LONG]);
             assert.ok(!castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
             assert.ok(!castleRights[Piece.BLACK][KingCastleRoad.LONG]);
 
-            castleRights = new BoardCastleInitial('kq');
+            castleRights = new BoardInitialCastle('kq');
             assert.ok(!castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
             assert.ok(!castleRights[Piece.WHITE][KingCastleRoad.LONG]);
             assert.ok(castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
             assert.ok(castleRights[Piece.BLACK][KingCastleRoad.LONG]);
 
-            castleRights = new BoardCastleInitial('KQkq');
+            castleRights = new BoardInitialCastle('KQkq');
             assert.ok(castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
             assert.ok(castleRights[Piece.WHITE][KingCastleRoad.LONG]);
             assert.ok(castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
@@ -215,9 +216,11 @@ describe('Test board', function () {
         });
     });
 
-    describe('Test FENDataParser', function () {
+    describe('Test BoardInitial', function () {
         it('should check position', function () {
-            let data = new FENDataParser('2kr4/1bp3q1/1pn5/p7/5Q2/5N1P/5PPB/5RK1 w - a6 0 25');
+            let data = new BoardInitial(
+                new FENData('2kr4/1bp3q1/1pn5/p7/5Q2/5N1P/5PPB/5RK1 w - a6 0 25')
+            );
 
             assert.equal(data.position[Piece.WHITE].length, 8);
             assert.equal(data.position[Piece.WHITE][0][0], Piece.ROOK);
@@ -257,33 +260,33 @@ describe('Test board', function () {
         });
 
         it('should check currentColor', function () {
-            let data = new FENDataParser('5r2/8/3k4/8/5K2/8/R7/8 w - - 0 1');
+            let data = new BoardInitial(new FENData('5r2/8/3k4/8/5K2/8/R7/8 w - - 0 1'));
             assert.equal(data.currentColor, Piece.WHITE);
 
-            data = new FENDataParser('5r2/8/3k4/8/4K3/8/R7/8 b - - 0 1');
+            data = new BoardInitial(new FENData('5r2/8/3k4/8/4K3/8/R7/8 b - - 0 1'));
             assert.equal(data.currentColor, Piece.BLACK);
         });
 
         it('should check castleRights', function () {
-            let data = new FENDataParser('r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1');
+            let data = new BoardInitial(new FENData('r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1'));
             assert.ok(data.castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
             assert.ok(data.castleRights[Piece.WHITE][KingCastleRoad.LONG]);
             assert.ok(data.castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
             assert.ok(data.castleRights[Piece.BLACK][KingCastleRoad.LONG]);
 
-            data = new FENDataParser('r3k3/pppppppp/8/8/8/8/PPPPPPPP/4K2R w Kq - 0 1');
+            data = new BoardInitial(new FENData('r3k3/pppppppp/8/8/8/8/PPPPPPPP/4K2R w Kq - 0 1'));
             assert.ok(data.castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
             assert.ok(!data.castleRights[Piece.WHITE][KingCastleRoad.LONG]);
             assert.ok(!data.castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
             assert.ok(data.castleRights[Piece.BLACK][KingCastleRoad.LONG]);
 
-            data = new FENDataParser('4k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K3 w Qk - 0 1');
+            data = new BoardInitial(new FENData('4k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K3 w Qk - 0 1'));
             assert.ok(!data.castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
             assert.ok(data.castleRights[Piece.WHITE][KingCastleRoad.LONG]);
             assert.ok(data.castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
             assert.ok(!data.castleRights[Piece.BLACK][KingCastleRoad.LONG]);
 
-            data = new FENDataParser('4k3/pppppppp/8/8/8/8/PPPPPPPP/4K3 w - - 0 1');
+            data = new BoardInitial(new FENData('4k3/pppppppp/8/8/8/8/PPPPPPPP/4K3 w - - 0 1'));
             assert.ok(!data.castleRights[Piece.WHITE][KingCastleRoad.SHORT]);
             assert.ok(!data.castleRights[Piece.WHITE][KingCastleRoad.LONG]);
             assert.ok(!data.castleRights[Piece.BLACK][KingCastleRoad.SHORT]);
@@ -291,15 +294,17 @@ describe('Test board', function () {
         });
 
         it('should check enPassantSquareName', function () {
-            let data = new FENDataParser('4k3/pppppppp/8/8/8/8/PPPPPPPP/4K3 w - - 0 1');
+            let data = new BoardInitial(new FENData('4k3/pppppppp/8/8/8/8/PPPPPPPP/4K3 w - - 0 1'));
             assert.equal(data.enPassantSquareName, null);
 
-            data = new FENDataParser('4k3/pppppppp/8/8/4P3/8/PPPP1PPP/4K3 w - e3 0 1');
+            data = new BoardInitial(new FENData('4k3/pppppppp/8/8/4P3/8/PPPP1PPP/4K3 w - e3 0 1'));
             assert.equal(data.enPassantSquareName, 'e3');
         });
 
         it('should check moves counters', function () {
-            let data = new FENDataParser('rnbq1bnr/pppkpppp/8/3p4/4P3/5N2/PPPP1PPP/RNBQKB1R w KQ - 2 3 ');
+            let data = new BoardInitial(
+                new FENData('rnbq1bnr/pppkpppp/8/3p4/4P3/5N2/PPPP1PPP/RNBQKB1R w KQ - 2 3 ')
+            );
             assert.equal(data.fiftyMovesRuleCounter, 2);
             assert.equal(data.movesCounter, 3);
         });
