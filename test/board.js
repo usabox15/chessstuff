@@ -216,6 +216,18 @@ describe('Test board', function () {
         });
     });
 
+    describe('Test FENData', function () {
+        it('should check creation', function () {
+            let data = new FENData('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+            assert.equal(data.positionData, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR');
+            assert.equal(data.currentColorData, 'w');
+            assert.equal(data.castleRightsData, 'KQkq');
+            assert.equal(data.enPassantData, '-');
+            assert.equal(data.fiftyMovesRuleData, '0');
+            assert.equal(data.movesCounterData, '1');
+        });
+    });
+
     describe('Test BoardInitial', function () {
         it('should check position', function () {
             let data = new BoardInitial(
