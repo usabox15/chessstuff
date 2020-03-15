@@ -582,10 +582,32 @@ class Board {
         if (this._positionIsSetted) {
             return {
                 success: false,
-                description: "Not allowed to set color after position has been setted."
+                description: "Position has been already setted."
             };
         }
         this.colors = new BoardColors(color);
+        return {success: true};
+    }
+
+    _setCastleRights(castleRights) {
+        if (this._positionIsSetted) {
+            return {
+                success: false,
+                description: "Position has been already setted."
+            };
+        }
+        if (castleRights.constructor != BoardInitialCastle) {
+            return {
+                success: false,
+                description: "Setted data has to be an instance of BoardInitialCastle."
+            };
+        }
+        this._initialCastleRights = castleRights;
+        for (let king of Object.values(this.kings)) {
+            if (king) {
+                king.setCastle(castleRights[king.color]);
+            }
+        }
         return {success: true};
     }
 
@@ -732,6 +754,12 @@ class Board {
 
     setCurrentColor(color) {
         let result = this._setCurrentColor(color);
+        if (!result.success) return this._response(result.description, false);
+        return this._response("Successfully setted!");
+    }
+
+    setCastleRights(castleRights) {
+        let result = this._setCastleRights(castleRights);
         if (!result.success) return this._response(result.description, false);
         return this._response("Successfully setted!");
     }
