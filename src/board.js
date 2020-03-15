@@ -560,16 +560,6 @@ class Board {
         piece.getPlace(toSquare, refresh);
     }
 
-    _setCurrentColor(color) {
-        this.colors = new BoardColors(color);
-        this._checkPositionIsLegal();
-        if (!this._positionIsLegal) {
-            this._rollBack();
-            return false;
-        }
-        return true;
-    }
-
     _setPosition(positionData) {
         for (let [color, piecesData] of Object.entries(positionData)) {
             for (let [pieceName, squareName] of piecesData) {
@@ -577,11 +567,26 @@ class Board {
             }
         }
         this.refreshAllSquares();
-        if (this._positionIsLegal) {
-            this._positionIsSetted = true;
-        } else {
+        if (!this._positionIsLegal) {
             this._rollBack();
+            return {
+                success: false,
+                description: "Position is not legal."
+            };
         }
+        this._positionIsSetted = true;
+        return {success: true};
+    }
+
+    _setCurrentColor(color) {
+        if (this._positionIsSetted) {
+            return {
+                success: false,
+                description: "Not allowed to set color after position has been setted."
+            };
+        }
+        this.colors = new BoardColors(color);
+        return {success: true};
     }
 
     _enPassantMatter(fromSquare, toSquare, pawn) {
@@ -718,32 +723,16 @@ class Board {
         return this._response("Successfully marked!");
     }
 
-    setCurrentColor(color) {
-        if (this._positionIsSetted) {
-            return this._response(
-                "Not allowed to set color after position has been setted.",
-                false
-            );
-        }
-        if (!this._setCurrentColor(color)) {
-            return this._response("Fail to set color.", false);
-        }
-        return this._response("Successfully setted!");
-    }
-
     setPosition(positionData) {
         if (this._positionIsSetted) return this._response("The position is already setted.", false);
-        this._setPosition(positionData);
-        if (!this._positionIsSetted) return this._response("Fail to set position.", false);
+        let result = this._setPosition(positionData);
+        if (!result.success) return this._response(result.description, false);
         return this._response("Successfully setted!");
     }
 
-    setInitial(data=null) {
-        let initialData = new FENDataParser(data || this.#initialFEN);
-        let setCurrentColorResponse = this.setCurrentColor(initialData.currentColor);
-        if (!setCurrentColorResponse.success) return setCurrentColorResponse;
-        let setPositionResponse = this.setPosition();
-        if (!setPositionResponse.success) return setPositionResponse;
+    setCurrentColor(color) {
+        let result = this._setCurrentColor(color);
+        if (!result.success) return this._response(result.description, false);
         return this._response("Successfully setted!");
     }
 
