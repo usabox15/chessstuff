@@ -381,42 +381,11 @@ class FENDataCreator {
 class Board {
     /*
     Chess board class.
-    There is create param:
+    Create param:
       - initial [Object] {
-            FEN [String] (FEN data string, not required)
-            data [Object] {
-                position [Object] {
-                    color: [
-                        [pieceName, squareName],
-                    ],
-                } (pieces placing, not required)
-                currentColor [String] (default is Piece.WHITE, not required)
-                castleRights [BoardCastleInitial] (not required)
-                enPassantSquareName [String] (not required)
-                fiftyMovesRuleCounter [Number] (
-                    count of half moves after latest pawn move or latest piece capture,
-                    not required
-                )
-                movesCounter [Number] (not required)
-            } (not required)
+            startingPosition: Boolean, // whether set starting position or not, not required
+            FEN: String // FEN data string, not required
         } (not required).
-
-    Initial example with FEN:
-        initial = {
-            FEN: 'r3k3/8/8/8/6P1/8/8/4K2R b Kq g3 0 1'
-        }
-
-    Initial example with data:
-        initial = {
-            data: {
-                position: new BoardPosition('r3k3/8/8/8/6P1/8/8/4K2R'),
-                currentColor: Piece.BLACK,
-                castleRights: new BoardCastleInitial('Kq'),
-                enPassantSquareName: 'g3',
-                fiftyMovesRuleCounter: 0,
-                movesCounter: 1,
-            }
-        }
     */
 
     #piecesBox = {
@@ -431,29 +400,23 @@ class Board {
     #initialFEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
     constructor(initial=null) {
-        let initialData = {};
-        if (initial) {
-            if (initial.FEN) {
-                initialData = new FENDataParser(initial.FEN);
-            } else if (initial.data) {
-                initialData = initial.data;
-            }
-        }
+        let initialData = this._getInitialData(initial);
         this._squares = new BoardSquares(this);
-        this._colors = new BoardColors(initialData.currentColor || Piece.WHITE);
+        this._colors = new BoardColors(initialData.currentColor);
         this._result = null;
-        this._enPassantSquare = null;
-        if (initialData.enPassantSquareName) {
-            this._enPassantSquare = this._squares[initialData.enPassantSquareName];
-        }
+        this._enPassantSquare = (
+            initialData.enPassantSquareName ?
+            this._squares[initialData.enPassantSquareName] :
+            null
+        );
         this._transformation = null;
-        this._initialCastleRights = initialData.castleRights || null;
+        this._initialCastleRights = initialData.castleRights;
         this._kings = {[Piece.WHITE]: null, [Piece.BLACK]: null};
-        this._fiftyMovesRuleCounter = new FiftyMovesRuleCounter(initialData.fiftyMovesRuleCounter || 0);
-        this._movesCounter = new MovesCounter(initialData.movesCounter || 1);
+        this._fiftyMovesRuleCounter = new FiftyMovesRuleCounter(initialData.fiftyMovesRuleCounter);
+        this._movesCounter = new MovesCounter(initialData.movesCounter);
         this._positionIsLegal = true;
         this._positionIsSetted = false;
-        if (initialData.position) this._setPosition(initialData.position);
+        if (initial) this._setPosition(initialData.position);
     }
 
     get squares() {
@@ -499,6 +462,18 @@ class Board {
             &&
             allPieces.filter(p => p.isBishop && !p.square.isLight).length > 0
         );
+    }
+
+    _getInitialData(initial) {
+        let initialFEN = this.#emptyFEN;
+        if (initial) {
+            if (initial.startingPosition) {
+                initialFEN = this.#initialFEN;
+            } else if (initial.FEN) {
+                initialFEN = initial.FEN;
+            }
+        }
+        return new BoardInitial(new FENData(initialFEN));
     }
 
     _setResult(whitePoints, blackPoints) {
