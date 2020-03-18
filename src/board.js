@@ -596,7 +596,7 @@ class Board {
                 description: "Position has been already setted."
             };
         }
-        if (castleRights.constructor != BoardInitialCastle) {
+        if (!castleRights instanceof BoardInitialCastle) {
             return {
                 success: false,
                 description: "Setted data has to be an instance of BoardInitialCastle."

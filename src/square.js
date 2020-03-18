@@ -219,6 +219,83 @@ class SquaresLine {
 }
 
 
+class SquareNeighbors {
+    static UP_LEFT = 'upLeft';
+    static UP = 'up';
+    static UP_RIGHT = 'upRight';
+    static RIGHT = 'right';
+    static DOWN_RIGHT = 'downRight';
+    static DOWN = 'down';
+    static DOWN_LEFT = 'downLeft';
+    static LEFT = 'left';
+
+    #validate = {
+        [SquareNeighbors.UP_LEFT]: (square) => {return !square.onEdge.up && !square.onEdge.left;},
+        [SquareNeighbors.UP]: (square) => {return !square.onEdge.up;},
+        [SquareNeighbors.UP_RIGHT]: (square) => {return !square.onEdge.up && !square.onEdge.right;},
+        [SquareNeighbors.RIGHT]: (square) => {return !square.onEdge.right;},
+        [SquareNeighbors.DOWN_RIGHT]: (square) => {return !square.onEdge.down && !square.onEdge.right;},
+        [SquareNeighbors.DOWN]: (square) => {return !square.onEdge.down;},
+        [SquareNeighbors.DOWN_LEFT]: (square) => {return !square.onEdge.down && !square.onEdge.left;},
+        [SquareNeighbors.LEFT]: (square) => {return !square.onEdge.left;},
+    };
+    #delta = {
+        [SquareNeighbors.UP_LEFT]: {x: -1, y: 1},
+        [SquareNeighbors.UP]: {x: 0, y: 1},
+        [SquareNeighbors.UP_RIGHT]: {x: 1, y: 1},
+        [SquareNeighbors.RIGHT]: {x: 1, y: 0},
+        [SquareNeighbors.DOWN_RIGHT]: {x: 1, y: -1},
+        [SquareNeighbors.DOWN]: {x: 0, y: -1},
+        [SquareNeighbors.DOWN_LEFT]: {x: -1, y: -1},
+        [SquareNeighbors.LEFT]: {x: -1, y: 0},
+    };
+
+    constructor(square) {
+        this._square = square;
+    }
+
+    _getSquare(kind) {
+        if (!this._square.board || !this.#validate[kind](this._square)) return null;
+        let x = this._square.coordinates.x + this.#delta[kind].x;
+        let y = this._square.coordinates.y + this.#delta[kind].y;
+        let squareName = Square.coordinatesToName(x, y);
+        return this._square.board[squareName];
+    }
+
+    upLeft() {
+        return this._getSquare(SquareNeighbors.UP_LEFT);
+    }
+
+    up() {
+        return this._getSquare(SquareNeighbors.UP);
+    }
+
+    upRight() {
+        return this._getSquare(SquareNeighbors.UP_RIGHT);
+    }
+
+    right() {
+        return this._getSquare(SquareNeighbors.RIGHT);
+    }
+
+    downRight() {
+        return this._getSquare(SquareNeighbors.DOWN_RIGHT);
+    }
+
+    down() {
+        return this._getSquare(SquareNeighbors.DOWN);
+    }
+
+    downLeft() {
+        return this._getSquare(SquareNeighbors.DOWN_LEFT);
+    }
+
+    left() {
+        return this._getSquare(SquareNeighbors.LEFT);
+    }
+}
+
+
 class Square {
     /*
     Chess board square.
@@ -256,6 +333,7 @@ class Square {
         this._piece = null;
         this.pieces = new relations.ActionsRelation(this, 'squares');
         this.onEdge = new SquareOnEdge(this.coordinates);
+        this.neighbors = new SquareNeighbors(this);
         this._isLight = this._getIsLight();
     }
 
