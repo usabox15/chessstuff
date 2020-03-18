@@ -20,6 +20,6 @@
   },
   "homepage": "https://github.com/YegorDB/chess#readme",
   "devDependencies": {
-    "mocha": "^6.2.2"
+    "mocha": "^7.1.1"
   }
 }
