@@ -718,6 +718,24 @@ class Board {
         return {success: true};
     }
 
+    _setMovesCounter(count) {
+        if (this._positionIsSetted) {
+            return {
+                success: false,
+                description: "Position has been already setted."
+            };
+        }
+        let countType = typeof count;
+        if (countType != 'number') {
+            return {
+                success: false,
+                description: `Count need to be an number. Not "${countType}".`
+            };
+        }
+        this._movesCounter = new MovesCounter(count);
+        return {success: true};
+    }
+
     _enPassantMatter(fromSquare, toSquare, pawn) {
         // jump through one square
         if (toSquare.getBetweenSquaresCount(fromSquare) == 1) {
@@ -879,6 +897,12 @@ class Board {
 
     setFiftyMovesRuleCounter(count) {
         let result = this._setFiftyMovesRuleCounter(count);
+        if (!result.success) return this._response(result.description, false);
+        return this._response("Successfully setted!");
+    }
+
+    setMovesCounter(count) {
+        let result = this._setMovesCounter(count);
         if (!result.success) return this._response(result.description, false);
         return this._response("Successfully setted!");
     }
