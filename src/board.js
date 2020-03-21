@@ -682,7 +682,7 @@ class Board {
         return {success: true};
     }
 
-    _setEnPassantSquare(SquareName) {
+    _setEnPassantSquare(squareName) {
         if (this._positionIsSetted) {
             return {
                 success: false,
@@ -690,13 +690,31 @@ class Board {
             };
         }
         let allSaquaresNames = Object.keys(this.squares);
-        if (!allSaquaresNames.includes(SquareName)) {
+        if (!allSaquaresNames.includes(squareName)) {
             return {
                 success: false,
-                description: `"${SquareName}" is illegal square name. Try one of ${allSaquaresNames}.`
+                description: `"${squareName}" is illegal square name. Try one of ${allSaquaresNames}.`
             };
         }
-        this._enPassantSquare = this.squares[SquareName];
+        this._enPassantSquare = this.squares[squareName];
+        return {success: true};
+    }
+
+    _setFiftyMovesRuleCounter(count) {
+        if (this._positionIsSetted) {
+            return {
+                success: false,
+                description: "Position has been already setted."
+            };
+        }
+        let countType = typeof count;
+        if (countType != 'number') {
+            return {
+                success: false,
+                description: `Count need to be an number. Not "${countType}".`
+            };
+        }
+        this._fiftyMovesRuleCounter = new FiftyMovesRuleCounter(count);
         return {success: true};
     }
 
@@ -853,8 +871,14 @@ class Board {
         return this._response("Successfully setted!");
     }
 
-    setEnPassantSquare(SquareName) {
-        let result = this._setEnPassantSquare(SquareName);
+    setEnPassantSquare(squareName) {
+        let result = this._setEnPassantSquare(squareName);
+        if (!result.success) return this._response(result.description, false);
+        return this._response("Successfully setted!");
+    }
+
+    setFiftyMovesRuleCounter(count) {
+        let result = this._setFiftyMovesRuleCounter(count);
         if (!result.success) return this._response(result.description, false);
         return this._response("Successfully setted!");
     }
