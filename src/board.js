@@ -523,6 +523,66 @@ class Board {
         return king.checkers.isLegal && (!king.checkers.exist || king.hasColor(this._colors.current));
     }
 
+    _checkEnPassantSquareLegal() {
+        return !this._enPassantSquare || !this._enPassantSquare.piece && (
+            this._enPassantSquare.onRank(3)
+            &&
+            !this._enPassantSquare.neighbors.down.piece
+            &&
+            this._enPassantSquare.neighbors.up.piece
+            &&
+            this._enPassantSquare.neighbors.up.piece.isPawn
+            &&
+            this._enPassantSquare.neighbors.up.piece.hasColor(Piece.WHITE)
+            &&
+            (
+                !this._enPassantSquare.onEdge.left
+                &&
+                this._enPassantSquare.neighbors.upLeft.piece
+                &&
+                this._enPassantSquare.neighbors.upLeft.piece.isPawn
+                &&
+                this._enPassantSquare.neighbors.upLeft.piece.hasColor(Piece.BLACK)
+            ||
+                !this._enPassantSquare.onEdge.right
+                &&
+                this._enPassantSquare.neighbors.upRight.piece
+                &&
+                this._enPassantSquare.neighbors.upRight.piece.isPawn
+                &&
+                this._enPassantSquare.neighbors.upRight.piece.hasColor(Piece.BLACK)
+            )
+        ||
+            this._enPassantSquare.onRank(6)
+            &&
+            !this._enPassantSquare.neighbors.up.piece
+            &&
+            this._enPassantSquare.neighbors.down.piece
+            &&
+            this._enPassantSquare.neighbors.down.piece.isPawn
+            &&
+            this._enPassantSquare.neighbors.down.piece.hasColor(Piece.BLACK)
+            &&
+            (
+                !this._enPassantSquare.onEdge.left
+                &&
+                this._enPassantSquare.neighbors.downLeft.piece
+                &&
+                this._enPassantSquare.neighbors.downLeft.piece.isPawn
+                &&
+                this._enPassantSquare.neighbors.downLeft.piece.hasColor(Piece.WHITE)
+            ||
+                !this._enPassantSquare.onEdge.right
+                &&
+                this._enPassantSquare.neighbors.downRight.piece
+                &&
+                this._enPassantSquare.neighbors.downRight.piece.isPawn
+                &&
+                this._enPassantSquare.neighbors.downRight.piece.hasColor(Piece.WHITE)
+            )
+        );
+    }
+
     _checkPositionIsLegal() {
         this._positionIsLegal = true;
         let allPieces = this.allPieces;
@@ -537,7 +597,13 @@ class Board {
             );
             if (!this._positionIsLegal) return;
         }
-        this._positionIsLegal = this._positionIsLegal && this._checkPawnsPlacementLegal(allPieces);
+        this._positionIsLegal = (
+            this._positionIsLegal
+        &&
+            this._checkPawnsPlacementLegal(allPieces)
+        &&
+            this._checkEnPassantSquareLegal()
+        );
     }
 
     _placePiece(color, kind, squareName, refresh=true) {
