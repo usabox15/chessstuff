@@ -627,19 +627,24 @@ class Board {
     }
 
     _setPosition(positionData) {
+        if (this._positionIsSetted) {
+            return {
+                success: false,
+                description: "Position has been already setted."
+            };
+        }
+        if (!castleRights instanceof BoardInitialPosition) {
+            return {
+                success: false,
+                description: "Setted data has to be an instance of BoardInitialPosition."
+            };
+        }
         for (let [color, piecesData] of Object.entries(positionData)) {
             for (let [pieceName, squareName] of piecesData) {
                 this._placePiece(color, pieceName, squareName, false);
             }
         }
         this.refreshAllSquares();
-        if (!this._positionIsLegal) {
-            this._rollBack();
-            return {
-                success: false,
-                description: "Position is not legal."
-            };
-        }
         this._positionIsSetted = true;
         return {success: true};
     }
@@ -674,6 +679,24 @@ class Board {
                 king.setCastle(castleRights[king.color]);
             }
         }
+        return {success: true};
+    }
+
+    _setEnPassantSquare(SquareName) {
+        if (this._positionIsSetted) {
+            return {
+                success: false,
+                description: "Position has been already setted."
+            };
+        }
+        let allSaquaresNames = Object.keys(this.squares);
+        if (!allSaquaresNames.includes(SquareName)) {
+            return {
+                success: false,
+                description: `"${SquareName}" is illegal square name. Try one of ${allSaquaresNames}.`
+            };
+        }
+        this._enPassantSquare = this.squares[SquareName];
         return {success: true};
     }
 
@@ -826,6 +849,12 @@ class Board {
 
     setCastleRights(castleRights) {
         let result = this._setCastleRights(castleRights);
+        if (!result.success) return this._response(result.description, false);
+        return this._response("Successfully setted!");
+    }
+
+    setEnPassantSquare(SquareName) {
+        let result = this._setEnPassantSquare(SquareName);
         if (!result.success) return this._response(result.description, false);
         return this._response("Successfully setted!");
     }
