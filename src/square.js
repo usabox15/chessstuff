@@ -254,44 +254,44 @@ class SquareNeighbors {
         this._square = square;
     }
 
+    get upLeft() {
+        return this._getSquare(SquareNeighbors.UP_LEFT);
+    }
+
+    get up() {
+        return this._getSquare(SquareNeighbors.UP);
+    }
+
+    get upRight() {
+        return this._getSquare(SquareNeighbors.UP_RIGHT);
+    }
+
+    get right() {
+        return this._getSquare(SquareNeighbors.RIGHT);
+    }
+
+    get downRight() {
+        return this._getSquare(SquareNeighbors.DOWN_RIGHT);
+    }
+
+    get down() {
+        return this._getSquare(SquareNeighbors.DOWN);
+    }
+
+    get downLeft() {
+        return this._getSquare(SquareNeighbors.DOWN_LEFT);
+    }
+
+    get left() {
+        return this._getSquare(SquareNeighbors.LEFT);
+    }
+
     _getSquare(kind) {
         if (!this._square.board || !this.#validate[kind](this._square)) return null;
         let x = this._square.coordinates.x + this.#delta[kind].x;
         let y = this._square.coordinates.y + this.#delta[kind].y;
         let squareName = Square.coordinatesToName(x, y);
-        return this._square.board[squareName];
-    }
-
-    upLeft() {
-        return this._getSquare(SquareNeighbors.UP_LEFT);
-    }
-
-    up() {
-        return this._getSquare(SquareNeighbors.UP);
-    }
-
-    upRight() {
-        return this._getSquare(SquareNeighbors.UP_RIGHT);
-    }
-
-    right() {
-        return this._getSquare(SquareNeighbors.RIGHT);
-    }
-
-    downRight() {
-        return this._getSquare(SquareNeighbors.DOWN_RIGHT);
-    }
-
-    down() {
-        return this._getSquare(SquareNeighbors.DOWN);
-    }
-
-    downLeft() {
-        return this._getSquare(SquareNeighbors.DOWN_LEFT);
-    }
-
-    left() {
-        return this._getSquare(SquareNeighbors.LEFT);
+        return this._square.board.squares[squareName];
     }
 }
 
@@ -405,6 +405,7 @@ class Square {
 module.exports = {
     Square: Square,
     SquareCoordinates: SquareCoordinates,
+    SquareNeighbors: SquareNeighbors,
     SquareName: SquareName,
     SquareOnEdge: SquareOnEdge,
     SquaresLine: SquaresLine

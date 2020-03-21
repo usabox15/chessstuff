@@ -1,10 +1,12 @@
 var assert = require('assert');
 var jschess = require('../');
+var SquareNeighbors = jschess.square.SquareNeighbors;
 var SquareName = jschess.square.SquareName;
 var SquareCoordinates = jschess.square.SquareCoordinates;
 var SquareOnEdge = jschess.square.SquareOnEdge;
 var Square = jschess.square.Square;
 var SquaresLine = jschess.square.SquaresLine;
+var Board = jschess.board.Board;
 
 
 describe('Test square', function () {
@@ -224,6 +226,102 @@ describe('Test square', function () {
             assert.ok(square.getBetweenSquaresCount(new Square('g4'), true, false), 3);
             assert.ok(square.getBetweenSquaresCount(new Square('g4'), false, true), 3);
             assert.ok(square.getBetweenSquaresCount(new Square('g4'), true, true), 4);
+        });
+    });
+
+    describe('Test SquareNeighbors', function () {
+        it('should check get neighbors', function () {
+            let board = new Board();
+
+            let neighbors = new SquareNeighbors(board.squares.a8);
+            assert.equal(neighbors.upLeft, null);
+            assert.equal(neighbors.up, null);
+            assert.equal(neighbors.upRight, null);
+            assert.equal(neighbors.right.name.value, 'b8');
+            assert.equal(neighbors.downRight.name.value, 'b7');
+            assert.equal(neighbors.down.name.value, 'a7');
+            assert.equal(neighbors.downLeft, null);
+            assert.equal(neighbors.left, null);
+
+            neighbors = new SquareNeighbors(board.squares.d8);
+            assert.equal(neighbors.upLeft, null);
+            assert.equal(neighbors.up, null);
+            assert.equal(neighbors.upRight, null);
+            assert.equal(neighbors.right.name.value, 'e8');
+            assert.equal(neighbors.downRight.name.value, 'e7');
+            assert.equal(neighbors.down.name.value, 'd7');
+            assert.equal(neighbors.downLeft.name.value, 'c7');
+            assert.equal(neighbors.left.name.value, 'c8');
+
+            neighbors = new SquareNeighbors(board.squares.h8);
+            assert.equal(neighbors.upLeft, null);
+            assert.equal(neighbors.up, null);
+            assert.equal(neighbors.upRight, null);
+            assert.equal(neighbors.right, null);
+            assert.equal(neighbors.downRight, null);
+            assert.equal(neighbors.down.name.value, 'h7');
+            assert.equal(neighbors.downLeft.name.value, 'g7');
+            assert.equal(neighbors.left.name.value, 'g8');
+
+            neighbors = new SquareNeighbors(board.squares.a4);
+            assert.equal(neighbors.upLeft, null);
+            assert.equal(neighbors.up.name.value, 'a5');
+            assert.equal(neighbors.upRight.name.value, 'b5');
+            assert.equal(neighbors.right.name.value, 'b4');
+            assert.equal(neighbors.downRight.name.value, 'b3');
+            assert.equal(neighbors.down.name.value, 'a3');
+            assert.equal(neighbors.downLeft, null);
+            assert.equal(neighbors.left, null);
+
+            neighbors = new SquareNeighbors(board.squares.e4);
+            assert.equal(neighbors.upLeft.name.value, 'd5');
+            assert.equal(neighbors.up.name.value, 'e5');
+            assert.equal(neighbors.upRight.name.value, 'f5');
+            assert.equal(neighbors.right.name.value, 'f4');
+            assert.equal(neighbors.downRight.name.value, 'f3');
+            assert.equal(neighbors.down.name.value, 'e3');
+            assert.equal(neighbors.downLeft.name.value, 'd3');
+            assert.equal(neighbors.left.name.value, 'd4');
+
+            neighbors = new SquareNeighbors(board.squares.h4);
+            assert.equal(neighbors.upLeft.name.value, 'g5');
+            assert.equal(neighbors.up.name.value, 'h5');
+            assert.equal(neighbors.upRight, null);
+            assert.equal(neighbors.right, null);
+            assert.equal(neighbors.downRight, null);
+            assert.equal(neighbors.down.name.value, 'h3');
+            assert.equal(neighbors.downLeft.name.value, 'g3');
+            assert.equal(neighbors.left.name.value, 'g4');
+
+            neighbors = new SquareNeighbors(board.squares.a1);
+            assert.equal(neighbors.upLeft, null);
+            assert.equal(neighbors.up.name.value, 'a2');
+            assert.equal(neighbors.upRight.name.value, 'b2');
+            assert.equal(neighbors.right.name.value, 'b1');
+            assert.equal(neighbors.downRight, null);
+            assert.equal(neighbors.down, null);
+            assert.equal(neighbors.downLeft, null);
+            assert.equal(neighbors.left, null);
+
+            neighbors = new SquareNeighbors(board.squares.d1);
+            assert.equal(neighbors.upLeft.name.value, 'c2');
+            assert.equal(neighbors.up.name.value, 'd2');
+            assert.equal(neighbors.upRight.name.value, 'e2');
+            assert.equal(neighbors.right.name.value, 'e1');
+            assert.equal(neighbors.downRight, null);
+            assert.equal(neighbors.down, null);
+            assert.equal(neighbors.downLeft, null);
+            assert.equal(neighbors.left.name.value, 'c1');
+
+            neighbors = new SquareNeighbors(board.squares.h1);
+            assert.equal(neighbors.upLeft.name.value, 'g2');
+            assert.equal(neighbors.up.name.value, 'h2');
+            assert.equal(neighbors.upRight, null);
+            assert.equal(neighbors.right, null);
+            assert.equal(neighbors.downRight, null);
+            assert.equal(neighbors.down, null);
+            assert.equal(neighbors.downLeft, null);
+            assert.equal(neighbors.left.name.value, 'g1');
         });
     });
 });
