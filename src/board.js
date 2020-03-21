@@ -400,23 +400,13 @@ class Board {
     #initialFEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
     constructor(initial=null) {
-        let initialData = this._getInitialData(initial);
         this._squares = new BoardSquares(this);
-        this._colors = new BoardColors(initialData.currentColor);
         this._result = null;
-        this._enPassantSquare = (
-            initialData.enPassantSquareName ?
-            this._squares[initialData.enPassantSquareName] :
-            null
-        );
         this._transformation = null;
-        this._initialCastleRights = initialData.castleRights;
         this._kings = {[Piece.WHITE]: null, [Piece.BLACK]: null};
-        this._fiftyMovesRuleCounter = new FiftyMovesRuleCounter(initialData.fiftyMovesRuleCounter);
-        this._movesCounter = new MovesCounter(initialData.movesCounter);
         this._positionIsLegal = true;
         this._positionIsSetted = false;
-        if (initial) this._setPosition(initialData.position);
+        this._init(initial);
     }
 
     get squares() {
@@ -462,6 +452,16 @@ class Board {
             &&
             allPieces.filter(p => p.isBishop && !p.square.isLight).length > 0
         );
+    }
+
+    _init(initial) {
+        let initialData = this._getInitialData(initial);
+        this._setCurrentColor(initialData.currentColor);
+        this._setCastleRights(initialData.castleRights);
+        this._setEnPassantSquare(initialData.enPassantSquareName);
+        this._setFiftyMovesRuleCounter(initialData.fiftyMovesRuleCounter);
+        this._setMovesCounter(initialData.movesCounter);
+        if (initial) this._setPosition(initialData.position);
     }
 
     _getInitialData(initial) {
@@ -656,7 +656,7 @@ class Board {
                 description: "Position has been already setted."
             };
         }
-        this.colors = new BoardColors(color);
+        this._colors = new BoardColors(color);
         return {success: true};
     }
 
@@ -689,14 +689,18 @@ class Board {
                 description: "Position has been already setted."
             };
         }
-        let allSaquaresNames = Object.keys(this.squares);
-        if (!allSaquaresNames.includes(squareName)) {
-            return {
-                success: false,
-                description: `"${squareName}" is illegal square name. Try one of ${allSaquaresNames}.`
-            };
+        if (squareName) {
+            let allSaquaresNames = Object.keys(this.squares);
+            if (!allSaquaresNames.includes(squareName)) {
+                return {
+                    success: false,
+                    description: `"${squareName}" is illegal square name. Try one of ${allSaquaresNames}.`
+                };
+            }
+            this._enPassantSquare = this.squares[squareName];
+        } else {
+            this._enPassantSquare = null;
         }
-        this._enPassantSquare = this.squares[squareName];
         return {success: true};
     }
 
