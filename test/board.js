@@ -10,6 +10,7 @@ var BoardInitialCastle = jschess.board.BoardInitialCastle;
 var BoardInitialPosition = jschess.board.BoardInitialPosition;
 var BoardSquares = jschess.board.BoardSquares;
 var FENData = jschess.board.FENData;
+var FENDataCreator = jschess.board.FENDataCreator;
 var FiftyMovesRuleCounter = jschess.board.FiftyMovesRuleCounter;
 var MovesCounter = jschess.board.MovesCounter;
 
@@ -319,6 +320,20 @@ describe('Test board', function () {
             );
             assert.equal(data.fiftyMovesRuleCounter, 2);
             assert.equal(data.movesCounter, 3);
+        });
+    });
+
+    describe('Test FENDataCreator', function () {
+        it('should check creation', function () {
+            let board = new Board();
+            assert.equal(new FENDataCreator(board).value, '8/8/8/8/8/8/8/8 w - - 0 1');
+
+            board = new Board({startingPosition: true});
+            assert.equal(new FENDataCreator(board).value, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+
+            let fenString = 'r3k2r/1bp1npb1/ppnp1qp1/7p/2P1P3/P1N1PNB1/1PBQ1PP1/2KR3R b kq - 3 26';
+            board = new Board({FEN: fenString});
+            assert.equal(new FENDataCreator(board).value, fenString);
         });
     });
 });

@@ -344,7 +344,7 @@ class FENDataCreator {
 
     _getPositionData(boardSquares) {
         let data = [];
-        for (let number of square.SquareName.numbers.reverse()) {
+        for (let number of square.SquareName.numbers) {
             let rowData = [];
             for (let symbol of square.SquareName.symbols) {
                 let square = boardSquares[`${symbol}${number}`];
@@ -360,16 +360,18 @@ class FENDataCreator {
                 .replace(/0+/g, n => {return n.length})
             );
         }
-        return data.join('/');
+        return data.reverse().join('/');
     }
 
     _getCastleRightsData(kings) {
-        data = [];
+        let data = [];
         for (let color of Piece.ALL_COLORS) {
             let king = kings[color];
-            for (let side of KingCastleRoad.ALL_SIDES) {
-                if (king.castle[side]) {
-                    data.push(this.#castleRights[color][side]);
+            if (king) {
+                for (let side of KingCastleRoad.ALL_SIDES) {
+                    if (king.castle[side]) {
+                        data.push(this.#castleRights[color][side]);
+                    }
                 }
             }
         }
@@ -416,6 +418,10 @@ class Board {
 
     get squares() {
         return this._squares;
+    }
+
+    get colors() {
+        return this._colors;
     }
 
     get kings() {
@@ -633,14 +639,18 @@ class Board {
 
     _setPosition(positionData) {
         // Decorators: checkPositionIsSetted.
-        if (!castleRights instanceof BoardInitialPosition) {
+        if (!positionData instanceof BoardInitialPosition) {
             return {
                 success: false,
                 description: "Setted data has to be an instance of BoardInitialPosition."
             };
         }
-        for (let [color, piecesData] of Object.entries(positionData)) {
-            for (let [pieceName, squareName] of piecesData) {
+        for (let color of Piece.ALL_COLORS) {
+            let piecesData = positionData[color];
+            for (let [pieceName, squareName] of piecesData.filter(d => d[0] != Piece.KING)) {
+                this._placePiece(color, pieceName, squareName, false);
+            }
+            for (let [pieceName, squareName] of piecesData.filter(d => d[0] == Piece.KING)) {
                 this._placePiece(color, pieceName, squareName, false);
             }
         }
