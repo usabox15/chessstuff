@@ -692,25 +692,11 @@ class Board {
     }
 
     _setFiftyMovesRuleCounter(count) {
-        let countType = typeof count;
-        if (countType != 'number') {
-            return {
-                success: false,
-                description: `Count need to be an number. Not "${countType}".`
-            };
-        }
         this._fiftyMovesRuleCounter = new FiftyMovesRuleCounter(count);
         return {success: true};
     }
 
     _setMovesCounter(count) {
-        let countType = typeof count;
-        if (countType != 'number') {
-            return {
-                success: false,
-                description: `Count need to be an number. Not "${countType}".`
-            };
-        }
         this._movesCounter = new MovesCounter(count);
         return {success: true};
     }
@@ -850,7 +836,6 @@ class Board {
     }
 
     setPosition(positionData) {
-        if (this._positionIsSetted) return this._response("The position is already setted.", false);
         let result = this._setPosition(positionData);
         if (!result.success) return this._response(result.description, false);
         return this._response("Successfully setted!");
@@ -967,6 +952,26 @@ Board.prototype._setCastleRights = checkPositionIsSetted(Board.prototype._setCas
 Board.prototype._setEnPassantSquare = checkPositionIsSetted(Board.prototype._setEnPassantSquare);
 Board.prototype._setFiftyMovesRuleCounter = checkPositionIsSetted(Board.prototype._setFiftyMovesRuleCounter);
 Board.prototype._setMovesCounter = checkPositionIsSetted(Board.prototype._setMovesCounter);
+
+
+function checkCounterArgument(setBoardCounterMethod) {
+    /*
+    Decorator to check whether count argument is number or not when set board counter method is called.
+    */
+    function wrapper(count) {
+        let countType = typeof count;
+        if (countType != 'number') {
+            return {
+                success: false,
+                description: `Count need to be an number. Not "${countType}".`
+            };
+        }
+        return setBoardCounterMethod.call(this, count);
+    }
+    return wrapper;
+}
+Board.prototype._setFiftyMovesRuleCounter = checkCounterArgument(Board.prototype._setFiftyMovesRuleCounter);
+Board.prototype._setMovesCounter = checkCounterArgument(Board.prototype._setMovesCounter);
 
 
 module.exports = {
