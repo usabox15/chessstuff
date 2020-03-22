@@ -406,6 +406,11 @@ class Board {
         this._kings = {[Piece.WHITE]: null, [Piece.BLACK]: null};
         this._positionIsLegal = true;
         this._positionIsSetted = false;
+        this._colors = null;
+        this._initialCastleRights = null;
+        this._enPassantSquare = null;
+        this._fiftyMovesRuleCounter = null;
+        this._movesCounter = null;
         this._init(initial);
     }
 
@@ -627,12 +632,6 @@ class Board {
     }
 
     _setPosition(positionData) {
-        if (this._positionIsSetted) {
-            return {
-                success: false,
-                description: "Position has been already setted."
-            };
-        }
         if (!castleRights instanceof BoardInitialPosition) {
             return {
                 success: false,
@@ -650,10 +649,10 @@ class Board {
     }
 
     _setCurrentColor(color) {
-        if (this._positionIsSetted) {
+        if (!Piece.ALL_COLORS.includes(color)) {
             return {
                 success: false,
-                description: "Position has been already setted."
+                description: `"${color}" is wrong color value. Try one of ${Piece.ALL_COLORS}.`
             };
         }
         this._colors = new BoardColors(color);
@@ -661,12 +660,6 @@ class Board {
     }
 
     _setCastleRights(castleRights) {
-        if (this._positionIsSetted) {
-            return {
-                success: false,
-                description: "Position has been already setted."
-            };
-        }
         if (!castleRights instanceof BoardInitialCastle) {
             return {
                 success: false,
@@ -683,18 +676,12 @@ class Board {
     }
 
     _setEnPassantSquare(squareName) {
-        if (this._positionIsSetted) {
-            return {
-                success: false,
-                description: "Position has been already setted."
-            };
-        }
         if (squareName) {
             let allSaquaresNames = Object.keys(this.squares);
             if (!allSaquaresNames.includes(squareName)) {
                 return {
                     success: false,
-                    description: `"${squareName}" is illegal square name. Try one of ${allSaquaresNames}.`
+                    description: `"${squareName}" is wrong square name. Try one of ${allSaquaresNames}.`
                 };
             }
             this._enPassantSquare = this.squares[squareName];
@@ -705,12 +692,6 @@ class Board {
     }
 
     _setFiftyMovesRuleCounter(count) {
-        if (this._positionIsSetted) {
-            return {
-                success: false,
-                description: "Position has been already setted."
-            };
-        }
         let countType = typeof count;
         if (countType != 'number') {
             return {
@@ -723,12 +704,6 @@ class Board {
     }
 
     _setMovesCounter(count) {
-        if (this._positionIsSetted) {
-            return {
-                success: false,
-                description: "Position has been already setted."
-            };
-        }
         let countType = typeof count;
         if (countType != 'number') {
             return {
@@ -969,6 +944,29 @@ class Board {
         if (refresh) return this._moveEnd();
     }
 }
+
+
+function checkPositionIsSetted(setBoardDataMethod) {
+    /*
+    Decorator to check whether board pisition is setted or not when set board data method is called.
+    */
+    function wrapper(...args) {
+        if (this._positionIsSetted) {
+            return {
+                success: false,
+                description: "Position has been already setted."
+            };
+        }
+        return setBoardDataMethod.call(this, ...args);
+    }
+    return wrapper;
+}
+Board.prototype._setPosition = checkPositionIsSetted(Board.prototype._setPosition);
+Board.prototype._setCurrentColor = checkPositionIsSetted(Board.prototype._setCurrentColor);
+Board.prototype._setCastleRights = checkPositionIsSetted(Board.prototype._setCastleRights);
+Board.prototype._setEnPassantSquare = checkPositionIsSetted(Board.prototype._setEnPassantSquare);
+Board.prototype._setFiftyMovesRuleCounter = checkPositionIsSetted(Board.prototype._setFiftyMovesRuleCounter);
+Board.prototype._setMovesCounter = checkPositionIsSetted(Board.prototype._setMovesCounter);
 
 
 module.exports = {
