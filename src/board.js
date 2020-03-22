@@ -632,6 +632,7 @@ class Board {
     }
 
     _setPosition(positionData) {
+        // Decorators: checkPositionIsSetted.
         if (!castleRights instanceof BoardInitialPosition) {
             return {
                 success: false,
@@ -649,6 +650,7 @@ class Board {
     }
 
     _setCurrentColor(color) {
+        // Decorators: checkPositionIsSetted.
         if (!Piece.ALL_COLORS.includes(color)) {
             return {
                 success: false,
@@ -660,6 +662,7 @@ class Board {
     }
 
     _setCastleRights(castleRights) {
+        // Decorators: checkPositionIsSetted.
         if (!castleRights instanceof BoardInitialCastle) {
             return {
                 success: false,
@@ -676,6 +679,7 @@ class Board {
     }
 
     _setEnPassantSquare(squareName) {
+        // Decorators: checkPositionIsSetted.
         if (squareName) {
             let allSaquaresNames = Object.keys(this.squares);
             if (!allSaquaresNames.includes(squareName)) {
@@ -692,11 +696,13 @@ class Board {
     }
 
     _setFiftyMovesRuleCounter(count) {
+        // Decorators: checkPositionIsSetted, checkCounterArgument.
         this._fiftyMovesRuleCounter = new FiftyMovesRuleCounter(count);
         return {success: true};
     }
 
     _setMovesCounter(count) {
+        // Decorators: checkPositionIsSetted, checkCounterArgument.
         this._movesCounter = new MovesCounter(count);
         return {success: true};
     }
@@ -836,39 +842,33 @@ class Board {
     }
 
     setPosition(positionData) {
-        let result = this._setPosition(positionData);
-        if (!result.success) return this._response(result.description, false);
-        return this._response("Successfully setted!");
+        // Decorators: handleSetBoardDataMethodResponse.
+        return this._setPosition(positionData);
     }
 
     setCurrentColor(color) {
-        let result = this._setCurrentColor(color);
-        if (!result.success) return this._response(result.description, false);
-        return this._response("Successfully setted!");
+        // Decorators: handleSetBoardDataMethodResponse.
+        return this._setCurrentColor(color);
     }
 
     setCastleRights(castleRights) {
-        let result = this._setCastleRights(castleRights);
-        if (!result.success) return this._response(result.description, false);
-        return this._response("Successfully setted!");
+        // Decorators: handleSetBoardDataMethodResponse.
+        return this._setCastleRights(castleRights);
     }
 
     setEnPassantSquare(squareName) {
-        let result = this._setEnPassantSquare(squareName);
-        if (!result.success) return this._response(result.description, false);
-        return this._response("Successfully setted!");
+        // Decorators: handleSetBoardDataMethodResponse.
+        return this._setEnPassantSquare(squareName);
     }
 
     setFiftyMovesRuleCounter(count) {
-        let result = this._setFiftyMovesRuleCounter(count);
-        if (!result.success) return this._response(result.description, false);
-        return this._response("Successfully setted!");
+        // Decorators: handleSetBoardDataMethodResponse.
+        return this._setFiftyMovesRuleCounter(count);
     }
 
     setMovesCounter(count) {
-        let result = this._setMovesCounter(count);
-        if (!result.success) return this._response(result.description, false);
-        return this._response("Successfully setted!");
+        // Decorators: handleSetBoardDataMethodResponse.
+        return this._setMovesCounter(count);
     }
 
     pawnTransformation(kind) {
@@ -972,6 +972,25 @@ function checkCounterArgument(setBoardCounterMethod) {
 }
 Board.prototype._setFiftyMovesRuleCounter = checkCounterArgument(Board.prototype._setFiftyMovesRuleCounter);
 Board.prototype._setMovesCounter = checkCounterArgument(Board.prototype._setMovesCounter);
+
+
+function handleSetBoardDataMethodResponse(setBoardDataMethod) {
+    /*
+    Decorator to handle set board data method response.
+    */
+    function wrapper(...args) {
+        let result = setBoardDataMethod.call(this, ...args);
+        if (!result.success) return this._response(result.description, false);
+        return this._response("Successfully setted!");
+    }
+    return wrapper;
+}
+Board.prototype.setPosition = handleSetBoardDataMethodResponse(Board.prototype.setPosition);
+Board.prototype.setCurrentColor = handleSetBoardDataMethodResponse(Board.prototype.setCurrentColor);
+Board.prototype.setCastleRights = handleSetBoardDataMethodResponse(Board.prototype.setCastleRights);
+Board.prototype.setEnPassantSquare = handleSetBoardDataMethodResponse(Board.prototype.setEnPassantSquare);
+Board.prototype.setFiftyMovesRuleCounter = handleSetBoardDataMethodResponse(Board.prototype.setFiftyMovesRuleCounter);
+Board.prototype.setMovesCounter = handleSetBoardDataMethodResponse(Board.prototype.setMovesCounter);
 
 
 module.exports = {
