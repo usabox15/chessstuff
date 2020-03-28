@@ -1,10 +1,15 @@
-var pieces = require('./pieces');
-var Piece = pieces.Piece;
-var KingCastle = pieces.KingCastle;
-var KingCastleRoad = pieces.KingCastleRoad;
-var KingCastleInitial = pieces.KingCastleInitial;
-var square = require('./square');
-var ar = require('./relations').ActionsRelation;
+var piecesModule = require('./pieces');
+var Piece = piecesModule.Piece;
+var KingCastle = piecesModule.KingCastle;
+var KingCastleRoad = piecesModule.KingCastleRoad;
+var KingCastleInitial = piecesModule.KingCastleInitial;
+
+var relationsModule = require('./relations');
+var ar = relationsModule.ActionsRelation;
+
+var squareModule = require('./square');
+var Square = squareModule.Square;
+var SquareName = squareModule.SquareName;
 
 
 class BoardSquares {
@@ -13,10 +18,13 @@ class BoardSquares {
     }
 
     _create(board) {
-        for (let symbol of square.SquareName.symbols) {
-            for (let number of square.SquareName.numbers) {
+        this._items = [];
+        for (let symbol of SquareName.symbols) {
+            for (let number of SquareName.numbers) {
                 let name = `${symbol}${number}`;
-                this[name] = new square.Square(name, board);
+                let square = new Square(name, board);
+                this[name] = square;
+                this._items.push(square);
             }
         }
     }
@@ -29,7 +37,13 @@ class BoardSquares {
     }
 
     getFromCoordinates(x, y) {
-        return this[square.Square.coordinatesToName(x, y)];
+        return this[Square.coordinatesToName(x, y)];
+    }
+
+    removePieces(refresh) {
+        for (let square of this._items) {
+            square.removePiece(refresh);
+        }
     }
 }
 
@@ -162,7 +176,7 @@ class BoardInitialPosition {
             for (let x = 0; x < 8; x++) {
                 if (this._rows[y][x] == '0') continue;
                 let [color, pieceName] = BoardInitialPosition.PIECES[this._rows[y][x]];
-                let squareName = square.Square.coordinatesToName(x, y);
+                let squareName = Square.coordinatesToName(x, y);
                 this[color].push([pieceName, squareName]);
             }
         }
@@ -344,9 +358,9 @@ class FENDataCreator {
 
     _getPositionData(boardSquares) {
         let data = [];
-        for (let number of square.SquareName.numbers) {
+        for (let number of SquareName.numbers) {
             let rowData = [];
-            for (let symbol of square.SquareName.symbols) {
+            for (let symbol of SquareName.symbols) {
                 let square = boardSquares[`${symbol}${number}`];
                 if (square.piece) {
                     rowData.push(this.#pieces[square.piece.color][square.piece.kind]);
@@ -391,12 +405,12 @@ class Board {
     */
 
     #piecesBox = {
-        [Piece.PAWN]: pieces.Pawn,
-        [Piece.KNIGHT]: pieces.Knight,
-        [Piece.BISHOP]: pieces.Bishop,
-        [Piece.ROOK]: pieces.Rook,
-        [Piece.QUEEN]: pieces.Queen,
-        [Piece.KING]: pieces.King,
+        [Piece.PAWN]: piecesModule.Pawn,
+        [Piece.KNIGHT]: piecesModule.Knight,
+        [Piece.BISHOP]: piecesModule.Bishop,
+        [Piece.ROOK]: piecesModule.Rook,
+        [Piece.QUEEN]: piecesModule.Queen,
+        [Piece.KING]: piecesModule.King,
     };
     #emptyFEN = '8/8/8/8/8/8/8/8 w - - 0 1';
     #initialFEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -645,6 +659,7 @@ class Board {
                 description: "Setted data has to be an instance of BoardInitialPosition."
             };
         }
+        this.squares.removePieces(false);
         for (let color of Piece.ALL_COLORS) {
             let piecesData = positionData[color];
             for (let [pieceName, squareName] of piecesData.filter(d => d[0] != Piece.KING)) {
@@ -654,8 +669,7 @@ class Board {
                 this._placePiece(color, pieceName, squareName, false);
             }
         }
-        this.refreshAllSquares();
-        this._positionIsSetted = true;
+        this.markPositionAsSetted();
         return {success: true};
     }
 
@@ -845,8 +859,7 @@ class Board {
     }
 
     markPositionAsSetted() {
-        this._checkPositionIsLegal();
-        if (!this._positionIsLegal) return this._response("The position isn't legal.", false);
+        this.refreshAllSquares();
         this._positionIsSetted = true;
         return this._response("Successfully marked!");
     }

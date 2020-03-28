@@ -19,7 +19,6 @@ describe('Test board', function () {
     describe('Test BoardSquares', function () {
         it('should check initial', function () {
             let board = new Board();
-            assert.equal(Object.entries(board.squares).length, 64);
             for (let symbol of SquareName.symbols) {
                 for (let number of SquareName.numbers) {
                     let name = `${symbol}${number}`;
