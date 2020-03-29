@@ -325,10 +325,10 @@ describe('Test board', function () {
     describe('Test FENDataCreator', function () {
         it('should check creation', function () {
             let board = new Board();
-            assert.equal(new FENDataCreator(board).value, '8/8/8/8/8/8/8/8 w - - 0 1');
+            assert.equal(new FENDataCreator(board).value, Board.EMPTY_FEN);
 
             board = new Board({startingPosition: true});
-            assert.equal(new FENDataCreator(board).value, 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+            assert.equal(new FENDataCreator(board).value, Board.INITIAL_FEN);
 
             let fenString = 'r3k2r/1bp1npb1/ppnp1qp1/7p/2P1P3/P1N1PNB1/1PBQ1PP1/2KR3R b kq - 3 26';
             board = new Board({FEN: fenString});

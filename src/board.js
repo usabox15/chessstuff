@@ -346,22 +346,23 @@ class FENDataCreator {
     };
 
     constructor(board) {
+        this._board = board;
         this.value = [
-            this._getPositionData(board.squares),
+            this._getPositionData(),
             this.#colors[board.colors.current],
-            this._getCastleRightsData(board.kings),
+            this._getCastleRightsData(),
             board.enPassantSquare ? board.enPassantSquare.name.value : '-',
             board.fiftyMovesRuleCounter.value.toString(),
             board.movesCounter.value.toString(),
         ].join(' ');
     }
 
-    _getPositionData(boardSquares) {
+    _getPositionData() {
         let data = [];
         for (let number of SquareName.numbers) {
             let rowData = [];
             for (let symbol of SquareName.symbols) {
-                let square = boardSquares[`${symbol}${number}`];
+                let square = this._board.squares[`${symbol}${number}`];
                 if (square.piece) {
                     rowData.push(this.#pieces[square.piece.color][square.piece.kind]);
                 } else {
@@ -377,10 +378,10 @@ class FENDataCreator {
         return data.reverse().join('/');
     }
 
-    _getCastleRightsData(kings) {
+    _getCastleRightsData() {
         let data = [];
         for (let color of Piece.ALL_COLORS) {
-            let king = kings[color];
+            let king = this._board.kings[color];
             if (king) {
                 for (let side of KingCastleRoad.ALL_SIDES) {
                     if (king.castle[side]) {
@@ -404,6 +405,9 @@ class Board {
         } (not required).
     */
 
+    static EMPTY_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
+    static INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+
     #piecesBox = {
         [Piece.PAWN]: piecesModule.Pawn,
         [Piece.KNIGHT]: piecesModule.Knight,
@@ -412,8 +416,6 @@ class Board {
         [Piece.QUEEN]: piecesModule.Queen,
         [Piece.KING]: piecesModule.King,
     };
-    #emptyFEN = '8/8/8/8/8/8/8/8 w - - 0 1';
-    #initialFEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
     constructor(initial=null) {
         this._squares = new BoardSquares(this);
@@ -454,6 +456,10 @@ class Board {
         return this._movesCounter;
     }
 
+    get FEN() {
+        return (new FENDataCreator(this)).value;
+    }
+
     get allPieces() {
         let pieces = [];
         for (let square of Object.values(this._squares.occupied)) {
@@ -490,10 +496,10 @@ class Board {
     }
 
     _getInitialData(initial) {
-        let initialFEN = this.#emptyFEN;
+        let initialFEN = Board.EMPTY_FEN;
         if (initial) {
             if (initial.startingPosition) {
-                initialFEN = this.#initialFEN;
+                initialFEN = Board.INITIAL_FEN;
             } else if (initial.FEN) {
                 initialFEN = initial.FEN;
             }
@@ -788,10 +794,11 @@ class Board {
 
     _response(description, success=true, transformation=false) {
         return {
-            "description": description,
-            "success": success,
-            "transformation": transformation,
-            "result": this._result
+            description: description,
+            success: success,
+            transformation: transformation,
+            FEN: this.FEN,
+            result: this._result
         }
     }
 
