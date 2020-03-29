@@ -864,6 +864,18 @@ class Board {
         return this._response("Successfully marked!");
     }
 
+    placePiece(color, kind, squareName) {
+        // Decorators: checkPositionIsSetted.
+        this._placePiece(color, kind, squareName, false);
+        return this._response("Successfully placed!");
+    }
+
+    removePiece(squareName) {
+        // Decorators: checkPositionIsSetted.
+        this._removePiece(squareName, false);
+        return this._response("Successfully removed!");
+    }
+
     setPosition(positionData) {
         // Decorators: handleSetBoardDataMethodResponse.
         return this._setPosition(positionData);
@@ -969,12 +981,19 @@ function checkPositionIsSetted(setBoardDataMethod) {
     }
     return wrapper;
 }
-Board.prototype._setPosition = checkPositionIsSetted(Board.prototype._setPosition);
-Board.prototype._setCurrentColor = checkPositionIsSetted(Board.prototype._setCurrentColor);
-Board.prototype._setCastleRights = checkPositionIsSetted(Board.prototype._setCastleRights);
-Board.prototype._setEnPassantSquare = checkPositionIsSetted(Board.prototype._setEnPassantSquare);
-Board.prototype._setFiftyMovesRuleCounter = checkPositionIsSetted(Board.prototype._setFiftyMovesRuleCounter);
-Board.prototype._setMovesCounter = checkPositionIsSetted(Board.prototype._setMovesCounter);
+let checkPositionIsSettedApplyFor = [
+    'placePiece',
+    'removePiece',
+    '_setPosition',
+    '_setCurrentColor',
+    '_setCastleRights',
+    '_setEnPassantSquare',
+    '_setFiftyMovesRuleCounter',
+    '_setMovesCounter'
+];
+for (let methodName of checkPositionIsSettedApplyFor) {
+    Board.prototype[methodName] = checkPositionIsSetted(Board.prototype[methodName]);
+}
 
 
 function checkCounterArgument(setBoardCounterMethod) {
@@ -993,8 +1012,10 @@ function checkCounterArgument(setBoardCounterMethod) {
     }
     return wrapper;
 }
-Board.prototype._setFiftyMovesRuleCounter = checkCounterArgument(Board.prototype._setFiftyMovesRuleCounter);
-Board.prototype._setMovesCounter = checkCounterArgument(Board.prototype._setMovesCounter);
+let checkCounterArgumentApplyFor = ['_setFiftyMovesRuleCounter', '_setMovesCounter'];
+for (let methodName of checkCounterArgumentApplyFor) {
+    Board.prototype[methodName] = checkPositionIsSetted(Board.prototype[methodName]);
+}
 
 
 function handleSetBoardDataMethodResponse(setBoardDataMethod) {
@@ -1008,12 +1029,17 @@ function handleSetBoardDataMethodResponse(setBoardDataMethod) {
     }
     return wrapper;
 }
-Board.prototype.setPosition = handleSetBoardDataMethodResponse(Board.prototype.setPosition);
-Board.prototype.setCurrentColor = handleSetBoardDataMethodResponse(Board.prototype.setCurrentColor);
-Board.prototype.setCastleRights = handleSetBoardDataMethodResponse(Board.prototype.setCastleRights);
-Board.prototype.setEnPassantSquare = handleSetBoardDataMethodResponse(Board.prototype.setEnPassantSquare);
-Board.prototype.setFiftyMovesRuleCounter = handleSetBoardDataMethodResponse(Board.prototype.setFiftyMovesRuleCounter);
-Board.prototype.setMovesCounter = handleSetBoardDataMethodResponse(Board.prototype.setMovesCounter);
+let handleSetBoardDataMethodResponseApplyFor = [
+    'setPosition',
+    'setCurrentColor',
+    'setCastleRights',
+    'setEnPassantSquare',
+    'setFiftyMovesRuleCounter',
+    'setMovesCounter'
+];
+for (let methodName of handleSetBoardDataMethodResponseApplyFor) {
+    Board.prototype[methodName] = checkPositionIsSetted(Board.prototype[methodName]);
+}
 
 
 module.exports = {
