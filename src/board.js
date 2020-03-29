@@ -422,7 +422,7 @@ class Board {
         this._result = null;
         this._transformation = null;
         this._kings = {[Piece.WHITE]: null, [Piece.BLACK]: null};
-        this._positionIsLegal = true;
+        this._positionIsLegal = false;
         this._positionIsSetted = false;
         this._colors = null;
         this._initialCastleRights = null;
@@ -435,6 +435,10 @@ class Board {
 
     get squares() {
         return this._squares;
+    }
+
+    get positionIsSetted() {
+        return this._positionIsSetted;
     }
 
     get colors() {
@@ -659,12 +663,25 @@ class Board {
         piece.getPlace(toSquare, refresh);
     }
 
+    _markPositionAsSetted() {
+        this.refreshAllSquares();
+        if (!this._positionIsLegal) {
+            this._positionIsSetted = false;
+            return {
+                success: false,
+                description: "The position is illegal."
+            };
+        }
+        this._positionIsSetted = true;
+        return {success: true};
+    }
+
     _setPosition(positionData) {
         // Decorators: checkPositionIsSetted.
         if (!positionData instanceof BoardInitialPosition) {
             return {
                 success: false,
-                description: "Setted data has to be an instance of BoardInitialPosition."
+                description: "Position data has to be an instance of BoardInitialPosition."
             };
         }
         this.squares.removePieces(false);
@@ -677,8 +694,7 @@ class Board {
                 this._placePiece(color, pieceName, squareName, false);
             }
         }
-        this.markPositionAsSetted();
-        return {success: true};
+        return this._markPositionAsSetted();
     }
 
     _setCurrentColor(color) {
@@ -870,9 +886,8 @@ class Board {
     }
 
     markPositionAsSetted() {
-        this.refreshAllSquares();
-        this._positionIsSetted = true;
-        return this._response("Successfully marked!");
+        // Decorators: handleSetBoardDataMethodResponse.
+        return this._markPositionAsSetted();
     }
 
     placePiece(color, kind, squareName) {
@@ -1036,11 +1051,12 @@ function handleSetBoardDataMethodResponse(setBoardDataMethod) {
     function wrapper(...args) {
         let result = setBoardDataMethod.call(this, ...args);
         if (!result.success) return this._response(result.description, false);
-        return this._response("Successfully setted!");
+        return this._response("Success!");
     }
     return wrapper;
 }
 let handleSetBoardDataMethodResponseApplyFor = [
+    'markPositionAsSetted',
     'setPosition',
     'setCurrentColor',
     'setCastleRights',

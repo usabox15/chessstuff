@@ -368,8 +368,13 @@ class Square {
     }
 
     placePiece(piece, refresh=true) {
-        if (piece.isKing && this.board) {
-            this.board.placeKing(piece);
+        if (this.board) {
+            if (this.board.positionIsSetted) {
+                throw Error('Board position is already setted.');
+            }
+            if (piece.isKing) {
+                this.board.placeKing(piece);
+            }
         }
         this._piece = piece;
         this.fireBoardRefresh(refresh);

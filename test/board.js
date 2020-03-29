@@ -335,4 +335,27 @@ describe('Test board', function () {
             assert.equal(new FENDataCreator(board).value, fenString);
         });
     });
+
+    describe('Test Board', function () {
+        it('should check initial state without initial data', function () {
+            let board = new Board();
+
+            assert.equal(board.allPieces.length, 0);
+            assert.equal(board.colors.current, Piece.WHITE);
+            assert.equal(board._result, null);
+            assert.equal(board.enPassantSquare, null);
+            assert.equal(board._latestFEN, Board.EMPTY_FEN);
+            assert.ok(!board._positionIsLegal);
+            assert.ok(!board.positionIsSetted);
+            assert.ok(!board._initialCastleRights[Piece.WHITE][KingCastleRoad.SHORT]);
+            assert.ok(!board._initialCastleRights[Piece.WHITE][KingCastleRoad.LONG]);
+            assert.ok(!board._initialCastleRights[Piece.BLACK][KingCastleRoad.SHORT]);
+            assert.ok(!board._initialCastleRights[Piece.BLACK][KingCastleRoad.LONG]);
+            assert.equal(board.kings[Piece.WHITE], null);
+            assert.equal(board.kings[Piece.BLACK], null);
+            assert.equal(board.fiftyMovesRuleCounter.value, 0);
+            assert.equal(board.movesCounter.value, 1);
+            assert.equal(board.FEN, Board.EMPTY_FEN);
+        });
+    });
 });
