@@ -429,6 +429,7 @@ class Board {
         this._enPassantSquare = null;
         this._fiftyMovesRuleCounter = null;
         this._movesCounter = null;
+        this._latestFEN = null;
         this._init(initial);
     }
 
@@ -504,6 +505,7 @@ class Board {
                 initialFEN = initial.FEN;
             }
         }
+        this._latestFEN = initialFEN;
         return new BoardInitial(new FENData(initialFEN));
     }
 
@@ -770,7 +772,8 @@ class Board {
     }
 
     _rollBack() {
-
+        this._positionIsSetted = false;
+        this._init({FEN: this._latestFEN});
     }
 
     _updateCounters() {
@@ -789,6 +792,7 @@ class Board {
         this._colors.changePriority();
         this._enPassantSquare = null;
         this._updateCounters();
+        this._latestFEN = this.FEN;
         return this._response("Success!");
     }
 
