@@ -384,5 +384,29 @@ describe('Test board', function () {
             assert.equal(board.movesCounter.value, 1);
             assert.equal(board.FEN, Board.INITIAL_FEN);
         });
+
+        it('should check initial state with FEN', function () {
+            let fenString = 'r3k2r/p2n1pbp/1p2p1p1/2p5/3pP1P1/1P1N2P1/P1P5/R2QK1Nb b Qkq e3 0 37';
+            let board = new Board({
+                FEN: fenString
+            });
+
+            assert.equal(board.allPieces.length, 25);
+            assert.equal(board.colors.current, Piece.BLACK);
+            assert.equal(board._result, null);
+            assert.ok(board.enPassantSquare.theSame(board.squares.e3));
+            assert.equal(board._latestFEN, fenString);
+            assert.ok(board._positionIsLegal);
+            assert.ok(board.positionIsSetted);
+            assert.ok(!board._initialCastleRights[Piece.WHITE][KingCastleRoad.SHORT]);
+            assert.ok(board._initialCastleRights[Piece.WHITE][KingCastleRoad.LONG]);
+            assert.ok(board._initialCastleRights[Piece.BLACK][KingCastleRoad.SHORT]);
+            assert.ok(board._initialCastleRights[Piece.BLACK][KingCastleRoad.LONG]);
+            assert.equal(board.kings[Piece.WHITE].square.name.value, 'e1');
+            assert.equal(board.kings[Piece.BLACK].square.name.value, 'e8');
+            assert.equal(board.fiftyMovesRuleCounter.value, 0);
+            assert.equal(board.movesCounter.value, 37);
+            assert.equal(board.FEN, fenString);
+        });
     });
 });
