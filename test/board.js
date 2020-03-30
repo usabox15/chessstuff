@@ -327,11 +327,15 @@ describe('Test board', function () {
             let board = new Board();
             assert.equal(new FENDataCreator(board).value, Board.EMPTY_FEN);
 
-            board = new Board({startingPosition: true});
+            board = new Board({
+                startingPosition: true
+            });
             assert.equal(new FENDataCreator(board).value, Board.INITIAL_FEN);
 
             let fenString = 'r3k2r/1bp1npb1/ppnp1qp1/7p/2P1P3/P1N1PNB1/1PBQ1PP1/2KR3R b kq - 3 26';
-            board = new Board({FEN: fenString});
+            board = new Board({
+                FEN: fenString
+            });
             assert.equal(new FENDataCreator(board).value, fenString);
         });
     });
@@ -356,6 +360,29 @@ describe('Test board', function () {
             assert.equal(board.fiftyMovesRuleCounter.value, 0);
             assert.equal(board.movesCounter.value, 1);
             assert.equal(board.FEN, Board.EMPTY_FEN);
+        });
+
+        it('should check initial state with initial position', function () {
+            let board = new Board({
+                startingPosition: true
+            });
+
+            assert.equal(board.allPieces.length, 32);
+            assert.equal(board.colors.current, Piece.WHITE);
+            assert.equal(board._result, null);
+            assert.equal(board.enPassantSquare, null);
+            assert.equal(board._latestFEN, Board.INITIAL_FEN);
+            assert.ok(board._positionIsLegal);
+            assert.ok(board.positionIsSetted);
+            assert.ok(board._initialCastleRights[Piece.WHITE][KingCastleRoad.SHORT]);
+            assert.ok(board._initialCastleRights[Piece.WHITE][KingCastleRoad.LONG]);
+            assert.ok(board._initialCastleRights[Piece.BLACK][KingCastleRoad.SHORT]);
+            assert.ok(board._initialCastleRights[Piece.BLACK][KingCastleRoad.LONG]);
+            assert.equal(board.kings[Piece.WHITE].square.name.value, 'e1');
+            assert.equal(board.kings[Piece.BLACK].square.name.value, 'e8');
+            assert.equal(board.fiftyMovesRuleCounter.value, 0);
+            assert.equal(board.movesCounter.value, 1);
+            assert.equal(board.FEN, Board.INITIAL_FEN);
         });
     });
 });
