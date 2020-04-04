@@ -2,6 +2,12 @@ var assert = require('assert');
 var jschess = require('../');
 var SquareName = jschess.square.SquareName;
 var Piece = jschess.pieces.Piece;
+var Pawn = jschess.pieces.Pawn;
+var Knight = jschess.pieces.Knight;
+var Bishop = jschess.pieces.Bishop;
+var Rook = jschess.pieces.Rook;
+var Queen = jschess.pieces.Queen;
+var King = jschess.pieces.King;
 var KingCastleRoad = jschess.pieces.KingCastleRoad;
 var Board = jschess.board.Board;
 var BoardColors = jschess.board.BoardColors;
@@ -407,6 +413,32 @@ describe('Test board', function () {
             assert.equal(board.fiftyMovesRuleCounter.value, 0);
             assert.equal(board.movesCounter.value, 37);
             assert.equal(board.FEN, fenString);
+        });
+
+        it('should check init board with manually added pieces', function () {
+            let board = new Board();
+            new King(Piece.WHITE, board.squares.c4);
+            new King(Piece.BLACK, board.squares.d7);
+            board.placePiece(Piece.WHITE, Piece.ROOK, 'g2');
+            board.placePiece(Piece.BLACK, Piece.ROOK, 'e6');
+            assert.ok(board.markPositionAsSetted().success);
+            // couldn't place piece after position is setted
+            assert.throws(() => {new Pawn(Piece.WHITE, board.squares.b2);});
+            assert.equal(board.FEN, '8/3k4/4r3/8/2K5/8/6R1/8 w - - 0 1');
+
+            board = new Board();
+            assert.ok(!board.markPositionAsSetted().success);
+            new King(Piece.WHITE, board.squares.e2);
+            assert.ok(!board.markPositionAsSetted().success);
+            // place pawn on wrong square
+            new Pawn(Piece.BLACK, board.squares.h8);
+            assert.ok(!board.markPositionAsSetted().success);
+            board.placePiece(Piece.BLACK, Piece.KING, 'b5');
+            assert.ok(!board.markPositionAsSetted().success);
+            // remove pawn
+            board.removePiece('h8');
+            assert.ok(board.markPositionAsSetted().success);
+            assert.equal(board.FEN, '8/8/8/1k6/8/8/4K3/8 w - - 0 1');
         });
     });
 });
