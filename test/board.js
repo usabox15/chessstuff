@@ -454,5 +454,52 @@ describe('Test board', function () {
             assert.ok(board.positionIsSetted);
             assert.equal(board.FEN, '2kb1r1q/2pn3r/1p1p4/pP1P4/P3Pp2/2P5/1B1N2Q1/R3K1R1 b Q e3 5 31');
         });
+
+        it('should check board insufficient material', function () {
+            let board = new Board({FEN: '8/8/3k4/8/2q5/4K3/8/8 w - - 0 1'});
+            assert.ok(!board.insufficientMaterial);
+
+            board = new Board({FEN: '8/8/3k4/8/2r5/4K3/8/8 w - - 0 1'});
+            assert.ok(!board.insufficientMaterial);
+
+            board = new Board({FEN: '8/8/3k4/8/2p5/4K3/8/8 w - - 0 1'});
+            assert.ok(!board.insufficientMaterial);
+
+            board = new Board({FEN: '8/8/3k4/8/1bn5/4K3/8/8 w - - 0 1'});
+            assert.ok(!board.insufficientMaterial);
+
+            board = new Board({FEN: '8/8/3k4/8/1Bn5/4K3/8/8 w - - 0 1'});
+            assert.ok(!board.insufficientMaterial);
+
+            board = new Board({FEN: '8/8/3k4/8/1bN5/4K3/8/8 w - - 0 1'});
+            assert.ok(!board.insufficientMaterial);
+
+            board = new Board({FEN: '8/8/3k4/8/1nn5/4K3/8/8 w - - 0 1'});
+            assert.ok(!board.insufficientMaterial);
+
+            board = new Board({FEN: '8/8/3k4/8/1Nn5/4K3/8/8 w - - 0 1'});
+            assert.ok(!board.insufficientMaterial);
+
+            board = new Board({FEN: '8/8/3k4/8/1bb5/4K3/8/8 w - - 0 1'});
+            assert.ok(!board.insufficientMaterial);
+
+            board = new Board({FEN: '8/8/3k4/8/1bB5/4K3/8/8 w - - 0 1'});
+            assert.ok(!board.insufficientMaterial);
+
+            board = new Board({FEN: '8/8/3k4/8/8/4K3/8/8 w - - 0 1'});
+            assert.ok(board.insufficientMaterial);
+
+            board = new Board({FEN: '8/8/3k4/8/1N6/4K3/8/8 w - - 0 1'});
+            assert.ok(board.insufficientMaterial);
+
+            board = new Board({FEN: '8/8/3k4/8/2B5/4K3/8/8 w - - 0 1'});
+            assert.ok(board.insufficientMaterial);
+
+            board = new Board({FEN: '8/8/3k4/8/B1B5/4K3/8/8 w - - 0 1'});
+            assert.ok(board.insufficientMaterial);
+
+            board = new Board({FEN: '8/8/3k4/8/b1B5/4K3/8/8 w - - 0 1'});
+            assert.ok(board.insufficientMaterial);
+        });
     });
 });
