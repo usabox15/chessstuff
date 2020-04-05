@@ -440,5 +440,19 @@ describe('Test board', function () {
             assert.ok(board.markPositionAsSetted().success);
             assert.equal(board.FEN, '8/8/8/1k6/8/8/4K3/8 w - - 0 1');
         });
+
+        it('should check init board by parts', function () {
+            board = new Board();
+            assert.ok(board.setCurrentColor(Piece.BLACK).success);
+            assert.ok(board.setCastleRights(new BoardInitialCastle('Q')).success);
+            assert.ok(board.setEnPassantSquare('e3').success);
+            assert.ok(board.setFiftyMovesRuleCounter(5).success);
+            assert.ok(board.setMovesCounter(31).success);
+            assert.ok(board.setPosition(
+                new BoardInitialPosition('2kb1r1q/2pn3r/1p1p4/pP1P4/P3Pp2/2P5/1B1N2Q1/R3K1R1')
+            ).success);
+            assert.ok(board.positionIsSetted);
+            assert.equal(board.FEN, '2kb1r1q/2pn3r/1p1p4/pP1P4/P3Pp2/2P5/1B1N2Q1/R3K1R1 b Q e3 5 31');
+        });
     });
 });
