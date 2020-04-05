@@ -15,6 +15,7 @@ var King = jschess.pieces.King;
 var KingCastle = jschess.pieces.KingCastle;
 var ar = jschess.relations.ActionsRelation;
 var Board = jschess.board.Board;
+var BoardInitialCastle = jschess.board.BoardInitialCastle;
 
 
 describe('Test pieces', function () {
@@ -605,15 +606,18 @@ describe('Test pieces', function () {
         it('should throw error by creating castle road without a rook', function () {
             assert.throws(() => {
                 let board = new Board();
+                board.setCastleRights(new BoardInitialCastle('kq'));
                 new King(Piece.BLACK, board.squares.e8);
             });
             assert.throws(() => {
                 let board = new Board();
+                board.setCastleRights(new BoardInitialCastle('kq'));
                 new Rook(Piece.BLACK, board.squares.a8);
                 new King(Piece.BLACK, board.squares.e8);
             });
             assert.throws(() => {
                 let board = new Board();
+                board.setCastleRights(new BoardInitialCastle('kq'));
                 new Rook(Piece.BLACK, board.squares.h8);
                 new King(Piece.BLACK, board.squares.e8);
             });
@@ -622,6 +626,7 @@ describe('Test pieces', function () {
         it('should throw error by creating castle road with other piece insead of a rook', function () {
             assert.throws(() => {
                 let board = new Board();
+                board.setCastleRights(new BoardInitialCastle('kq'));
                 new Piece(Piece.BLACK, board.squares.a8);
                 new Piece(Piece.BLACK, board.squares.h8);
                 new King(Piece.BLACK, board.squares.e8);
@@ -631,18 +636,21 @@ describe('Test pieces', function () {
         it('should throw error by creating castle road without right color rook', function () {
             assert.throws(() => {
                 let board = new Board();
+                board.setCastleRights(new BoardInitialCastle('kq'));
                 new Rook(Piece.WHITE, board.squares.a8);
                 new Rook(Piece.WHITE, board.squares.h8);
                 new King(Piece.BLACK, board.squares.e8);
             });
             assert.throws(() => {
                 let board = new Board();
+                board.setCastleRights(new BoardInitialCastle('kq'));
                 new Rook(Piece.BLACK, board.squares.a8);
                 new Rook(Piece.WHITE, board.squares.h8);
                 new King(Piece.BLACK, board.squares.e8);
             });
             assert.throws(() => {
                 let board = new Board();
+                board.setCastleRights(new BoardInitialCastle('kq'));
                 new Rook(Piece.WHITE, board.squares.a8);
                 new Rook(Piece.BLACK, board.squares.h8);
                 new King(Piece.BLACK, board.squares.e8);
@@ -651,6 +659,7 @@ describe('Test pieces', function () {
 
         it('should check initial KingCastleRoad data', function () {
             let board = new Board();
+            board.setCastleRights(new BoardInitialCastle('KQ'));
             let shortSideRook = new Rook(Piece.WHITE, board.squares.h1);
             let longSideRook = new Rook(Piece.WHITE, board.squares.a1);
             let king = new King(Piece.WHITE, board.squares.e1);
@@ -685,6 +694,7 @@ describe('Test pieces', function () {
 
         it('should check KingCastleRoad free', function () {
             let board = new Board();
+            board.setCastleRights(new BoardInitialCastle('kq'));
             new Rook(Piece.BLACK, board.squares.h8);
             new Rook(Piece.BLACK, board.squares.a8);
             let king = new King(Piece.BLACK, board.squares.e8);
@@ -739,6 +749,7 @@ describe('Test pieces', function () {
 
         it('should check KingCastleRoad safe', function () {
             let board = new Board();
+            board.setCastleRights(new BoardInitialCastle('KQ'));
             new Rook(Piece.WHITE, board.squares.h1);
             new Rook(Piece.WHITE, board.squares.a1);
             let king = new King(Piece.WHITE, board.squares.e1);
@@ -809,26 +820,29 @@ describe('Test pieces', function () {
             board.squares.c5.removePiece();
 
             board._kings[Piece.BLACK] = null;
-            king = new King(Piece.BLACK, board.squares.e8, new KingCastleInitial());
+            king = new King(Piece.BLACK, board.squares.e8);
 
             assert.ok(!king.castle[KingCastleRoad.SHORT]);
             assert.ok(!king.castle[KingCastleRoad.LONG]);
 
             new Rook(Piece.BLACK, board.squares.h8);
             board._kings[Piece.BLACK] = null;
-            king = new King(Piece.BLACK, board.squares.e8, new KingCastleInitial([KingCastleRoad.SHORT]));
+            board.setCastleRights(new BoardInitialCastle('k'));
+            king = new King(Piece.BLACK, board.squares.e8);
 
             assert.ok(king.castle[KingCastleRoad.SHORT]);
             assert.ok(!king.castle[KingCastleRoad.LONG]);
 
             new Rook(Piece.BLACK, board.squares.a8);
             board._kings[Piece.BLACK] = null;
-            king = new King(Piece.BLACK, board.squares.e8, new KingCastleInitial([KingCastleRoad.LONG]));
+            board.setCastleRights(new BoardInitialCastle('q'));
+            king = new King(Piece.BLACK, board.squares.e8);
 
             assert.ok(!king.castle[KingCastleRoad.SHORT]);
             assert.ok(king.castle[KingCastleRoad.LONG]);
 
             board._kings[Piece.BLACK] = null;
+            board.setCastleRights(new BoardInitialCastle('kq'));
             king = new King(Piece.BLACK, board.squares.e8);
 
             assert.ok(king.castle[KingCastleRoad.SHORT]);
@@ -845,6 +859,7 @@ describe('Test pieces', function () {
             new Rook(Piece.WHITE, board.squares.h1);
             new Rook(Piece.WHITE, board.squares.a1);
             board._kings[Piece.WHITE] = null;
+            board.setCastleRights(new BoardInitialCastle('KQ'));
             king = new King(Piece.WHITE, board.squares.e1);
 
             assert.ok(king.castle.getRoad(board.squares.g1));
@@ -855,6 +870,7 @@ describe('Test pieces', function () {
 
         it('should check KingCastle stop', function () {
             let board = new Board();
+            board.setCastleRights(new BoardInitialCastle('kq'));
             let shortSideRook = new Rook(Piece.BLACK, board.squares.h8);
             let longSideRook = new Rook(Piece.BLACK, board.squares.a8);
             let king = new King(Piece.BLACK, board.squares.e8);
@@ -1023,6 +1039,7 @@ describe('Test pieces', function () {
 
         it('should check castle moves handle', function () {
             let board = new Board();
+            board.setCastleRights(new BoardInitialCastle('KQ'));
             new Rook(Piece.WHITE, board.squares.h1);
             new Rook(Piece.WHITE, board.squares.a1);
             let king = new King(Piece.WHITE, board.squares.e1);

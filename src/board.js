@@ -644,14 +644,7 @@ class Board {
     }
 
     _placePiece(color, kind, squareName, refresh=true) {
-        let data = [color, this._squares[squareName]];
-        if (kind == Piece.KING && this._initialCastleRights && this._initialCastleRights[color]) {
-            data.push(this._initialCastleRights[color]);
-        }
-        let piece = new this.#piecesBox[kind](...data, refresh);
-        if (piece.isKing) {
-            this._kings[color] = piece;
-        }
+        new this.#piecesBox[kind](color, this._squares[squareName], refresh);
     }
 
     _removePiece(squareName, refresh=true) {

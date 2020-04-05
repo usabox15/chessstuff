@@ -601,8 +601,11 @@ class KingCastle {
     constructor(king, initial=null) {
         this._king = king;
         let accepted;
-        if (king.onInitialSquare) {
-            accepted = initial || new KingCastleInitial([KingCastleRoad.SHORT, KingCastleRoad.LONG]);
+        if (king.onInitialSquare && initial) {
+            if (!initial instanceof KingCastleInitial) {
+                throw Error("Castle initial data has to be an instance of KingCastleInitial.");
+            }
+            accepted = initial;
         } else {
             accepted = new KingCastleInitial();
         }
@@ -729,16 +732,12 @@ class King extends StepPiece {
         {x: -1, y: 0},  // H
     ];
 
-    constructor(color, square, castleInitial=null, refresh=true) {
-        super(color, square, Piece.KING, refresh, [castleInitial]);
+    constructor(color, square, refresh=true) {
+        super(color, square, Piece.KING, refresh);
     }
 
     get onInitialSquare() {
         return this.square.name.value == King.INITIAL_SQUARE_NAMES[this.color];
-    }
-
-    _endOfCreate(castleInitial) {
-        this.setCastle(castleInitial);
     }
 
     _removeEnemyControlledSquares() {
