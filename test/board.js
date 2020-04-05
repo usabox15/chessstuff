@@ -501,5 +501,22 @@ describe('Test board', function () {
             board = new Board({FEN: '8/8/3k4/8/b1B5/4K3/8/8 w - - 0 1'});
             assert.ok(board.insufficientMaterial);
         });
+
+        it('should check board pieces count legality', function () {
+            let board = new Board({FEN: 'qqqqqqqq/3q4/3q4/3k4/8/8/8/3K4 w - - 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: 'rrrrrrrr/3r4/3r4/3r4/3k4/8/8/3K4 w - - 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: 'nnnnnnnn/3n4/3n4/3n4/3k4/8/8/3K4 w - - 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: 'bbbbbbbb/3b4/3b4/3b4/3k4/8/8/3K4 w - - 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/pppppppp/3p4/8/3k4/8/8/3K4 w - - 0 1'});
+            assert.ok(!board._positionIsLegal);
+        });
     });
 });
