@@ -536,5 +536,18 @@ describe('Test board', function () {
             board._removePiece('c8');
             assert.ok(board._positionIsLegal);
         });
+
+        it('should check board kings placement legality', function () {
+            board = new Board({FEN: '8/8/8/3k4/4K3/8/8/8 w - - 0 1'});
+            assert.ok(!board._positionIsLegal);
+        });
+
+        it('should check board kings checkers legality', function () {
+            board = new Board({FEN: '8/8/8/2k5/4K3/2R5/8/8 w - - 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/8/6b1/2k5/4K3/8/8/8 b - - 0 1'});
+            assert.ok(!board._positionIsLegal);
+        });
     });
 });
