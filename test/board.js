@@ -428,17 +428,17 @@ describe('Test board', function () {
 
             board = new Board();
             assert.ok(!board.markPositionAsSetted().success);
-            new King(Piece.WHITE, board.squares.e2);
+            new King(Piece.BLACK, board.squares.e8);
             assert.ok(!board.markPositionAsSetted().success);
             // place pawn on wrong square
-            new Pawn(Piece.BLACK, board.squares.h8);
+            new Pawn(Piece.WHITE, board.squares.d7);
             assert.ok(!board.markPositionAsSetted().success);
-            board.placePiece(Piece.BLACK, Piece.KING, 'b5');
+            board.placePiece(Piece.WHITE, Piece.KING, 'b5');
             assert.ok(!board.markPositionAsSetted().success);
             // remove pawn
-            board.removePiece('h8');
+            board.removePiece('d7');
             assert.ok(board.markPositionAsSetted().success);
-            assert.equal(board.FEN, '8/8/8/1k6/8/8/4K3/8 w - - 0 1');
+            assert.equal(board.FEN, '4k3/8/8/1K6/8/8/8/8 w - - 0 1');
         });
 
         it('should check init board by parts', function () {
@@ -517,6 +517,24 @@ describe('Test board', function () {
 
             board = new Board({FEN: '8/pppppppp/3p4/8/3k4/8/8/3K4 w - - 0 1'});
             assert.ok(!board._positionIsLegal);
+        });
+
+        it('should check board pawns placement legality', function () {
+            let board = new Board();
+            board.placePiece(Piece.WHITE, Piece.KING, 'd3');
+            board.placePiece(Piece.BLACK, Piece.KING, 'e7');
+
+            let pawn = new Pawn(Piece.WHITE, board.squares.g2);
+            board._replacePiece(board.squares.g2, board.squares.g1, pawn);
+            assert.ok(!board._positionIsLegal);
+            board._removePiece('g1');
+            assert.ok(board._positionIsLegal);
+
+            pawn = new Pawn(Piece.BLACK, board.squares.c7);
+            board._replacePiece(board.squares.c7, board.squares.c8, pawn);
+            assert.ok(!board._positionIsLegal);
+            board._removePiece('c8');
+            assert.ok(board._positionIsLegal);
         });
     });
 });

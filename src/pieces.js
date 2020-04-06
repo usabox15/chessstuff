@@ -203,6 +203,9 @@ class Pawn extends Piece {
     static INITIAL_RANKS = {[Piece.WHITE]: "2", [Piece.BLACK]: "7"};
 
     constructor(color, square, refresh=true) {
+        if (square.onEdge.up || square.onEdge.down) {
+            throw Error(`Pawn couldn't be placed on ${square.name.value} square.`);
+        }
         super(color, square, Piece.PAWN, refresh);
     }
 
