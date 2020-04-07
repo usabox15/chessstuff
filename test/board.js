@@ -549,5 +549,64 @@ describe('Test board', function () {
             board = new Board({FEN: '8/8/6b1/2k5/4K3/8/8/8 b - - 0 1'});
             assert.ok(!board._positionIsLegal);
         });
+
+        it('should check board en passant square legality', function () {
+            board = new Board({FEN: '8/8/8/2k3Pp/4K3/8/8/8 b - g4 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/8/8/2k5/6Pp/8/6K1/8 b - g3 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/8/8/2k5/7p/8/4K3/8 b - g3 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/8/8/2k5/6Np/8/4K3/8 b - g3 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/8/8/2k5/6pp/8/4K3/8 b - g3 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/8/8/2k5/6P1/8/4K3/8 b - g3 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/8/8/2k5/6Pb/8/4K3/8 b - g3 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/8/8/2k5/6PP/8/4K3/8 b - g3 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/8/8/2k5/5qP1/8/4K3/8 b - g3 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/8/8/2k5/5PP1/8/4K3/8 b - g3 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/4k3/8/4pP2/8/8/6K1/8 b - e6 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/4k3/8/5P2/8/8/6K1/8 b - e6 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/4k3/8/4rP2/8/8/6K1/8 b - e6 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/4k3/8/4PP2/8/8/6K1/8 b - e6 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/4k3/8/4p3/8/8/6K1/8 b - e6 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/4k3/8/4pQ2/8/8/6K1/8 b - e6 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/4k3/8/4pp2/8/8/6K1/8 b - e6 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/4k3/8/3Np3/8/8/6K1/8 b - e6 0 1'});
+            assert.ok(!board._positionIsLegal);
+
+            board = new Board({FEN: '8/4k3/8/3pp3/8/8/6K1/8 b - e6 0 1'});
+            assert.ok(!board._positionIsLegal);
+        });
     });
 });
