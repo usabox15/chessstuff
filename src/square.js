@@ -372,7 +372,12 @@ class Square {
 
     placePiece(piece, refresh=true) {
         if (this.board) {
-            if (this.board.positionIsSetted) {
+            let positionIsSetted = (
+                this.board.positionIsSetted
+            &&
+                (!this.board.transformation || this.name.value != this.board.transformation.toSquareName)
+            );
+            if (positionIsSetted) {
                 throw Error('Board position is already setted.');
             }
             if (piece.isKing) {

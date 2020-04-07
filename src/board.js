@@ -441,6 +441,10 @@ class Board {
         return this._positionIsSetted;
     }
 
+    get transformation() {
+        return this._transformation;
+    }
+
     get colors() {
         return this._colors;
     }
@@ -811,6 +815,7 @@ class Board {
             success: success,
             transformation: transformation,
             FEN: this.FEN,
+            insufficientMaterial: this.insufficientMaterial,
             result: this._result
         }
     }
@@ -930,10 +935,10 @@ class Board {
         if (this._result) return this._response("The result is already reached.", false);
         this._checkPositionIsLegal();
         if (!this._positionIsLegal) return this._response("The position isn't legal.", false);
-        if (!this._transformation) return this._response("There isn't transformation.", false);
+        if (!this.transformation) return this._response("There isn't transformation.", false);
 
-        this._placePiece(this._colors.current, kind, this._transformation.toSquareName, false);
-        this._removePiece(this._transformation.fromSquareName, false);
+        this._placePiece(this._colors.current, kind, this.transformation.toSquareName, false);
+        this._removePiece(this.transformation.fromSquareName, false);
         this._refreshTransformation();
         this._fiftyMovesRuleCounter.switch();
         return this._moveEnd();

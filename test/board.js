@@ -538,12 +538,12 @@ describe('Test board', function () {
         });
 
         it('should check board kings placement legality', function () {
-            board = new Board({FEN: '8/8/8/3k4/4K3/8/8/8 w - - 0 1'});
+            let board = new Board({FEN: '8/8/8/3k4/4K3/8/8/8 w - - 0 1'});
             assert.ok(!board._positionIsLegal);
         });
 
         it('should check board kings checkers legality', function () {
-            board = new Board({FEN: '8/8/8/2k5/4K3/2R5/8/8 w - - 0 1'});
+            let board = new Board({FEN: '8/8/8/2k5/4K3/2R5/8/8 w - - 0 1'});
             assert.ok(!board._positionIsLegal);
 
             board = new Board({FEN: '8/8/6b1/2k5/4K3/8/8/8 b - - 0 1'});
@@ -551,7 +551,7 @@ describe('Test board', function () {
         });
 
         it('should check board en passant square legality', function () {
-            board = new Board({FEN: '8/8/8/2k3Pp/4K3/8/8/8 b - g4 0 1'});
+            let board = new Board({FEN: '8/8/8/2k3Pp/4K3/8/8/8 b - g4 0 1'});
             assert.ok(!board._positionIsLegal);
 
             board = new Board({FEN: '8/8/8/2k5/6Pp/8/6K1/8 b - g3 0 1'});
@@ -607,6 +607,18 @@ describe('Test board', function () {
 
             board = new Board({FEN: '8/4k3/8/3pp3/8/8/6K1/8 b - e6 0 1'});
             assert.ok(!board._positionIsLegal);
+        });
+
+        it('should check pawn transformation', function () {
+            let board = new Board({FEN: '8/2P1k3/8/8/8/8/6K1/8 w - - 0 1'});
+            response = board.movePiece('c7', 'c8');
+            assert.ok(response.success);
+            response = board.pawnTransformation(Piece.BISHOP);
+            assert.ok(response.success);
+
+            board = new Board({FEN: '8/4k3/8/8/8/8/2p3K1/8 b - - 0 1'});
+            response = board.pawnTransformation(Piece.KNIGHT);
+            assert.ok(!response.success);
         });
     });
 });
