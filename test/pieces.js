@@ -249,7 +249,6 @@ describe('Test pieces', function () {
             let pawn = new Pawn(Piece.WHITE, new Square('e2'));
             assert.ok(pawn.isPawn);
             assert.equal(pawn.direction, 1);
-            assert.equal(pawn._enPassantSquare, null);
             assert.equal(pawn.kind, Piece.PAWN);
         });
 
@@ -355,13 +354,13 @@ describe('Test pieces', function () {
             assert.ok(!pawn3.squares.includes(ar.COVER, board.squares.b2));
 
             let pawn4 = new Pawn(Piece.WHITE, board.squares.h5);
-            pawn4.setEnPassantSquare(board.squares.g6)
+            board.setEnPassantSquare('g6');
+            board.setCurrentColor(Piece.BLACK);
             let pawn4AttackCoordinates = pawn4._getAttackCoordinates();
             assert.equal(pawn4AttackCoordinates.length, 1);
             assert.equal(pawn4AttackCoordinates[0][0], 6);
             assert.equal(pawn4AttackCoordinates[0][1], 5);
             pawn4._getAttackSquares();
-            assert.equal(pawn4._enPassantSquare, null);
             assert.ok(pawn4.squares.includes(ar.CONTROL, board.squares.g6));
             assert.ok(pawn4.squares.includes(ar.ATTACK, board.squares.g6));
             assert.ok(!pawn4.squares.includes(ar.COVER, board.squares.g6));

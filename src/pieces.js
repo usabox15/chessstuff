@@ -11,8 +11,7 @@ class Piece {
       - color [string] (white or black);
       - square [square instance] (where piece is placed);
       - kind [string] (one of Piece.ALL_KINDS);
-      - refresh [boolean] (whether refresh board after piece placed or not);
-      - endOfCreateData [Array] (additional data to end of create functional).
+      - refresh [boolean] (whether refresh board after piece placed or not).
     */
 
     static WHITE = 'white';
@@ -29,7 +28,7 @@ class Piece {
     static ALL_COLORS = [Piece.WHITE, Piece.BLACK];
     static ALL_LINEARS = [Piece.BISHOP, Piece.ROOK, Piece.QUEEN];
 
-    constructor(color, square, kind=null, refresh=true, endOfCreateData=null) {
+    constructor(color, square, kind=null, refresh=true) {
         this._setKind(kind);
         this._setColor(color);
         this._isLinear = Piece.ALL_LINEARS.includes(kind);
@@ -38,7 +37,7 @@ class Piece {
         this._refreshSquareFinder();
         this.getInitState();
         this.getPlace(square, false);
-        this._endOfCreate(...(endOfCreateData || []));
+        this._castleRoad = null;
         this.square.fireBoardRefresh(refresh);
     }
 
@@ -76,8 +75,6 @@ class Piece {
         }
         this._color = color;
     }
-
-    _endOfCreate() {}
 
     _refreshSquareFinder() {
         this.sqrBeforeXray = null; // square before xray (always occupied by piece)
@@ -217,10 +214,6 @@ class Pawn extends Piece {
         return this.square.onRank(Pawn.INITIAL_RANKS[this.color]);
     }
 
-    _endOfCreate() {
-        this._enPassantSquare = null;
-    }
-
     _getMoveCoordinates() {
         let moveSquaresCoordinates = [];
         moveSquaresCoordinates.push([
@@ -261,6 +254,16 @@ class Pawn extends Piece {
         return attackSquaresCoordinates;
     }
 
+    _checkEnPassantSquare(square) {
+        return (
+            this.board.enPassantSquare
+        &&
+            square.theSame(this.board.enPassantSquare)
+        &&
+            !this.hasColor(this.board.colors.current)
+        );
+    }
+
     _getAttackSquares() {
         for (let [x, y] of this._getAttackCoordinates()) {
             let square = this.board.squares.getFromCoordinates(x, y);
@@ -275,20 +278,11 @@ class Pawn extends Piece {
                         square.piece.checkers.add(this.square.piece);
                     }
                 }
+            } else if (this._checkEnPassantSquare(square)) {
+                this.squares.add(ar.ATTACK, square);
+                this.squares.add(ar.MOVE, square);
             }
         }
-        if (this._enPassantSquare) {
-            this.squares.add(ar.ATTACK, this._enPassantSquare);
-            this.clearEnPassantSquare();
-        }
-    }
-
-    setEnPassantSquare(square) {
-        this._enPassantSquare = square;
-    }
-
-    clearEnPassantSquare() {
-        this.setEnPassantSquare(null);
     }
 
     getSquares() {
@@ -300,8 +294,8 @@ class Pawn extends Piece {
 
 
 class StepPiece extends Piece {
-    constructor(color, square, kind, refresh=true, endOfCreateData=null) {
-        super(color, square, kind, refresh, endOfCreateData);
+    constructor(color, square, kind, refresh=true) {
+        super(color, square, kind, refresh);
     }
 
     _getStepSquares(stepPoints) {
@@ -359,8 +353,8 @@ class Knight extends StepPiece {
 
 
 class LinearPiece extends Piece {
-    constructor(color, square, kind, refresh=true, endOfCreateData=null) {
-        super(color, square, kind, refresh, endOfCreateData);
+    constructor(color, square, kind, refresh=true) {
+        super(color, square, kind, refresh);
     }
 
     _getLinearSquares(directions) {
@@ -432,10 +426,6 @@ class Rook extends LinearPiece {
 
     get castleRoad() {
         return this._castleRoad;
-    }
-
-    _endOfCreate() {
-        this._castleRoad = null;
     }
 
     getSquares() {

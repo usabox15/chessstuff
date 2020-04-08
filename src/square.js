@@ -371,7 +371,7 @@ class Square {
     }
 
     placePiece(piece, refresh=true) {
-        if (this.board) {
+        if (this.board && !piece.canBeReplacedTo(this)) {
             let positionIsSetted = (
                 this.board.positionIsSetted
             &&

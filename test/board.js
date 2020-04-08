@@ -620,5 +620,26 @@ describe('Test board', function () {
             response = board.pawnTransformation(Piece.KNIGHT);
             assert.ok(!response.success);
         });
+
+        it('should check en passant', function () {
+            let board = new Board({FEN: '4k3/8/8/8/2p5/8/1P6/4K3 w - - 0 1'});
+            response = board.movePiece('b2', 'b4');
+            assert.ok(response.success);
+            assert.ok(board.squares.b3.theSame(board.enPassantSquare));
+            response = board.movePiece('c4', 'b3');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '4k3/8/8/8/8/1p6/8/4K3 w - - 0 2');
+
+            board = new Board({FEN: '4k3/6p1/8/5P2/8/8/8/4K3 b - - 0 1'});
+            response = board.movePiece('g7', 'g5');
+            assert.ok(response.success);
+            assert.ok(board.squares.g6.theSame(board.enPassantSquare));
+            response = board.movePiece('e1', 'e2');
+            assert.ok(response.success);
+            response = board.movePiece('e8', 'e7');
+            assert.ok(response.success);
+            response = board.movePiece('f5', 'g6');
+            assert.ok(!response.success);
+        });
     });
 });

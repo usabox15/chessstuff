@@ -528,8 +528,9 @@ class Board {
         };
     }
 
-    _refreshTransformation() {
+    _refreshState() {
         this._transformation = null;
+        this._enPassantSquare = null;
     }
 
     _checkPieceCountLegal(color, allPieces) {
@@ -759,16 +760,6 @@ class Board {
                 toSquare.coordinates.x,
                 toSquare.coordinates.y - pawn.direction
             );
-            for (let [state, dx] of [["right", 1], ["left", -1]]) {
-                if (!toSquare.onEdge[state]) {
-                    let x = toSquare.coordinates.x + dx;
-                    let y = toSquare.coordinates.y;
-                    let otherPiece = this._squares.getFromCoordinates(x, y).piece;
-                    if (otherPiece && otherPiece.isPawn) {
-                        otherPiece.setEnPassantSquare(this._enPassantSquare);
-                    }
-                }
-            }
         }
         // catch other pawn en passant
         else if (pawn.squares.includes(ar.ATTACK, toSquare) && !toSquare.piece) {
@@ -803,7 +794,6 @@ class Board {
             return this._response("The position would be illegal after that.", false);
         }
         this._colors.changePriority();
-        this._enPassantSquare = null;
         this._updateCounters();
         this._latestFEN = this.FEN;
         return this._response("Success!");
@@ -814,6 +804,8 @@ class Board {
             description: description,
             success: success,
             transformation: transformation,
+            positionIsLegal: this._positionIsLegal,
+            enPassantSquare: this._enPassantSquare ? this._enPassantSquare.name.value : null,
             FEN: this.FEN,
             insufficientMaterial: this.insufficientMaterial,
             result: this._result
@@ -831,6 +823,8 @@ class Board {
         if (this._initialCastleRights && this._initialCastleRights[king.color]) {
             king.setCastle(this._initialCastleRights[king.color]);
         }
+
+        return this._response("Success!");
     }
 
     refreshAllSquares() {
@@ -881,6 +875,8 @@ class Board {
         }
 
         this._checkPositionIsLegal();
+
+        return this._response("Success!");
     }
 
     markPositionAsSetted() {
@@ -939,7 +935,7 @@ class Board {
 
         this._placePiece(this._colors.current, kind, this.transformation.toSquareName, false);
         this._removePiece(this.transformation.fromSquareName, false);
-        this._refreshTransformation();
+        this._refreshState();
         this._fiftyMovesRuleCounter.switch();
         return this._moveEnd();
     }
@@ -958,7 +954,7 @@ class Board {
         if (!piece.hasColor(this._colors.current)) return this._response("Wrong color piece.", false);
         if (!piece.canBeReplacedTo(toSquare)) return this._response("Illegal move.", false);
 
-        this._refreshTransformation();
+        this._refreshState();
         if (piece.isKing) {
             let castleRoad = piece.castle.getRoad(toSquare);
             if (castleRoad) {
