@@ -782,7 +782,7 @@ class Board {
 
     _updateCounters() {
         this._fiftyMovesRuleCounter.update();
-        if (this._colors.current == Piece.BLACK) {
+        if (this._colors.current == Piece.WHITE) {
             this._movesCounter.update();
         }
     }
@@ -841,7 +841,8 @@ class Board {
             piece.getSquares();
         }
 
-        let oppKing = this._kings[this._colors.opponent];
+        let oppColor = this._positionIsSetted ? this._colors.opponent : this._colors.current;
+        let oppKing = this._kings[oppColor];
         if (oppKing) {
             if (oppKing.checkers.single) {
                 let noMoves = true;

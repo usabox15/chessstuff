@@ -641,5 +641,37 @@ describe('Test board', function () {
             response = board.movePiece('f5', 'g6');
             assert.ok(!response.success);
         });
+
+        it('should check caltle', function () {
+            let board = new Board({FEN: '4k3/8/8/8/8/8/8/4K2R w K - 0 1'});
+            response = board.movePiece('e1', 'g1');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '4k3/8/8/8/8/8/8/5RK1 b - - 0 1');
+
+            board = new Board({FEN: '4k3/8/8/8/5r2/8/8/4K2R w K - 0 1'});
+            response = board.movePiece('e1', 'g1');
+            assert.ok(!response.success);
+            assert.equal(board.FEN, '4k3/8/8/8/5r2/8/8/4K2R w K - 0 1');
+
+            board = new Board({FEN: 'r3k3/8/8/8/8/8/8/4K3 b q - 0 1'});
+            response = board.movePiece('e8', 'c8');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '2kr4/8/8/8/8/8/8/4K3 w - - 0 2');
+
+            board = new Board({FEN: 'rn2k3/8/8/8/8/8/8/4K3 b q - 0 1'});
+            response = board.movePiece('e8', 'c8');
+            assert.ok(!response.success);
+            assert.equal(board.FEN, 'rn2k3/8/8/8/8/8/8/4K3 b q - 0 1');
+
+            board = new Board({FEN: '4k3/8/8/8/8/8/8/R3K3 w Q - 0 1'});
+            response = board.movePiece('e1', 'c1');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '4k3/8/8/8/8/8/8/2KR4 b - - 0 1');
+
+            board = new Board({FEN: '4k3/8/8/8/4q3/8/8/R3K3 w Q - 0 1'});
+            response = board.movePiece('e1', 'c1');
+            assert.ok(!response.success);
+            assert.equal(board.FEN, '4k3/8/8/8/4q3/8/8/R3K3 w Q - 0 1');
+        });
     });
 });

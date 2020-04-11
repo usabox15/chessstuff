@@ -36,9 +36,7 @@ class Piece {
         this.squares = new relations.PieceSquares(this, 'pieces');
         this._refreshSquareFinder();
         this.getInitState();
-        this.getPlace(square, false);
-        this._castleRoad = null;
-        this.square.fireBoardRefresh(refresh);
+        this.getPlace(square);
     }
 
     get color() {
@@ -425,7 +423,10 @@ class Rook extends LinearPiece {
     }
 
     get castleRoad() {
-        return this._castleRoad;
+        if (this.hasOwnProperty('_castleRoad')) {
+            return this._castleRoad;
+        }
+        return null
     }
 
     getSquares() {

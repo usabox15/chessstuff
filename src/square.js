@@ -366,7 +366,7 @@ class Square {
         return xIsEven && !yIsEven || !xIsEven && yIsEven;
     }
 
-    fireBoardRefresh(refresh) {
+    _fireBoardRefresh(refresh) {
         if (this.board && refresh) this.board.refreshAllSquares();
     }
 
@@ -385,12 +385,12 @@ class Square {
             }
         }
         this._piece = piece;
-        this.fireBoardRefresh(refresh);
+        this._fireBoardRefresh(refresh);
     }
 
     removePiece(refresh=true) {
         this._piece = null;
-        this.fireBoardRefresh(refresh);
+        this._fireBoardRefresh(refresh);
     }
 
     theSame(otherSquare) {
