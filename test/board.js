@@ -583,7 +583,7 @@ describe('Test board', function () {
 
         it('should check pawn transformation', function () {
             let board = new Board({FEN: '8/2P1k3/8/8/8/8/6K1/8 w - - 0 1'});
-            response = board.movePiece('c7', 'c8');
+            let response = board.movePiece('c7', 'c8');
             assert.ok(response.success);
             response = board.pawnTransformation(Piece.BISHOP);
             assert.ok(response.success);
@@ -595,7 +595,7 @@ describe('Test board', function () {
 
         it('should check en passant', function () {
             let board = new Board({FEN: '4k3/8/8/8/2p5/8/1P6/4K3 w - - 0 1'});
-            response = board.movePiece('b2', 'b4');
+            let response = board.movePiece('b2', 'b4');
             assert.ok(response.success);
             assert.ok(board.squares.b3.theSame(board.enPassantSquare));
             response = board.movePiece('c4', 'b3');
@@ -616,7 +616,7 @@ describe('Test board', function () {
 
         it('should check caltle', function () {
             let board = new Board({FEN: '4k3/8/8/8/8/8/8/4K2R w K - 0 1'});
-            response = board.movePiece('e1', 'g1');
+            let response = board.movePiece('e1', 'g1');
             assert.ok(response.success);
             assert.equal(board.FEN, '4k3/8/8/8/8/8/8/5RK1 b - - 0 1');
 
@@ -650,7 +650,7 @@ describe('Test board', function () {
             let board = new Board({startingPosition: true});
             assert.equal(board.FEN, Board.INITIAL_FEN);
 
-            response = board.movePiece('g1', 'f3');
+            let response = board.movePiece('g1', 'f3');
             assert.ok(response.success);
             assert.equal(board.FEN, 'rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 0 1');
 
@@ -662,7 +662,7 @@ describe('Test board', function () {
         it('should check moves', function () {
             let board = new Board({startingPosition: true});
 
-            response = board.movePiece('e2', 'e4');
+            let response = board.movePiece('e2', 'e4');
             assert.ok(response.success);
             assert.equal(board.FEN, 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1');
 
@@ -759,6 +759,60 @@ describe('Test board', function () {
             assert.equal(response.result[0], 1);
             assert.equal(response.result[1], 0);
             assert.equal(board.FEN, '1nb1R1k1/1p3ppp/r3p3/p7/1P6/2N2N2/1PPK1PPP/R1BQ1B1R b - - 0 11');
+        });
+
+        it('should check result', function () {
+            let board = new Board({FEN: '8/8/1R6/4k3/5q2/3K2R1/7B/5n2 w - - 0 1'});
+            let response = board.movePiece('g3', 'g5');
+            assert.ok(response.success);
+            assert.ok(response.result);
+            assert.equal(response.result[0], 1);
+            assert.equal(response.result[1], 0);
+            assert.equal(board.FEN, '8/8/1R6/4k1R1/5q2/3K4/7B/5n2 b - - 0 1');
+
+            board = new Board({FEN: '8/8/1R6/4k1R1/5q2/3K4/7B/5n2 b - - 0 1'});
+            assert.ok(board.state.result);
+            assert.equal(board.state.result[0], 1);
+            assert.equal(board.state.result[1], 0);
+
+            board = new Board({FEN: '8/R3q3/8/4n2k/1bpP1Q2/4KB2/8/8 b - - 0 1'});
+            response = board.movePiece('e5', 'g4');
+            assert.ok(response.success);
+            assert.ok(response.result);
+            assert.equal(response.result[0], 0);
+            assert.equal(response.result[1], 1);
+            assert.equal(board.FEN, '8/R3q3/8/7k/1bpP1Qn1/4KB2/8/8 w - - 0 2');
+
+            board = new Board({FEN: '8/R3q3/8/7k/1bpP1Qn1/4KB2/8/8 w - - 0 2'});
+            assert.ok(board.state.result);
+            assert.equal(board.state.result[0], 0);
+            assert.equal(board.state.result[1], 1);
+
+            board = new Board({FEN: '8/8/8/5k2/1r6/2K5/8/8 w - - 0 1'});
+            response = board.movePiece('c3', 'b4');
+            assert.ok(response.success);
+            assert.ok(response.result);
+            assert.equal(response.result[0], 0.5);
+            assert.equal(response.result[1], 0.5);
+            assert.equal(board.FEN, '8/8/8/5k2/1K6/8/8/8 b - - 0 1');
+
+            board = new Board({FEN: '8/8/8/5k2/1K6/8/8/8 b - - 0 1'});
+            assert.ok(board.state.result);
+            assert.equal(board.state.result[0], 0.5);
+            assert.equal(board.state.result[1], 0.5);
+
+            board = new Board({FEN: '1q1Q2r1/bP6/P1K5/5r2/6k1/8/8/8 b - - 0 1'});
+            response = board.movePiece('g8', 'd8');
+            assert.ok(response.success);
+            assert.ok(response.result);
+            assert.equal(response.result[0], 0.5);
+            assert.equal(response.result[1], 0.5);
+            assert.equal(board.FEN, '1q1r4/bP6/P1K5/5r2/6k1/8/8/8 w - - 0 2');
+
+            board = new Board({FEN: '1q1r4/bP6/P1K5/5r2/6k1/8/8/8 w - - 0 2'});
+            assert.ok(board.state.result);
+            assert.equal(board.state.result[0], 0.5);
+            assert.equal(board.state.result[1], 0.5);
         });
     });
 });

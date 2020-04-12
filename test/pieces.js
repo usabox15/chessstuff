@@ -427,7 +427,7 @@ describe('Test pieces', function () {
             assert.equal(knight.squares[ar.MOVE], null);
             assert.equal(knight.squares[ar.ATTACK], null);
             assert.equal(knight.squares[ar.COVER], null);
-            assert.equal(knight.squares[ar.CONTROL], null);
+            assert.equal(knight.squares[ar.CONTROL].length, 8);
             assert.equal(knight.squares[ar.XRAY], null);
         });
     });

@@ -494,6 +494,15 @@ class Board {
         );
     }
 
+    get state() {
+        return {
+            positionIsLegal: this._positionIsLegal,
+            FEN: this.FEN,
+            insufficientMaterial: this.insufficientMaterial,
+            result: this._result
+        }
+    }
+
     _init(initial) {
         let initialData = this._getInitialData(initial);
         this._setCurrentColor(initialData.currentColor);
@@ -770,16 +779,11 @@ class Board {
     }
 
     _response(description, success=true, transformation=false) {
-        return {
+        return Object.assign(this.state, {
             description: description,
             success: success,
             transformation: transformation,
-            positionIsLegal: this._positionIsLegal,
-            enPassantSquare: this._enPassantSquare ? this._enPassantSquare.name.value : null,
-            FEN: this.FEN,
-            insufficientMaterial: this.insufficientMaterial,
-            result: this._result
-        }
+        });
     }
 
     placeKing(king) {
@@ -811,7 +815,21 @@ class Board {
             piece.getSquares();
         }
 
-        let oppColor = this._positionIsSetted ? this._colors.opponent : this._colors.current;
+        this._checkPositionIsLegal(beforeMove);
+
+        let oppColor;
+        let firstPriority;
+        let secondPriority;
+        if (this._positionIsSetted) {
+            oppColor = this._colors.opponent;
+            firstPriority = this._colors.firstPriority;
+            secondPriority = this._colors.secondPriority;
+        } else {
+            oppColor = this._colors.current;
+            firstPriority = this._colors.secondPriority;
+            secondPriority = this._colors.firstPriority;
+        }
+
         let oppKing = this._kings[oppColor];
         if (oppKing) {
             if (oppKing.checkers.single) {
@@ -822,13 +840,13 @@ class Board {
                     piece.getCheck(checker, betweenSquares);
                     if (!piece.stuck) noMoves = false;
                 }
-                if (noMoves) this._setResult(this._colors.secondPriority, this._colors.firstPriority);
+                if (noMoves) this._setResult(secondPriority, firstPriority);
             }
             else if (oppKing.checkers.several) {
                 for (let piece of this.allPieces.filter(p => p.sameColor(oppKing) && !p.isKing)) {
                     piece.getTotalImmobilize();
                 }
-                if (oppKing.stuck) this._setResult(this._colors.secondPriority, this._colors.firstPriority);
+                if (oppKing.stuck) this._setResult(secondPriority, firstPriority);
             }
             else if (this.insufficientMaterial) {
                 this._setResult(0.5, 0.5);
@@ -844,8 +862,6 @@ class Board {
                 if (noMoves) this._setResult(0.5, 0.5);
             }
         }
-
-        this._checkPositionIsLegal(beforeMove);
 
         return this._response("Success!");
     }

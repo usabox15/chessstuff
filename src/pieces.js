@@ -171,7 +171,9 @@ class Piece {
     }
 
     getTotalImmobilize() {
-        this.squares.refresh();
+        for (let kind of [ar.MOVE, ar.ATTACK, ar.COVER]) {
+            this.squares.refresh(kind);
+        }
     }
 
     getBind(kingSquare) {
@@ -671,7 +673,7 @@ class KingCheckers extends Array {
         return (
             this.filter(p => p.isKing).length == 0
         &&
-            this.filter(p => !p.squares.includes(ar.ATTACK, this._king.square)).length == 0
+            this.filter(p => !p.squares.includes(ar.CONTROL, this._king.square)).length == 0
         );
     }
 
@@ -682,7 +684,7 @@ class KingCheckers extends Array {
         let discoveredAttackSquaresNames = discoveredAttacker.square.getBetweenSquaresNames(this._king.square);
         for (let squareName of discoveredAttackSquaresNames) {
             let square = this._king.board.squares[squareName];
-            if (discoverer.squares.includes(ar.MOVE, square)) {
+            if (!square.piece && discoverer.squares.includes(ar.CONTROL, square)) {
                 return true;
             }
         }
