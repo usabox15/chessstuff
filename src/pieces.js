@@ -36,7 +36,7 @@ class Piece {
         this.squares = new relations.PieceSquares(this, 'pieces');
         this._refreshSquareFinder();
         this.getInitState();
-        this.getPlace(square);
+        this.getPlace(square, refresh);
     }
 
     get color() {

@@ -528,12 +528,14 @@ describe('Test board', function () {
             board._replacePiece(board.squares.g2, board.squares.g1, pawn);
             assert.ok(!board._positionIsLegal);
             board._removePiece('g1');
+            board.refreshAllSquares();
             assert.ok(board._positionIsLegal);
 
             pawn = new Pawn(Piece.BLACK, board.squares.c7);
             board._replacePiece(board.squares.c7, board.squares.c8, pawn);
             assert.ok(!board._positionIsLegal);
             board._removePiece('c8');
+            board.refreshAllSquares();
             assert.ok(board._positionIsLegal);
         });
 
@@ -672,6 +674,19 @@ describe('Test board', function () {
             response = board.movePiece('e1', 'c1');
             assert.ok(!response.success);
             assert.equal(board.FEN, '4k3/8/8/8/4q3/8/8/R3K3 w Q - 0 1');
+        });
+
+        it('should check rollback', function () {
+            let board = new Board({startingPosition: true});
+            assert.equal(board.FEN, Board.INITIAL_FEN);
+
+            response = board.movePiece('g1', 'f3');
+            assert.ok(response.success);
+            assert.equal(board.FEN, 'rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 0 1');
+
+            board._latestFEN = Board.INITIAL_FEN;
+            board._rollBack();
+            assert.equal(board.FEN, Board.INITIAL_FEN);
         });
     });
 });

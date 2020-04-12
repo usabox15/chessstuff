@@ -421,7 +421,7 @@ class Board {
         this._squares = new BoardSquares(this);
         this._result = null;
         this._transformation = null;
-        this._kings = {[Piece.WHITE]: null, [Piece.BLACK]: null};
+        this._setKingsInitial();
         this._positionIsLegal = false;
         this._positionIsSetted = false;
         this._colors = null;
@@ -515,6 +515,10 @@ class Board {
         }
         this._latestFEN = initialFEN;
         return new BoardInitial(new FENData(initialFEN));
+    }
+
+    _setKingsInitial() {
+        this._kings = {[Piece.WHITE]: null, [Piece.BLACK]: null};
     }
 
     _setResult(whitePoints, blackPoints) {
@@ -648,12 +652,12 @@ class Board {
         );
     }
 
-    _placePiece(color, kind, squareName, refresh=true) {
-        new this.#piecesBox[kind](color, this._squares[squareName], refresh);
+    _placePiece(color, kind, squareName) {
+        new this.#piecesBox[kind](color, this._squares[squareName], false);
     }
 
-    _removePiece(squareName, refresh=true) {
-        this._squares[squareName].removePiece(refresh);
+    _removePiece(squareName) {
+        this._squares[squareName].removePiece(false);
     }
 
     _replacePiece(fromSquare, toSquare, piece, refresh=true) {
@@ -686,10 +690,10 @@ class Board {
         for (let color of Piece.ALL_COLORS) {
             let piecesData = positionData[color];
             for (let [pieceName, squareName] of piecesData.filter(d => d[0] != Piece.KING)) {
-                this._placePiece(color, pieceName, squareName, false);
+                this._placePiece(color, pieceName, squareName);
             }
             for (let [pieceName, squareName] of piecesData.filter(d => d[0] == Piece.KING)) {
-                this._placePiece(color, pieceName, squareName, false);
+                this._placePiece(color, pieceName, squareName);
             }
         }
         return this._markPositionAsSetted();
@@ -753,19 +757,42 @@ class Board {
         return {success: true};
     }
 
+    _hasEnPassantAttacker(attackerSquare, pawn) {
+        return (
+            attackerSquare
+            &&
+            attackerSquare.piece
+            &&
+            attackerSquare.piece.isPawn
+            &&
+            !attackerSquare.piece.hasColor(pawn.color)
+        );
+
+    }
+
+    _needToSetEnPassantSquare(enPassantSquare, pawn) {
+        return (
+            this._hasEnPassantAttacker(enPassantSquare.neighbors.left, pawn)
+        ||
+            this._hasEnPassantAttacker(enPassantSquare.neighbors.right, pawn)
+        );
+    }
+
     _enPassantMatter(fromSquare, toSquare, pawn) {
         // jump through one square
         if (toSquare.getBetweenSquaresCount(fromSquare) == 1) {
-            this._enPassantSquare = this._squares.getFromCoordinates(
-                toSquare.coordinates.x,
-                toSquare.coordinates.y - pawn.direction
-            );
+            if (this._needToSetEnPassantSquare(toSquare, pawn)) {
+                this._enPassantSquare = this._squares.getFromCoordinates(
+                    toSquare.coordinates.x,
+                    toSquare.coordinates.y - pawn.direction
+                );
+            }
         }
         // catch other pawn en passant
         else if (pawn.squares.includes(ar.ATTACK, toSquare) && !toSquare.piece) {
             let x = toSquare.coordinates.x;
             let y = fromSquare.coordinates.y;
-            this._removePiece(this._squares.getFromCoordinates(x, y).name.value, false);
+            this._removePiece(this._squares.getFromCoordinates(x, y).name.value);
         }
     }
 
@@ -777,6 +804,7 @@ class Board {
 
     _rollBack() {
         this._positionIsSetted = false;
+        this._setKingsInitial();
         this._init({FEN: this._latestFEN});
     }
 
@@ -887,13 +915,13 @@ class Board {
 
     placePiece(color, kind, squareName) {
         // Decorators: checkPositionIsSetted.
-        this._placePiece(color, kind, squareName, false);
+        this._placePiece(color, kind, squareName);
         return this._response("Successfully placed!");
     }
 
     removePiece(squareName) {
         // Decorators: checkPositionIsSetted.
-        this._removePiece(squareName, false);
+        this._removePiece(squareName);
         return this._response("Successfully removed!");
     }
 
@@ -934,8 +962,8 @@ class Board {
         if (!this._positionIsLegal) return this._response("The position isn't legal.", false);
         if (!this.transformation) return this._response("There isn't transformation.", false);
 
-        this._placePiece(this._colors.current, kind, this.transformation.toSquareName, false);
-        this._removePiece(this.transformation.fromSquareName, false);
+        this._placePiece(this._colors.current, kind, this.transformation.toSquareName);
+        this._removePiece(this.transformation.fromSquareName);
         this._refreshState();
         this._fiftyMovesRuleCounter.switch();
         return this._moveEnd();
