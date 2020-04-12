@@ -71,6 +71,8 @@ describe('Test relations', function () {
                 assert.ok(queen.squares.includes(ActionsRelation.MOVE, square));
                 assert.ok(square.pieces.includes(ActionsRelation.MOVE, queen));
             }
+            queen.squares.limit(ActionsRelation.MOVE, ['b5']);
+            assert.ok(!queen.squares[ActionsRelation.MOVE])
         });
     });
 });

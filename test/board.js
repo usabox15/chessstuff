@@ -568,46 +568,16 @@ describe('Test board', function () {
             board = new Board({FEN: '8/8/8/2k5/6pp/8/4K3/8 b - g3 0 1'});
             assert.ok(!board._positionIsLegal);
 
-            board = new Board({FEN: '8/8/8/2k5/6P1/8/4K3/8 b - g3 0 1'});
-            assert.ok(!board._positionIsLegal);
-
-            board = new Board({FEN: '8/8/8/2k5/6Pb/8/4K3/8 b - g3 0 1'});
-            assert.ok(!board._positionIsLegal);
-
-            board = new Board({FEN: '8/8/8/2k5/6PP/8/4K3/8 b - g3 0 1'});
-            assert.ok(!board._positionIsLegal);
-
-            board = new Board({FEN: '8/8/8/2k5/5qP1/8/4K3/8 b - g3 0 1'});
-            assert.ok(!board._positionIsLegal);
-
-            board = new Board({FEN: '8/8/8/2k5/5PP1/8/4K3/8 b - g3 0 1'});
-            assert.ok(!board._positionIsLegal);
-
             board = new Board({FEN: '8/4k3/8/4pP2/8/8/6K1/8 b - e6 0 1'});
             assert.ok(!board._positionIsLegal);
 
-            board = new Board({FEN: '8/4k3/8/5P2/8/8/6K1/8 b - e6 0 1'});
+            board = new Board({FEN: '3k4/8/8/5P2/8/8/6K1/8 b - e6 0 1'});
             assert.ok(!board._positionIsLegal);
 
-            board = new Board({FEN: '8/4k3/8/4rP2/8/8/6K1/8 b - e6 0 1'});
+            board = new Board({FEN: '8/2k5/8/4rP2/8/8/6K1/8 b - e6 0 1'});
             assert.ok(!board._positionIsLegal);
 
-            board = new Board({FEN: '8/4k3/8/4PP2/8/8/6K1/8 b - e6 0 1'});
-            assert.ok(!board._positionIsLegal);
-
-            board = new Board({FEN: '8/4k3/8/4p3/8/8/6K1/8 b - e6 0 1'});
-            assert.ok(!board._positionIsLegal);
-
-            board = new Board({FEN: '8/4k3/8/4pQ2/8/8/6K1/8 b - e6 0 1'});
-            assert.ok(!board._positionIsLegal);
-
-            board = new Board({FEN: '8/4k3/8/4pp2/8/8/6K1/8 b - e6 0 1'});
-            assert.ok(!board._positionIsLegal);
-
-            board = new Board({FEN: '8/4k3/8/3Np3/8/8/6K1/8 b - e6 0 1'});
-            assert.ok(!board._positionIsLegal);
-
-            board = new Board({FEN: '8/4k3/8/3pp3/8/8/6K1/8 b - e6 0 1'});
+            board = new Board({FEN: '8/2k5/8/4PP2/8/8/6K1/8 b - e6 0 1'});
             assert.ok(!board._positionIsLegal);
         });
 
@@ -687,6 +657,108 @@ describe('Test board', function () {
             board._latestFEN = Board.INITIAL_FEN;
             board._rollBack();
             assert.equal(board.FEN, Board.INITIAL_FEN);
+        });
+
+        it('should check moves', function () {
+            let board = new Board({startingPosition: true});
+
+            response = board.movePiece('e2', 'e4');
+            assert.ok(response.success);
+            assert.equal(board.FEN, 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1');
+
+            response = board.movePiece('a7', 'a5');
+            assert.ok(response.success);
+            assert.equal(board.FEN, 'rnbqkbnr/1ppppppp/8/p7/4P3/8/PPPP1PPP/RNBQKBNR w KQkq a6 0 2');
+
+            response = board.movePiece('g1', 'f3');
+            assert.ok(response.success);
+            assert.equal(board.FEN, 'rnbqkbnr/1ppppppp/8/p7/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2');
+
+            response = board.movePiece('a8', 'a6');
+            assert.ok(response.success);
+            assert.ok(!board.kings[Piece.BLACK].castle[KingCastleRoad.LONG]);
+            assert.equal(board.FEN, '1nbqkbnr/1ppppppp/r7/p7/4P3/5N2/PPPP1PPP/RNBQKB1R w KQk - 2 3');
+
+            response = board.movePiece('e4', 'e5');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '1nbqkbnr/1ppppppp/r7/p3P3/8/5N2/PPPP1PPP/RNBQKB1R b KQk - 0 3');
+
+            response = board.movePiece('d7', 'd5');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '1nbqkbnr/1pp1pppp/r7/p2pP3/8/5N2/PPPP1PPP/RNBQKB1R w KQk d6 0 4');
+
+            response = board.movePiece('e5', 'd6');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '1nbqkbnr/1pp1pppp/r2P4/p7/8/5N2/PPPP1PPP/RNBQKB1R b KQk - 0 4');
+
+            response = board.movePiece('g8', 'f6');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '1nbqkb1r/1pp1pppp/r2P1n2/p7/8/5N2/PPPP1PPP/RNBQKB1R w KQk - 1 5');
+
+            response = board.movePiece('d6', 'c7');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '1nbqkb1r/1pP1pppp/r4n2/p7/8/5N2/PPPP1PPP/RNBQKB1R b KQk - 0 5');
+
+            response = board.movePiece('d8', 'd2');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '1nb1kb1r/1pP1pppp/r4n2/p7/8/5N2/PPPq1PPP/RNBQKB1R w KQk - 0 6');
+
+            response = board.movePiece('f1', 'd3');
+            assert.ok(!response.success);
+            assert.equal(board.FEN, '1nb1kb1r/1pP1pppp/r4n2/p7/8/5N2/PPPq1PPP/RNBQKB1R w KQk - 0 6');
+
+            response = board.movePiece('e1', 'd2');
+            assert.ok(response.success);
+            assert.ok(!board.kings[Piece.WHITE].castle[KingCastleRoad.SHORT]);
+            assert.ok(!board.kings[Piece.WHITE].castle[KingCastleRoad.LONG]);
+            assert.equal(board.FEN, '1nb1kb1r/1pP1pppp/r4n2/p7/8/5N2/PPPK1PPP/RNBQ1B1R b k - 0 6');
+
+            response = board.movePiece('e7', 'e6');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '1nb1kb1r/1pP2ppp/r3pn2/p7/8/5N2/PPPK1PPP/RNBQ1B1R w k - 0 7');
+
+            response = board.movePiece('b1', 'c3');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '1nb1kb1r/1pP2ppp/r3pn2/p7/8/2N2N2/PPPK1PPP/R1BQ1B1R b k - 1 7');
+
+            response = board.movePiece('f8', 'b4');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '1nb1k2r/1pP2ppp/r3pn2/p7/1b6/2N2N2/PPPK1PPP/R1BQ1B1R w k - 2 8');
+
+            response = board.movePiece('a2', 'a3');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '1nb1k2r/1pP2ppp/r3pn2/p7/1b6/P1N2N2/1PPK1PPP/R1BQ1B1R b k - 0 8');
+
+            response = board.movePiece('e8', 'g8');
+            assert.ok(!board.kings[Piece.BLACK].castle[KingCastleRoad.SHORT]);
+            assert.ok(response.success);
+            assert.equal(board.FEN, '1nb2rk1/1pP2ppp/r3pn2/p7/1b6/P1N2N2/1PPK1PPP/R1BQ1B1R w - - 1 9');
+
+            response = board.movePiece('a3', 'b4');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '1nb2rk1/1pP2ppp/r3pn2/p7/1P6/2N2N2/1PPK1PPP/R1BQ1B1R b - - 0 9');
+
+            response = board.movePiece('f8', 'd8');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '1nbr2k1/1pP2ppp/r3pn2/p7/1P6/2N2N2/1PPK1PPP/R1BQ1B1R w - - 1 10');
+
+            response = board.movePiece('c7', 'd8');
+            assert.ok(response.success);
+            assert.ok(response.transformation);
+            response = board.pawnTransformation(Piece.ROOK);
+            assert.ok(response.success);
+            assert.equal(board.FEN, '1nbR2k1/1p3ppp/r3pn2/p7/1P6/2N2N2/1PPK1PPP/R1BQ1B1R b - - 0 10');
+
+            response = board.movePiece('f6', 'e8');
+            assert.ok(response.success);
+            assert.equal(board.FEN, '1nbRn1k1/1p3ppp/r3p3/p7/1P6/2N2N2/1PPK1PPP/R1BQ1B1R w - - 1 11');
+
+            response = board.movePiece('d8', 'e8');
+            assert.ok(response.success);
+            assert.ok(response.result);
+            assert.equal(response.result[0], 1);
+            assert.equal(response.result[1], 0);
+            assert.equal(board.FEN, '1nb1R1k1/1p3ppp/r3p3/p7/1P6/2N2N2/1PPK1PPP/R1BQ1B1R b - - 0 11');
         });
     });
 });

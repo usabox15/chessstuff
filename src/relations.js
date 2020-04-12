@@ -102,6 +102,9 @@ class PieceSquares extends ActionsRelation {
             square[this._relatedName].remove(kind, this._target, false);
         }
         this[kind] = this[kind].filter(square => acceptedNames.includes(square.name.value));
+        if (this[kind].length == 0) {
+            this[kind] = null;
+        }
     }
 }
 

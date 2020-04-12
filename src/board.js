@@ -565,8 +565,9 @@ class Board {
         );
     }
 
-    _checkCheckersLegal(king) {
-        return king.checkers.isLegal && (!king.checkers.exist || king.hasColor(this._colors.current));
+    _checkCheckersLegal(king, beforeMove) {
+        let kingColor = beforeMove ? this._colors.current : this._colors.opponent;
+        return king.checkers.isLegal && (!king.checkers.exist || king.hasColor(kingColor));
     }
 
     _checkEnPassantSquareLegal() {
@@ -580,24 +581,6 @@ class Board {
             this._enPassantSquare.neighbors.up.piece.isPawn
             &&
             this._enPassantSquare.neighbors.up.piece.hasColor(Piece.WHITE)
-            &&
-            (
-                !this._enPassantSquare.onEdge.left
-                &&
-                this._enPassantSquare.neighbors.upLeft.piece
-                &&
-                this._enPassantSquare.neighbors.upLeft.piece.isPawn
-                &&
-                this._enPassantSquare.neighbors.upLeft.piece.hasColor(Piece.BLACK)
-            ||
-                !this._enPassantSquare.onEdge.right
-                &&
-                this._enPassantSquare.neighbors.upRight.piece
-                &&
-                this._enPassantSquare.neighbors.upRight.piece.isPawn
-                &&
-                this._enPassantSquare.neighbors.upRight.piece.hasColor(Piece.BLACK)
-            )
         ||
             this._enPassantSquare.onRank(6)
             &&
@@ -608,28 +591,10 @@ class Board {
             this._enPassantSquare.neighbors.down.piece.isPawn
             &&
             this._enPassantSquare.neighbors.down.piece.hasColor(Piece.BLACK)
-            &&
-            (
-                !this._enPassantSquare.onEdge.left
-                &&
-                this._enPassantSquare.neighbors.downLeft.piece
-                &&
-                this._enPassantSquare.neighbors.downLeft.piece.isPawn
-                &&
-                this._enPassantSquare.neighbors.downLeft.piece.hasColor(Piece.WHITE)
-            ||
-                !this._enPassantSquare.onEdge.right
-                &&
-                this._enPassantSquare.neighbors.downRight.piece
-                &&
-                this._enPassantSquare.neighbors.downRight.piece.isPawn
-                &&
-                this._enPassantSquare.neighbors.downRight.piece.hasColor(Piece.WHITE)
-            )
         );
     }
 
-    _checkPositionIsLegal() {
+    _checkPositionIsLegal(beforeMove=true) {
         this._positionIsLegal = true;
         let allPieces = this.allPieces;
         for (let color of Piece.ALL_COLORS) {
@@ -639,7 +604,7 @@ class Board {
             &&
                 this._checkKingPlacementLegal(king)
             &&
-                this._checkCheckersLegal(king)
+                this._checkCheckersLegal(king, beforeMove)
             );
             if (!this._positionIsLegal) return;
         }
@@ -757,36 +722,13 @@ class Board {
         return {success: true};
     }
 
-    _hasEnPassantAttacker(attackerSquare, pawn) {
-        return (
-            attackerSquare
-            &&
-            attackerSquare.piece
-            &&
-            attackerSquare.piece.isPawn
-            &&
-            !attackerSquare.piece.hasColor(pawn.color)
-        );
-
-    }
-
-    _needToSetEnPassantSquare(enPassantSquare, pawn) {
-        return (
-            this._hasEnPassantAttacker(enPassantSquare.neighbors.left, pawn)
-        ||
-            this._hasEnPassantAttacker(enPassantSquare.neighbors.right, pawn)
-        );
-    }
-
     _enPassantMatter(fromSquare, toSquare, pawn) {
         // jump through one square
         if (toSquare.getBetweenSquaresCount(fromSquare) == 1) {
-            if (this._needToSetEnPassantSquare(toSquare, pawn)) {
-                this._enPassantSquare = this._squares.getFromCoordinates(
-                    toSquare.coordinates.x,
-                    toSquare.coordinates.y - pawn.direction
-                );
-            }
+            this._enPassantSquare = this._squares.getFromCoordinates(
+                toSquare.coordinates.x,
+                toSquare.coordinates.y - pawn.direction
+            );
         }
         // catch other pawn en passant
         else if (pawn.squares.includes(ar.ATTACK, toSquare) && !toSquare.piece) {
@@ -816,7 +758,7 @@ class Board {
     }
 
     _moveEnd() {
-        this.refreshAllSquares();
+        this.refreshAllSquares(false);
         if (!this._positionIsLegal) {
             this._rollBack();
             return this._response("The position would be illegal after that.", false);
@@ -855,7 +797,7 @@ class Board {
         return this._response("Success!");
     }
 
-    refreshAllSquares() {
+    refreshAllSquares(beforeMove=true) {
         for (let piece of this.allPieces) {
             piece.getInitState();
         }
@@ -903,7 +845,7 @@ class Board {
             }
         }
 
-        this._checkPositionIsLegal();
+        this._checkPositionIsLegal(beforeMove);
 
         return this._response("Success!");
     }
