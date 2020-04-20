@@ -1,15 +1,12 @@
 class ActionsRelation {
     /*
     Relation between whether piece and squares or square and pieces by piece action.
-    There are piece actions:
-      - ActionsRelation.MOVE;
-      - ActionsRelation.ATTACK;
-      - ActionsRelation.XRAY;
-      - ActionsRelation.COVER (protect);
-      - ActionsRelation.CONTROL (prevent opponent king move to).
-    There are create params:
-      - target [whether some kind of piece or square instance];
-      - relatedName [string] (related items attribute name of relate).
+    Piece actions:
+        ActionsRelation.MOVE;
+        ActionsRelation.ATTACK;
+        ActionsRelation.XRAY;
+        ActionsRelation.COVER (protect);
+        ActionsRelation.CONTROL (prevent opponent king move to).
     */
 
     static MOVE = 'move';
@@ -27,18 +24,37 @@ class ActionsRelation {
     ];
 
     constructor(target, relatedName) {
+        /*
+        Params:
+            target {whether some kind of piece or square instance};
+            relatedName {string} - related items attribute (relate name).
+        */
+
         this._target = target;
         this._relatedName = relatedName;
         this.refresh();
     }
 
     _checkKind(kind, except=null) {
+        /*
+        Check whether piece action kind is valid or not.
+        Params:
+            kind {string} - piece action kind;
+            except {string} - additional valid value.
+        */
+
         if (!this.#allKinds.includes(kind) && except != kind) {
             throw Error(`Wrong relation kind (${kind}) passed`);
         }
     }
 
     refresh(kind='all') {
+        /*
+        Refersh action kind values.
+        Params:
+            kind {string} - piece action kind.
+        */
+
         this._checkKind(kind, 'all');
         let kinds = kind === 'all' ? this.#allKinds : [kind];
         for (let kind of kinds) {
@@ -52,6 +68,14 @@ class ActionsRelation {
     }
 
     add(kind, item, relate=true) {
+        /*
+        Add action kind value.
+        Params:
+            kind {string} - piece action kind;
+            item {whether some kind of piece or square instance} - action value;
+            relate {boolean} - need to add target to relate action.
+        */
+
         this._checkKind(kind);
         if (this[kind]) {
             this[kind].push(item);
@@ -65,6 +89,14 @@ class ActionsRelation {
     }
 
     remove(kind, item, relate=true) {
+        /*
+        Remove action kind value.
+        Params:
+            kind {string} - piece action kind;
+            item {whether some kind of piece or square instance} - action value;
+            relate {boolean} - need to remove target from relate action.
+        */
+
         this._checkKind(kind);
         if (this[kind]) {
             this[kind] = this[kind].filter(i => !i.theSame(item));
@@ -78,6 +110,13 @@ class ActionsRelation {
     }
 
     includes(kind, item) {
+        /*
+        Check whether particular action kind includes item.
+        Params:
+            kind {string} - piece action kind;
+            item {whether some kind of piece or square instance} - action value.
+        */
+
         this._checkKind(kind);
         if (!this[kind]) {
             return false;
@@ -89,11 +128,23 @@ class ActionsRelation {
 
 class PieceSquares extends ActionsRelation {
     constructor(target, relatedName) {
+        /*
+        Params:
+            target {whether some kind of piece or square instance};
+            relatedName {string} - related items attribute (relate name).
+        */
+
         super(target, relatedName);
     }
 
     limit(kind, acceptedNames) {
-        // limit some kind of Piece actions squares by Array of accepted square names
+        /*
+        Limit some kind of Piece actions squares by Array of accepted square names.
+        Params:
+            kind {string} - piece action kind;
+            acceptedNames {Array} - accepted square names.
+        */
+
         this._checkKind(kind);
         if (!this[kind]) {
             return;
