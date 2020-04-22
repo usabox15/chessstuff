@@ -5,14 +5,7 @@ var SquareCoordinates = square.SquareCoordinates;
 
 
 class Piece {
-    /*
-    Base chess piece class.
-    There are create params:
-      - color [string] (white or black);
-      - square [square instance] (where piece is placed);
-      - kind [string] (one of Piece.ALL_KINDS);
-      - refresh [boolean] (whether refresh board after piece placed or not).
-    */
+    // Base chess piece class.
 
     static WHITE = 'white';
     static BLACK = 'black';
@@ -29,6 +22,14 @@ class Piece {
     static ALL_LINEARS = [Piece.BISHOP, Piece.ROOK, Piece.QUEEN];
 
     constructor(color, square, kind=null, refresh=true) {
+        /*
+        Params:
+            color {string} (white or black);
+            square {Square} - where piece is placed;
+            kind {string} - one of Piece.ALL_KINDS;
+            refresh {boolean} - whether refresh board after piece placed or not.
+        */
+
         this._setKind(kind);
         this._setColor(color);
         this._isLinear = Piece.ALL_LINEARS.includes(kind);
@@ -61,6 +62,11 @@ class Piece {
     }
 
     _setKind(kind) {
+        /*
+        Params:
+            kind {string} - one of Piece.ALL_KINDS.
+        */
+
         if (kind != null && !Piece.ALL_KINDS.includes(kind)) {
             throw Error(`'${kind}' is wrong piece kind value. Use any of Piece.ALL_KINDS.`);
         }
@@ -68,6 +74,11 @@ class Piece {
     }
 
     _setColor(color) {
+        /*
+        Params:
+            color {string} - one of Piece.ALL_COLORS.
+        */
+
         if (!Piece.ALL_COLORS.includes(color)) {
             throw Error(`'${color}' is wrong piece color value. Use any of Piece.ALL_COLORS.`);
         }
@@ -75,12 +86,16 @@ class Piece {
     }
 
     _refreshSquareFinder() {
+        // Refresh square finder states
+
         this.sqrBeforeXray = null; // square before xray (always occupied by piece)
         this.xrayControl = false; // control square behind checked king (inline of piece attack)
         this.endOfALine = false;
     }
 
     _refreshSquares() {
+        // Refresh piece squares data
+
         this.squares.refresh();
         this._refreshSquareFinder();
     }
@@ -95,7 +110,12 @@ class Piece {
     }
 
     _nextSquareAction(nextSquare) {
-        // define next square kinds and handle logic with it
+        /*
+        Handle action with next square.
+        Params:
+            nextSquare {Square}.
+        */
+
         if (this.sqrBeforeXray) {
             this.squares.add(ar.XRAY, nextSquare);
             if (this.xrayControl) {
@@ -131,30 +151,63 @@ class Piece {
         }
     }
 
-    getSquares() {}
+    getSquares() {
+        // Get piece squares by piece action
+    }
 
     getInitState() {
         this.binder = null;
     }
 
     getPlace(square, refresh=true) {
+        /*
+        Place piece to square.
+        Params:
+            square {Square};
+            refresh {boolean} - whether refresh board after piece placed or not.
+        */
+
         this.square = square;
         square.placePiece(this, refresh);
     }
 
     theSame(otherPiece) {
+        /*
+        Check piece is the same with other piece.
+        Params:
+            otherPiece {Piece / its subclass}.
+        */
+
         return this.square.theSame(otherPiece.square);
     }
 
     sameColor(otherPiece) {
+        /*
+        Check piece has same color with other piece.
+        Params:
+            otherPiece {Piece / its subclass}.
+        */
+
         return this.color === otherPiece.color;
     }
 
     hasColor(color) {
+        /*
+        Check piece has particular color.
+        Params:
+            color {string} (one of Piece.ALL_COLORS).
+        */
+
         return this.color === color;
     }
 
     canBeReplacedTo(square) {
+        /*
+        Check piece could be replaced to particular square.
+        Params:
+            square {Square}.
+        */
+
         return (
             !square.piece
             &&
@@ -171,13 +224,16 @@ class Piece {
     }
 
     getTotalImmobilize() {
+        // Immobilize piece.
+
         for (let kind of [ar.MOVE, ar.ATTACK, ar.COVER]) {
             this.squares.refresh(kind);
         }
     }
 
     getBind(kingSquare) {
-        // make piece is binded
+        // Bind piece.
+
         this.squares.refresh(ar.XRAY);
         let betweenSquares = this.binder.square.getBetweenSquaresNames(kingSquare, true, true);
         for (let actonKind of [ar.MOVE, ar.ATTACK, ar.COVER]) {
@@ -186,7 +242,8 @@ class Piece {
     }
 
     getCheck(checker, betweenSquaresNames) {
-        // change Piece action abilities after its king was checked
+        // Change piece action abilities after its king was checked
+
         this.squares.refresh(ar.COVER);
         this.squares.refresh(ar.XRAY);
         this.squares.limit(ar.ATTACK, [checker.square.name.value]);
@@ -200,6 +257,13 @@ class Pawn extends Piece {
     static INITIAL_RANKS = {[Piece.WHITE]: "2", [Piece.BLACK]: "7"};
 
     constructor(color, square, refresh=true) {
+        /*
+        Params:
+            color {string} (white or black);
+            square {Square} - where piece is placed;
+            refresh {boolean} - whether refresh board after piece placed or not.
+        */
+
         if (square.onEdge.up || square.onEdge.down) {
             throw Error(`Pawn couldn't be placed on ${square.name.value} square.`);
         }
@@ -255,6 +319,8 @@ class Pawn extends Piece {
     }
 
     _checkEnPassantSquare(square) {
+        // Check whether square is en passant square or not
+
         return (
             this.board.enPassantSquare
         &&
@@ -286,6 +352,8 @@ class Pawn extends Piece {
     }
 
     getSquares() {
+        // Get pawn squares by piece action.
+
         this._refreshSquares();
         this._getMoveSquares();
         this._getAttackSquares();
@@ -295,10 +363,24 @@ class Pawn extends Piece {
 
 class StepPiece extends Piece {
     constructor(color, square, kind, refresh=true) {
+        /*
+        Params:
+            color {string} (white or black);
+            square {Square} - where piece is placed;
+            kind {string} - one of Piece.ALL_KINDS;
+            refresh {boolean} - whether refresh board after piece placed or not.
+        */
+
         super(color, square, kind, refresh);
     }
 
     _getStepSquares(stepPoints) {
+        /*
+        Get step piece squares by piece action.
+        Params:
+            stepPoints {Array} - array of Objects with x and y attributes.
+        */
+
         this._refreshSquareFinder();
         for (let stepPoint of stepPoints) {
             let x = this.square.coordinates.x + stepPoint.x;
@@ -338,15 +420,26 @@ class Knight extends StepPiece {
     ];
 
     constructor(color, square, refresh=true) {
+        /*
+        Params:
+            color {string} (white or black);
+            square {Square} - where piece is placed;
+            refresh {boolean} - whether refresh board after piece placed or not.
+        */
+
         super(color, square, Piece.KNIGHT, refresh);
     }
 
     getSquares() {
+        // Get knight squares by piece action.
+
         this._refreshSquares();
         this._getStepSquares(Knight.stepPoints);
     }
 
     getBind() {
+        // Bind knight.
+
         this.getTotalImmobilize();
     }
 }
@@ -354,10 +447,24 @@ class Knight extends StepPiece {
 
 class LinearPiece extends Piece {
     constructor(color, square, kind, refresh=true) {
+        /*
+        Params:
+            color {string} (white or black);
+            square {Square} - where piece is placed;
+            kind {string} - one of Piece.ALL_KINDS;
+            refresh {boolean} - whether refresh board after piece placed or not.
+        */
+
         super(color, square, kind, refresh);
     }
 
     _getLinearSquares(directions) {
+        /*
+        Get linear piece squares by piece action.
+        Params:
+            directions {Array} - array of Objects with x and y attributes.
+        */
+
         for (let direction of directions) {
             this._refreshSquareFinder();
             let x = this.square.coordinates.x + direction.x;
@@ -392,10 +499,19 @@ class Bishop extends LinearPiece {
     ];
 
     constructor(color, square, refresh=true) {
+        /*
+        Params:
+            color {string} (white or black);
+            square {Square} - where piece is placed;
+            refresh {boolean} - whether refresh board after piece placed or not.
+        */
+
         super(color, square, Piece.BISHOP, refresh);
     }
 
     getSquares() {
+        // Get bishop squares by piece action.
+
         this._refreshSquares();
         this._getLinearSquares(Bishop.directions);
     }
@@ -421,6 +537,13 @@ class Rook extends LinearPiece {
     ];
 
     constructor(color, square, refresh=true) {
+        /*
+        Params:
+            color {string} (white or black);
+            square {Square} - where piece is placed;
+            refresh {boolean} - whether refresh board after piece placed or not.
+        */
+
         super(color, square, Piece.ROOK, refresh);
     }
 
@@ -432,11 +555,18 @@ class Rook extends LinearPiece {
     }
 
     getSquares() {
+        // Get rook squares by piece action.
+
         this._refreshSquares();
         this._getLinearSquares(Rook.directions);
     }
 
     setCastleRoad(castleRoad) {
+        /*
+        Params:
+            castleRoad {KingCastleRoad}.
+        */
+
         this._castleRoad = castleRoad;
     }
 
@@ -461,10 +591,19 @@ class Queen extends LinearPiece {
     */
 
     constructor(color, square, refresh=true) {
+        /*
+        Params:
+            color {string} (white or black);
+            square {Square} - where piece is placed;
+            refresh {boolean} - whether refresh board after piece placed or not.
+        */
+
         super(color, square, Piece.QUEEN, refresh);
     }
 
     getSquares() {
+        // Get queen squares by piece action.
+
         this._refreshSquares();
         this._getLinearSquares(Bishop.directions);
         this._getLinearSquares(Rook.directions);
@@ -483,6 +622,13 @@ class KingCastleRoad {
     static safeSigns = {[KingCastleRoad.SHORT]: ['f', 'g'], [KingCastleRoad.LONG]: ['c', 'd']};
 
     constructor(castle, rank, side) {
+        /*
+        Params:
+            castle {KingCastle};
+            rank {number or string} - first or eights rank;
+            side {string} - one of KingCastleRoad.ALL_SIDES.
+        */
+
         this._castle = castle;
         this._rank = rank;
         this._side = side;
@@ -500,10 +646,14 @@ class KingCastleRoad {
     }
 
     get toSquare() {
+        // King move to square
+
         return this._toSquare;
     }
 
     get rookToSquare() {
+        // Rook move to square
+
         return this._rookToSquare;
     }
 
@@ -567,12 +717,14 @@ class KingCastleInitial {
             [KingCastleRoad.SHORT]: true,
             [KingCastleRoad.LONG]: false
         }
-
-    Create param:
-      - acceptedSides [Array] (KingCastleRoad.ALL_SIDES items, not required).
     */
 
     constructor(acceptedSides=null) {
+        /*
+        Params:
+            acceptedSides {Array} - some of KingCastleRoad.ALL_SIDES.
+        */
+
         acceptedSides = acceptedSides || [];
         acceptedSides = acceptedSides.slice(0, 2);
         this._checkAcceptedSides(acceptedSides);
@@ -582,6 +734,11 @@ class KingCastleInitial {
     }
 
     _checkAcceptedSides(acceptedSides) {
+        /*
+        Params:
+            acceptedSides {Array} - some of KingCastleRoad.ALL_SIDES.
+        */
+
         for (let side of acceptedSides) {
             if (!KingCastleRoad.ALL_SIDES.includes(side)) {
                 throw Error(`${side} is not a correct castle side name. Use one of ${KingCastleRoad.ALL_SIDES}.`);
@@ -595,6 +752,12 @@ class KingCastle {
     static RANKS = {[Piece.WHITE]: "1", [Piece.BLACK]: "8"};
 
     constructor(king, initial=null) {
+        /*
+        Params:
+            king {King};
+            initial {KingCastleInitial}.
+        */
+
         this._king = king;
         let accepted;
         if (king.onInitialSquare && initial) {
@@ -619,6 +782,12 @@ class KingCastle {
     }
 
     stop(side='all') {
+        /*
+        Stop castle rights.
+        Params:
+            side {string} one of KingCastleRoad.ALL_SIDES.
+        */
+
         let sides = side == 'all' ? KingCastleRoad.ALL_SIDES : [side];
         for (let s of sides) {
             if (this[s]) {
@@ -629,6 +798,12 @@ class KingCastle {
     }
 
     getRoad(toSquare) {
+        /*
+        Get castle road by king to square.
+        Params:
+            toSquare {Square}.
+        */
+
         for (let side of KingCastleRoad.ALL_SIDES) {
             if (this[side] && this[side].toSquare.theSame(toSquare)) {
                 return this[side];
@@ -641,6 +816,11 @@ class KingCastle {
 
 class KingCheckers extends Array {
     constructor(king) {
+        /*
+        Params:
+            king {King}.
+        */
+
         super();
         this._king = king;
     }
@@ -678,7 +858,12 @@ class KingCheckers extends Array {
     }
 
     _isDiscoverLegal(discoverer, discoveredAttacker) {
-        // Legality of a discover check that cause a double check
+        /*
+        Legality of a discover check that cause a double check.
+        Params:
+            discoverer {Piece subclass} piece that discover attack;
+            discoveredAttacker {Piece subclass} piece that attack by discover.
+        */
 
         if (!discoveredAttacker.isLinear) return false;
         let discoveredAttackSquaresNames = discoveredAttacker.square.getBetweenSquaresNames(this._king.square);
@@ -696,6 +881,11 @@ class KingCheckers extends Array {
     }
 
     add(piece) {
+        /*
+        Params:
+            piece {Piece subclass}.
+        */
+
         this.push(piece);
     }
 }
@@ -711,9 +901,6 @@ class King extends StepPiece {
         | G | F | E |
       -1|___|___|___|
           -1   0   1
-
-    There are additional create params:
-      - castleInitial [KingCastleInitial] (not required).
     */
 
     static INITIAL_SQUARE_NAMES = {[Piece.WHITE]: "e1", [Piece.BLACK]: "e8"};
@@ -729,6 +916,13 @@ class King extends StepPiece {
     ];
 
     constructor(color, square, refresh=true) {
+        /*
+        Params:
+            color {string} (white or black);
+            square {Square} - where piece is placed;
+            refresh {boolean} - whether refresh board after piece placed or not.
+        */
+
         super(color, square, Piece.KING, refresh);
     }
 
@@ -773,6 +967,8 @@ class King extends StepPiece {
     }
 
     getSquares() {
+        // Get king squares by piece action
+
         this._refreshSquares();
         this._getStepSquares(King.stepPoints);
         this._removeEnemyControlledSquares();
@@ -784,6 +980,11 @@ class King extends StepPiece {
     }
 
     setCastle(castleInitial) {
+        /*
+        Params:
+            castleInitial {KingCastleInitial}.
+        */
+
         this.castle = new KingCastle(this, castleInitial);
     }
 }
