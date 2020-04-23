@@ -396,14 +396,7 @@ class FENDataCreator {
 
 
 class Board {
-    /*
-    Chess board class.
-    Create param:
-      - initial [Object] {
-            startingPosition: Boolean, // whether set starting position or not, not required
-            FEN: String // FEN data string, not required
-        } (not required).
-    */
+    // Chess board class.
 
     static EMPTY_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
     static INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -417,7 +410,12 @@ class Board {
         [Piece.KING]: piecesModule.King,
     };
 
-    constructor(initial=null) {
+    constructor(FEN=Board.EMPTY_FEN) {
+        /*
+        Params:
+            FEN {string} - FEN data string, not required.
+        */
+
         this._squares = new BoardSquares(this);
         this._result = null;
         this._transformation = null;
@@ -429,8 +427,8 @@ class Board {
         this._enPassantSquare = null;
         this._fiftyMovesRuleCounter = null;
         this._movesCounter = null;
-        this._latestFEN = null;
-        this._init(initial);
+        this._latestFEN = FEN;
+        this._init(FEN);
     }
 
     get squares() {
@@ -503,27 +501,14 @@ class Board {
         }
     }
 
-    _init(initial) {
-        let initialData = this._getInitialData(initial);
+    _init(FEN) {
+        let initialData = new BoardInitial(new FENData(FEN));
         this._setCurrentColor(initialData.currentColor);
         this._setCastleRights(initialData.castleRights);
         this._setEnPassantSquare(initialData.enPassantSquareName);
         this._setFiftyMovesRuleCounter(initialData.fiftyMovesRuleCounter);
         this._setMovesCounter(initialData.movesCounter);
-        if (initial) this._setPosition(initialData.position);
-    }
-
-    _getInitialData(initial) {
-        let initialFEN = Board.EMPTY_FEN;
-        if (initial) {
-            if (initial.startingPosition) {
-                initialFEN = Board.INITIAL_FEN;
-            } else if (initial.FEN) {
-                initialFEN = initial.FEN;
-            }
-        }
-        this._latestFEN = initialFEN;
-        return new BoardInitial(new FENData(initialFEN));
+        this._setPosition(initialData.position);
     }
 
     _setKingsInitial() {
@@ -756,7 +741,7 @@ class Board {
     _rollBack() {
         this._positionIsSetted = false;
         this._setKingsInitial();
-        this._init({FEN: this._latestFEN});
+        this._init(this._latestFEN);
     }
 
     _updateCounters() {
