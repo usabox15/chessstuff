@@ -13,11 +13,23 @@ var SquareName = squareModule.SquareName;
 
 
 class BoardSquares {
+    // Board squares handler.
+
     constructor(board) {
+        /*
+        Params:
+            board {Board}.
+        */
+
         this._create(board);
     }
 
     _create(board) {
+        /*
+        Params:
+            board {Board}.
+        */
+
         this._items = [];
         for (let symbol of SquareName.symbols) {
             for (let number of SquareName.numbers) {
@@ -30,6 +42,8 @@ class BoardSquares {
     }
 
     get occupied() {
+        // Squares with placed pieces.
+
         return Object.fromEntries(
             Object.entries(this)
             .filter(data => data[1].piece)
@@ -37,10 +51,23 @@ class BoardSquares {
     }
 
     getFromCoordinates(x, y) {
+        /*
+        Get square by its coordinates.
+        Params:
+            x {number};
+            y {number}.
+        */
+
         return this[Square.coordinatesToName(x, y)];
     }
 
     removePieces(refresh) {
+        /*
+        Remove pieces from all squares.
+        Params:
+            refresh {boolean} - whether need to refresh board after piece has been placed or not.
+        */
+
         for (let square of this._items) {
             square.removePiece(refresh);
         }
@@ -49,6 +76,8 @@ class BoardSquares {
 
 
 class BoardColors {
+    // Board colors handler.
+
     #priorities = {
         [Piece.WHITE]: [0, 1],
         [Piece.BLACK]: [1, 0],
@@ -56,6 +85,11 @@ class BoardColors {
     #all = [Piece.WHITE, Piece.BLACK];
 
     constructor(currentColor) {
+        /*
+        Params:
+            currentColor {string} one of Piece.ALL_COLORS.
+        */
+
         if (!Piece.ALL_COLORS.includes(currentColor)) {
             throw Error(`'${currentColor}' is wrong color value. Use any of Piece.ALL_COLORS.`);
         }
@@ -86,6 +120,11 @@ class BoardColors {
 
 class MovesCounter {
     constructor(initialCount) {
+        /*
+        Params:
+            initialCount {number}.
+        */
+
         this._value = initialCount;
     }
 
@@ -101,6 +140,11 @@ class MovesCounter {
 
 class FiftyMovesRuleCounter extends MovesCounter {
     constructor(initialCount) {
+        /*
+        Params:
+            initialCount {number}.
+        */
+
         super(initialCount);
         this._turnedOn = false;
         this._needToRefresh = false;
@@ -134,9 +178,6 @@ class BoardInitialPosition {
             ],
             ...
         }
-
-    Create param:
-      - data [String] (FEN piece placement data).
     */
 
     static PIECES = {
@@ -155,6 +196,11 @@ class BoardInitialPosition {
     };
 
     constructor(data) {
+        /*
+        Params:
+            data {string} FEN piece placement data.
+        */
+
         for (let color of Piece.ALL_COLORS) {
             this[color] = [];
         }
@@ -163,6 +209,11 @@ class BoardInitialPosition {
     }
 
     _getRows(data) {
+        /*
+        Params:
+            data {string} FEN piece placement data.
+        */
+
         return (
             data
             .replace(/\d/g, n => {return '0'.repeat(parseInt(n))})
@@ -214,11 +265,21 @@ class BoardInitialCastle {
     };
 
     constructor(signs='-') {
+        /*
+        Params:
+            signs {string} FEN castling availability data, not required.
+        */
+
         this._signs = signs.slice(0, 4);
         this._fillData();
     }
 
     _checkSign(sign) {
+        /*
+        Params:
+            sign {string} FEN castling availability sign.
+        */
+
         if (!BoardInitialCastle.ALL_SIGNS.includes(sign)) {
             throw Error(`"${sign}" is not a correct castle rights sign. Use one of ${BoardInitialCastle.ALL_SIGNS}.`);
         }
@@ -260,12 +321,14 @@ class FENData {
             fiftyMovesRuleData: String,
             movesCounterData: String
         }
-
-    Create param:
-      - data [String] (FEN data string).
     */
 
     constructor(data) {
+        /*
+        Params:
+            data {string} FEN data string.
+        */
+
         [
             this.positionData,
             this.currentColorData,
@@ -289,14 +352,16 @@ class BoardInitial {
             fiftyMovesRuleCounter: Number,
             movesCounter: Number
         }
-
-    Create param:
-      - data [FENData] (parsed FEN data).
     */
 
     #colors = {'w': Piece.WHITE, 'b': Piece.BLACK};
 
     constructor(data) {
+        /*
+        Params:
+            data {FENData} parsed FEN data.
+        */
+
         this.position = new BoardInitialPosition(data.positionData);
         this.currentColor = this.#colors[data.currentColorData];
         this.castleRights = new BoardInitialCastle(data.castleRightsData);
@@ -308,12 +373,7 @@ class BoardInitial {
 
 
 class FENDataCreator {
-    /*
-    Create FEN string.
-
-    Create param:
-      - board [Board].
-    */
+    // Create FEN string.
 
     #pieces = {
         [Piece.WHITE]: {
@@ -346,6 +406,11 @@ class FENDataCreator {
     };
 
     constructor(board) {
+        /*
+        Params:
+            board {Board}.
+        */
+
         this._board = board;
         this.value = [
             this._getPositionData(),
@@ -516,10 +581,22 @@ class Board {
     }
 
     _setResult(whitePoints, blackPoints) {
+        /*
+        Params:
+            whitePoints {number} 0 || 0.5 || 1;
+            blackPoints {number} 0 || 0.5 || 1.
+        */
+
         this._result = [whitePoints, blackPoints];
     }
 
     _setTransformation(fromSquareName, toSquareName) {
+        /*
+        Params:
+            fromSquareName {string};
+            toSquareName {string}.
+        */
+
         this._transformation = {
             fromSquareName: fromSquareName,
             toSquareName: toSquareName
@@ -532,6 +609,12 @@ class Board {
     }
 
     _checkPieceCountLegal(color, allPieces) {
+        /*
+        Params:
+            color {string} one of Piece.ALL_COLORS;
+            allPieces {Array of Piece subclasses}.
+        */
+
         return (
             allPieces.filter(p => p.isKing && p.hasColor(color)).length == 1
         &&
@@ -548,10 +631,20 @@ class Board {
     }
 
     _checkPawnsPlacementLegal(allPieces) {
+        /*
+        Params:
+            allPieces {Array of Piece subclasses}.
+        */
+
         return allPieces.filter(p => p.isPawn && (p.square.onEdge.up || p.square.onEdge.down)).length == 0;
     }
 
     _checkKingPlacementLegal(king) {
+        /*
+        Params:
+            king {King}.
+        */
+
         return (
             !king.squares[ar.ATTACK]
         ||
@@ -560,6 +653,12 @@ class Board {
     }
 
     _checkCheckersLegal(king, beforeMove) {
+        /*
+        Params:
+            king {King};
+            beforeMove {boolean} whether check before move or after.
+        */
+
         let kingColor = beforeMove ? this._colors.current : this._colors.opponent;
         return king.checkers.isLegal && (!king.checkers.exist || king.hasColor(kingColor));
     }
@@ -589,6 +688,11 @@ class Board {
     }
 
     _checkPositionIsLegal(beforeMove=true) {
+        /*
+        Params:
+            beforeMove {boolean} whether check before move or after.
+        */
+
         this._positionIsLegal = true;
         let allPieces = this.allPieces;
         for (let color of Piece.ALL_COLORS) {
@@ -612,14 +716,34 @@ class Board {
     }
 
     _placePiece(color, kind, squareName) {
+        /*
+        Params:
+            color {string} one of Piece.ALL_COLORS;
+            kind {string} one of Piece.ALL_KINDS;
+            squareName {string}.
+        */
+
         new this.#piecesBox[kind](color, this._squares[squareName], false);
     }
 
     _removePiece(squareName) {
+        /*
+        Params:
+            squareName {string}.
+        */
+
         this._squares[squareName].removePiece(false);
     }
 
     _replacePiece(fromSquare, toSquare, piece, refresh=true) {
+        /*
+        Params:
+            fromSquareName {string};
+            toSquareName {string};
+            piece {Piece subclass};
+            refresh {boolean} - whether need to refresh board after piece has been placed or not.
+        */
+
         fromSquare.removePiece(false);
         piece.getPlace(toSquare, refresh);
     }
@@ -638,7 +762,12 @@ class Board {
     }
 
     _setPosition(positionData) {
-        // Decorators: checkPositionIsSetted.
+        /*
+        Params:
+            positionData {booleBoardInitialPositionan}.
+        Decorators: checkPositionIsSetted.
+        */
+
         if (!positionData instanceof BoardInitialPosition) {
             return {
                 success: false,
@@ -659,7 +788,12 @@ class Board {
     }
 
     _setCurrentColor(color) {
-        // Decorators: checkPositionIsSetted.
+        /*
+        Params:
+            color {string} one of Piece.ALL_COLORS.
+        Decorators: checkPositionIsSetted.
+        */
+
         if (!Piece.ALL_COLORS.includes(color)) {
             return {
                 success: false,
@@ -671,7 +805,12 @@ class Board {
     }
 
     _setCastleRights(castleRights) {
-        // Decorators: checkPositionIsSetted.
+        /*
+        Params:
+            castleRights {BoardInitialCastle}.
+        Decorators: checkPositionIsSetted.
+        */
+
         if (!castleRights instanceof BoardInitialCastle) {
             return {
                 success: false,
@@ -688,7 +827,12 @@ class Board {
     }
 
     _setEnPassantSquare(squareName) {
-        // Decorators: checkPositionIsSetted.
+        /*
+        Params:
+            squareName {string}.
+        Decorators: checkPositionIsSetted.
+        */
+
         if (squareName) {
             let allSaquaresNames = Object.keys(this.squares);
             if (!allSaquaresNames.includes(squareName)) {
@@ -705,18 +849,36 @@ class Board {
     }
 
     _setFiftyMovesRuleCounter(count) {
-        // Decorators: checkPositionIsSetted, checkCounterArgument.
+        /*
+        Params:
+            count {number}.
+        Decorators: checkPositionIsSetted, checkCounterArgument.
+        */
+
         this._fiftyMovesRuleCounter = new FiftyMovesRuleCounter(count);
         return {success: true};
     }
 
     _setMovesCounter(count) {
-        // Decorators: checkPositionIsSetted, checkCounterArgument.
+        /*
+        Params:
+            count {number}.
+        Decorators: checkPositionIsSetted, checkCounterArgument.
+        */
+
         this._movesCounter = new MovesCounter(count);
         return {success: true};
     }
 
     _enPassantMatter(fromSquare, toSquare, pawn) {
+        /*
+        En passant cases handler.
+        Params:
+            fromSquare {Square};
+            toSquare {Square};
+            pawn {Pawn}.
+        */
+
         // jump through one square
         if (toSquare.getBetweenSquaresCount(fromSquare) == 1) {
             this._enPassantSquare = this._squares.getFromCoordinates(
@@ -733,12 +895,19 @@ class Board {
     }
 
     _rookCastleMove(castleRoad) {
+        /*
+        Params:
+            castleRoad {KingCastleRoad}.
+        */
+
         let rookFromSquareName = castleRoad.rook.square.name.value;
         let rookToSquareName = castleRoad.rookToSquare.name.value;
         this.movePiece(rookFromSquareName, rookToSquareName, false);
     }
 
     _rollBack() {
+        // Roll position back to latest setted position
+
         this._positionIsSetted = false;
         this._setKingsInitial();
         this._init(this._latestFEN);
@@ -764,6 +933,13 @@ class Board {
     }
 
     _response(description, success=true, transformation=false) {
+        /*
+        Params:
+            description {string};
+            success {boolean};
+            transformation {boolean} - whether there is pawn transformation time or not.
+        */
+
         return Object.assign(this.state, {
             description: description,
             success: success,
@@ -772,6 +948,11 @@ class Board {
     }
 
     placeKing(king) {
+        /*
+        Params:
+            king {King}.
+        */
+
         if (!king.isKing) {
             throw Error(`Piece need to be a king not ${king.kind}.`);
         }
@@ -787,6 +968,11 @@ class Board {
     }
 
     refreshAllSquares(beforeMove=true) {
+        /*
+        Params:
+            beforeMove {boolean} whether check before move or after.
+        */
+
         for (let piece of this.allPieces) {
             piece.getInitState();
         }
@@ -853,52 +1039,100 @@ class Board {
 
     markPositionAsSetted() {
         // Decorators: handleSetBoardDataMethodResponse.
+
         return this._markPositionAsSetted();
     }
 
     placePiece(color, kind, squareName) {
-        // Decorators: checkPositionIsSetted.
+        /*
+        Params:
+            color {string} one of Piece.ALL_COLORS;
+            kind {string} one of Piece.ALL_KINDS;
+            squareName {string}.
+        Decorators: checkPositionIsSetted.
+        */
+
         this._placePiece(color, kind, squareName);
         return this._response("Successfully placed!");
     }
 
     removePiece(squareName) {
-        // Decorators: checkPositionIsSetted.
+        /*
+        Params:
+            squareName {string}.
+        Decorators: checkPositionIsSetted.
+        */
+
         this._removePiece(squareName);
         return this._response("Successfully removed!");
     }
 
     setPosition(positionData) {
-        // Decorators: handleSetBoardDataMethodResponse.
+        /*
+        Params:
+            positionData {booleBoardInitialPositionan}.
+        Decorators: handleSetBoardDataMethodResponse.
+        */
+
         return this._setPosition(positionData);
     }
 
     setCurrentColor(color) {
-        // Decorators: handleSetBoardDataMethodResponse.
+        /*
+        Params:
+            color {string} one of Piece.ALL_COLORS.
+        Decorators: handleSetBoardDataMethodResponse.
+        */
+
         return this._setCurrentColor(color);
     }
 
     setCastleRights(castleRights) {
-        // Decorators: handleSetBoardDataMethodResponse.
+        /*
+        Params:
+            castleRights {BoardInitialCastle}.
+        Decorators: handleSetBoardDataMethodResponse.
+        */
+
         return this._setCastleRights(castleRights);
     }
 
     setEnPassantSquare(squareName) {
-        // Decorators: handleSetBoardDataMethodResponse.
+        /*
+        Params:
+            squareName {string}.
+        Decorators: handleSetBoardDataMethodResponse.
+        */
+
         return this._setEnPassantSquare(squareName);
     }
 
     setFiftyMovesRuleCounter(count) {
-        // Decorators: handleSetBoardDataMethodResponse.
+        /*
+        Params:
+            count {number}.
+        Decorators: handleSetBoardDataMethodResponse.
+        */
+
         return this._setFiftyMovesRuleCounter(count);
     }
 
     setMovesCounter(count) {
-        // Decorators: handleSetBoardDataMethodResponse.
+        /*
+        Params:
+            count {number}.
+        Decorators: handleSetBoardDataMethodResponse.
+        */
+
         return this._setMovesCounter(count);
     }
 
     pawnTransformation(kind) {
+        /*
+        Params:
+            kind {string} one of Piece.ALL_KINDS.
+        */
+
         if (!this._positionIsSetted) return this._response("The position isn't setted.", false);
         if (this._result) return this._response("The result is already reached.", false);
         this._checkPositionIsLegal();
@@ -913,6 +1147,13 @@ class Board {
     }
 
     movePiece(from, to, refresh=true) {
+        /*
+        Params:
+            from {string} from square name;
+            to {string} to square name;
+            refresh {boolean} - whether need to refresh board after piece has been placed or not.
+        */
+
         if (!this._positionIsSetted) return this._response("The position isn't setted.", false);
         if (this._result) return this._response("The result is already reached.", false);
         this._checkPositionIsLegal();
@@ -961,7 +1202,10 @@ class Board {
 function checkPositionIsSetted(setBoardDataMethod) {
     /*
     Decorator to check whether board pisition is setted or not when set board data method is called.
+    Params:
+        setBoardDataMethod {string} - decorated method name.
     */
+
     function wrapper(...args) {
         if (this._positionIsSetted) {
             return {
@@ -991,7 +1235,10 @@ for (let methodName of checkPositionIsSettedApplyFor) {
 function checkCounterArgument(setBoardCounterMethod) {
     /*
     Decorator to check whether count argument is number or not when set board counter method is called.
+    Params:
+        setBoardCounterMethod {string} - decorated method name.
     */
+
     function wrapper(count) {
         let countType = typeof count;
         if (countType != 'number') {
@@ -1013,7 +1260,10 @@ for (let methodName of checkCounterArgumentApplyFor) {
 function handleSetBoardDataMethodResponse(setBoardDataMethod) {
     /*
     Decorator to handle set board data method response.
+    Params:
+        handleSetBoardDataMethodResponse {string} - decorated method name.
     */
+
     function wrapper(...args) {
         let result = setBoardDataMethod.call(this, ...args);
         if (!result.success) return this._response(result.description, false);
