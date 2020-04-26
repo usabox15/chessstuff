@@ -1,6 +1,6 @@
 # Create board
 
-## Create board from FEN string 
+## Create board from FEN string
 
 ```javascript
 > const chessstaff = require('chessstaff');
