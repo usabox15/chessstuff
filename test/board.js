@@ -16,26 +16,26 @@ limitations under the License.
 
 
 var assert = require('assert');
-var jschess = require('../');
-var SquareName = jschess.square.SquareName;
-var Piece = jschess.pieces.Piece;
-var Pawn = jschess.pieces.Pawn;
-var Knight = jschess.pieces.Knight;
-var Bishop = jschess.pieces.Bishop;
-var Rook = jschess.pieces.Rook;
-var Queen = jschess.pieces.Queen;
-var King = jschess.pieces.King;
-var KingCastleRoad = jschess.pieces.KingCastleRoad;
-var Board = jschess.board.Board;
-var BoardColors = jschess.board.BoardColors;
-var BoardInitial = jschess.board.BoardInitial;
-var BoardInitialCastle = jschess.board.BoardInitialCastle;
-var BoardInitialPosition = jschess.board.BoardInitialPosition;
-var BoardSquares = jschess.board.BoardSquares;
-var FENData = jschess.board.FENData;
-var FENDataCreator = jschess.board.FENDataCreator;
-var FiftyMovesRuleCounter = jschess.board.FiftyMovesRuleCounter;
-var MovesCounter = jschess.board.MovesCounter;
+var chessstaff = require('../');
+var SquareName = chessstaff.square.SquareName;
+var Piece = chessstaff.pieces.Piece;
+var Pawn = chessstaff.pieces.Pawn;
+var Knight = chessstaff.pieces.Knight;
+var Bishop = chessstaff.pieces.Bishop;
+var Rook = chessstaff.pieces.Rook;
+var Queen = chessstaff.pieces.Queen;
+var King = chessstaff.pieces.King;
+var KingCastleRoad = chessstaff.pieces.KingCastleRoad;
+var Board = chessstaff.board.Board;
+var BoardColors = chessstaff.board.BoardColors;
+var BoardInitial = chessstaff.board.BoardInitial;
+var BoardInitialCastle = chessstaff.board.BoardInitialCastle;
+var BoardInitialPosition = chessstaff.board.BoardInitialPosition;
+var BoardSquares = chessstaff.board.BoardSquares;
+var FENData = chessstaff.board.FENData;
+var FENDataCreator = chessstaff.board.FENDataCreator;
+var FiftyMovesRuleCounter = chessstaff.board.FiftyMovesRuleCounter;
+var MovesCounter = chessstaff.board.MovesCounter;
 
 
 describe('Test board', function () {

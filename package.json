@@ -1,24 +1,27 @@
 {
-  "name": "jschess",
+  "name": "chessstaff",
   "version": "1.0.0",
-  "description": "Chess util",
-  "main": "./src/main.js",
-  "scripts": {
-    "test": "mocha"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/YegorDB/chess.git"
-  },
+  "description": "Chess utility to handle whole game or particular positions. Provides work with board, squares and pieces",
   "keywords": [
     "chess"
   ],
-  "author": "Yegor Bitensky",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/YegorDB/chess/issues"
-  },
   "homepage": "https://github.com/YegorDB/chess#readme",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Yegor Bitensky",
+    "email": "yegorbitensky@gmail.com"
+  },
+  "main": "./src/main.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YegorDB/chessstaff.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YegorDB/chessstaff/issues"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
   "devDependencies": {
     "mocha": "^7.1.1"
   }

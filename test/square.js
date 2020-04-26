@@ -16,14 +16,14 @@ limitations under the License.
 
 
 var assert = require('assert');
-var jschess = require('../');
-var SquareNeighbors = jschess.square.SquareNeighbors;
-var SquareName = jschess.square.SquareName;
-var SquareCoordinates = jschess.square.SquareCoordinates;
-var SquareOnEdge = jschess.square.SquareOnEdge;
-var Square = jschess.square.Square;
-var SquaresLine = jschess.square.SquaresLine;
-var Board = jschess.board.Board;
+var chessstaff = require('../');
+var SquareNeighbors = chessstaff.square.SquareNeighbors;
+var SquareName = chessstaff.square.SquareName;
+var SquareCoordinates = chessstaff.square.SquareCoordinates;
+var SquareOnEdge = chessstaff.square.SquareOnEdge;
+var Square = chessstaff.square.Square;
+var SquaresLine = chessstaff.square.SquaresLine;
+var Board = chessstaff.board.Board;
 
 
 describe('Test square', function () {
