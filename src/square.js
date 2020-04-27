@@ -257,14 +257,9 @@ class SquaresLine {
             includeEnd {boolean} - whether include end square name or not.
         */
 
-        let additional = [];
-        if (includeStart) {
-            additional.push(this._startSquare.name.value);
-        }
-        if (includeEnd) {
-            additional.push(this._endSquare.name.value);
-        }
-        return this._betweenSquaresNames.concat(additional);
+        let start = includeStart ? [this._startSquare.name.value] : [];
+        let end = includeEnd ? [this._endSquare.name.value] : [];
+        return [...start, ...this._betweenSquaresNames, ...end];
     }
 
     betweenSquaresCount(includeStart=false, includeEnd=false) {
