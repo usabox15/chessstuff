@@ -135,29 +135,65 @@ Square piece
 Square related pieces by piece action
 
 ```javascript
+> var queen = board.squares.e2.piece;
+undefined
+> var bishop = board.squares.d6.piece;
+undefined
+>
+>
+> board.squares.e5.pieces.includes('move', queen);
+false
+> board.squares.e5.pieces.includes('move', bishop);
+false
 > board.squares.e5.pieces.move;
 null
+>
+>
+> board.squares.e5.pieces.includes('attack', queen);
+true
+> board.squares.e5.pieces.includes('attack', bishop);
+false
 > for (let piece of board.squares.e5.pieces.attack) {
 ... console.log(piece.color, piece.kind);
 ... }
 black queen
 undefined
+>
+>
+> board.squares.e5.pieces.includes('cover', queen);
+false
+> board.squares.e5.pieces.includes('cover', bishop);
+true
 > for (let piece of board.squares.e5.pieces.cover) {
 ... console.log(piece.color, piece.kind);
 ... 
 ... }
 white bishop
 undefined
+>
+>
+> board.squares.e5.pieces.includes('control', queen);
+true
+> board.squares.e5.pieces.includes('control', bishop);
+true
 > for (let piece of board.squares.e5.pieces.control) {
 ... console.log(piece.color, piece.kind);
 ... }
 white bishop
 black queen
 undefined
+>
+>
+> board.squares.e5.pieces.includes('xray', queen);
+false
+> board.squares.e5.pieces.includes('xray', bishop);
+false
 > board.squares.e5.pieces.xray
 null
 > 
-> 
+>
+>
+>
 > board.squares.c6.pieces.move;
 null
 > board.squares.c6.pieces.attack;
@@ -176,7 +212,9 @@ undefined
 white bishop
 undefined
 > 
-> 
+>
+>
+>
 > for (let piece of board.squares.c4.pieces.move) {
 ... console.log(piece.color, piece.kind);
 ... }

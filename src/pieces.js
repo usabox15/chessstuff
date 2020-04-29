@@ -230,7 +230,7 @@ class Piece {
             &&
             this.squares.includes(ar.MOVE, square)
         ||
-            square.piece
+            !!square.piece
             &&
             !square.piece.isKing
             &&
