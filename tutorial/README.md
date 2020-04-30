@@ -11,9 +11,9 @@
 ### Create board from FEN string
 
 ```javascript
-> const chessstaff = require('chessstaff');
+> const chessstuff = require('chessstuff');
 undefined
-> var board = new chessstaff.board.Board('8/8/2k5/4q3/6K1/8/1R3R2/8 w - - 0 1');
+> var board = new chessstuff.board.Board('8/8/2k5/4q3/6K1/8/1R3R2/8 w - - 0 1');
 undefined
 > board.state;
 {
@@ -27,13 +27,13 @@ undefined
 ### Create empty board and set it up
 
 ```javascript
-> const chessstaff = require('chessstaff');
+> const chessstuff = require('chessstuff');
 undefined
-> var board = new chessstaff.board.Board();
+> var board = new chessstuff.board.Board();
 undefined
-> board.setCurrentColor(chessstaff.pieces.Piece.BLACK);
+> board.setCurrentColor(chessstuff.pieces.Piece.BLACK);
 { success: true }
-> var castleRights = new chessstaff.board.BoardInitialCastle('Kq');
+> var castleRights = new chessstuff.board.BoardInitialCastle('Kq');
 undefined
 > board.setCastleRights(castleRights);
 { success: true }
@@ -43,7 +43,7 @@ undefined
 { success: true }
 > board.setMovesCounter(34);
 { success: true }
-> var initialPosition = new chessstaff.board.BoardInitialPosition('r3k3/8/6p1/8/2P5/8/8/4K2R');
+> var initialPosition = new chessstuff.board.BoardInitialPosition('r3k3/8/6p1/8/2P5/8/8/4K2R');
 undefined
 > board.setPosition(initialPosition);
 { success: true }
@@ -59,13 +59,13 @@ undefined
 ### Create empty board and set position by pieces creation
 
 ```javascript
-> const chessstaff = require('chessstaff');
+> const chessstuff = require('chessstuff');
 undefined
-> var board = new chessstaff.board.Board();
+> var board = new chessstuff.board.Board();
 undefined
-> new chessstaff.pieces.King('white', board.squares.e3);
+> new chessstuff.pieces.King('white', board.squares.e3);
 King {...}
-> new chessstaff.pieces.King('black', board.squares.b5);
+> new chessstuff.pieces.King('black', board.squares.b5);
 King {...}
 > board.state;
 {
@@ -88,9 +88,9 @@ King {...}
 ### Pieces movement
 
 ```javascript
-> const chessstaff = require('chessstaff');
+> const chessstuff = require('chessstuff');
 undefined
-> var board = new chessstaff.board.Board('8/8/5N2/8/6K1/1k6/3r4/8 b - - 0 1');
+> var board = new chessstuff.board.Board('8/8/5N2/8/6K1/1k6/3r4/8 b - - 0 1');
 undefined
 ```
 
@@ -142,9 +142,9 @@ Take rook by knight
 ### Castling
 
 ```javascript
-> const chessstaff = require('chessstaff');
+> const chessstuff = require('chessstuff');
 undefined
-> var board = new chessstaff.board.Board('4k2r/8/8/8/6b1/8/8/R3K3 b Qk - 0 1');
+> var board = new chessstuff.board.Board('4k2r/8/8/8/6b1/8/8/R3K3 b Qk - 0 1');
 undefined
 ```
 
@@ -184,9 +184,9 @@ White king can't castle at that moment (d1 square is controlled by black bishop)
 ### Take pawn en passant
 
 ```javascript
-> const chessstaff = require('chessstaff');
+> const chessstuff = require('chessstuff');
 undefined
-> var board = new chessstaff.board.Board('4k3/p7/8/1P6/8/8/8/4K3 b - - 0 1');
+> var board = new chessstuff.board.Board('4k3/p7/8/1P6/8/8/8/4K3 b - - 0 1');
 undefined
 > board.movePiece('a7', 'a5');
 {
@@ -215,9 +215,9 @@ undefined
 ### Pawn transformation
 
 ```javascript
-> const chessstaff = require('chessstaff');
+> const chessstuff = require('chessstuff');
 undefined
-> var board = new chessstaff.board.Board('8/8/3k4/8/8/6K1/5p2/8 b - - 0 1');
+> var board = new chessstuff.board.Board('8/8/3k4/8/8/6K1/5p2/8 b - - 0 1');
 undefined
 > board.movePiece('f2', 'f1');
 {
@@ -246,9 +246,9 @@ undefined
 ## 3. Full game example
 
 ```javascript
-> const chessstaff = require('chessstaff');
+> const chessstuff = require('chessstuff');
 undefined
-> var board = new chessstaff.board.Board(chessstaff.board.Board.INITIAL_FEN);
+> var board = new chessstuff.board.Board(chessstuff.board.Board.INITIAL_FEN);
 undefined
 > board.movePiece('e2', 'e4');
 {
@@ -325,9 +325,9 @@ undefined
 ## 4. Square information
 
 ```javascript
-> const chessstaff = require('chessstaff');
+> const chessstuff = require('chessstuff');
 undefined
-> var board = new chessstaff.board.Board('8/4K3/3B4/1k1pN3/8/5B2/4q3/8 b - - 0 1');
+> var board = new chessstuff.board.Board('8/4K3/3B4/1k1pN3/8/5B2/4q3/8 b - - 0 1');
 undefined
 ```
 
@@ -563,9 +563,9 @@ null
 ## 5. Piece information
 
 ```javascript
-> const chessstaff = require('chessstaff');
+> const chessstuff = require('chessstuff');
 undefined
-> var board = new chessstaff.board.Board('7r/3k1pp1/2p1p3/3n4/3Q4/P7/1PP5/1K6 b - - 0 1');
+> var board = new chessstuff.board.Board('7r/3k1pp1/2p1p3/3n4/3Q4/P7/1PP5/1K6 b - - 0 1');
 undefined
 > var queen = board.squares.d4.piece;
 undefined
@@ -731,7 +731,7 @@ true
 King castle
 
 ```javascript
-> var board = new chessstaff.board.Board('r3k1r1/8/8/8/8/8/8/R1B1K2R w KQq - 0 1');
+> var board = new chessstuff.board.Board('r3k1r1/8/8/8/8/8/8/R1B1K2R w KQq - 0 1');
 undefined
 > board.kings.white.castle.short.isFree; // there is no pieces between king and rook
 true
@@ -758,7 +758,7 @@ null
 King checkers
 
 ```javascript
-> var board = new chessstaff.board.Board('4k3/8/8/8/8/8/8/4K3 w - - 0 1');
+> var board = new chessstuff.board.Board('4k3/8/8/8/8/8/8/4K3 w - - 0 1');
 undefined
 > board.kings.white.checkers.exist;
 false
@@ -774,7 +774,7 @@ null
 true
 >
 >
-> var board = new chessstaff.board.Board('4k3/8/8/1B6/8/8/8/4K3 b - - 0 1');
+> var board = new chessstuff.board.Board('4k3/8/8/1B6/8/8/8/4K3 b - - 0 1');
 undefined
 > board.kings.black.checkers.exist;
 true
@@ -790,7 +790,7 @@ null
 true
 >
 >
-> var board = new chessstaff.board.Board('4k3/4r3/8/8/8/5n2/8/4K3 w - - 0 1');
+> var board = new chessstuff.board.Board('4k3/4r3/8/8/8/5n2/8/4K3 w - - 0 1');
 undefined
 > board.kings.white.checkers.exist;
 true

@@ -1,19 +1,19 @@
-# Chess staff
+# Chess stuff
 
 Chess utility to handle whole game or particular positions. Provides work with board, squares and pieces.
 
 ## Install
 
-`npm install chessstaff`
+`npm install chessstuff`
 
 ## Brief view
 
 ```javascript
-> const chessstaff = require('chessstaff');
+> const chessstuff = require('chessstuff');
 undefined
-> chessstaff.board.Board.INITIAL_FEN;
+> chessstuff.board.Board.INITIAL_FEN;
 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
-> var board = new chessstaff.board.Board(chessstaff.board.Board.INITIAL_FEN);
+> var board = new chessstuff.board.Board(chessstuff.board.Board.INITIAL_FEN);
 undefined
 > board.movePiece('g2', 'g4');
 { ... }
@@ -35,4 +35,4 @@ undefined
 
 ## Tutorial
 
-[View tutorial](https://github.com/YegorDB/chessstaff/tree/master/tutorial)
+[View tutorial](https://github.com/YegorDB/chessstuff/tree/master/tutorial)

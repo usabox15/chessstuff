@@ -1,11 +1,11 @@
 {
-  "name": "chessstaff",
-  "version": "1.0.1",
+  "name": "chessstuff",
+  "version": "1.0.0",
   "description": "Chess utility to handle whole game or particular positions. Provides work with board, squares and pieces.",
   "keywords": [
     "chess"
   ],
-  "homepage": "https://github.com/YegorDB/chessstaff#readme",
+  "homepage": "https://github.com/YegorDB/chessstuff#readme",
   "license": "Apache-2.0",
   "author": {
     "name": "Yegor Bitensky",
@@ -14,10 +14,10 @@
   "main": "./src/main.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/YegorDB/chessstaff.git"
+    "url": "git+https://github.com/YegorDB/chessstuff.git"
   },
   "bugs": {
-    "url": "https://github.com/YegorDB/chessstaff/issues"
+    "url": "https://github.com/YegorDB/chessstuff/issues"
   },
   "scripts": {
     "test": "mocha"

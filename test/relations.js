@@ -16,11 +16,11 @@ limitations under the License.
 
 
 var assert = require('assert');
-var chessstaff = require('../');
-var ActionsRelation = chessstaff.relations.ActionsRelation;
-var PieceSquares = chessstaff.relations.PieceSquares;
-var Square = chessstaff.square.Square;
-var Piece = chessstaff.pieces.Piece;
+var chessstuff = require('../');
+var ActionsRelation = chessstuff.relations.ActionsRelation;
+var PieceSquares = chessstuff.relations.PieceSquares;
+var Square = chessstuff.square.Square;
+var Piece = chessstuff.pieces.Piece;
 
 var a1 = new Square('a1');
 var b4 = new Square('b4');

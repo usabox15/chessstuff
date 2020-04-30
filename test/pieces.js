@@ -16,23 +16,23 @@ limitations under the License.
 
 
 var assert = require('assert');
-var chessstaff = require('../');
-var Square = chessstaff.square.Square;
-var Piece = chessstaff.pieces.Piece;
-var Pawn = chessstaff.pieces.Pawn;
-var Knight = chessstaff.pieces.Knight;
-var Bishop = chessstaff.pieces.Bishop;
-var Rook = chessstaff.pieces.Rook;
-var Queen = chessstaff.pieces.Queen;
-var KingCastleRoad = chessstaff.pieces.KingCastleRoad;
-var KingCastleInitial = chessstaff.pieces.KingCastleInitial;
-var KingCastle = chessstaff.pieces.KingCastle;
-var KingCheckers = chessstaff.pieces.KingCheckers;
-var King = chessstaff.pieces.King;
-var KingCastle = chessstaff.pieces.KingCastle;
-var ar = chessstaff.relations.ActionsRelation;
-var Board = chessstaff.board.Board;
-var BoardInitialCastle = chessstaff.board.BoardInitialCastle;
+var chessstuff = require('../');
+var Square = chessstuff.square.Square;
+var Piece = chessstuff.pieces.Piece;
+var Pawn = chessstuff.pieces.Pawn;
+var Knight = chessstuff.pieces.Knight;
+var Bishop = chessstuff.pieces.Bishop;
+var Rook = chessstuff.pieces.Rook;
+var Queen = chessstuff.pieces.Queen;
+var KingCastleRoad = chessstuff.pieces.KingCastleRoad;
+var KingCastleInitial = chessstuff.pieces.KingCastleInitial;
+var KingCastle = chessstuff.pieces.KingCastle;
+var KingCheckers = chessstuff.pieces.KingCheckers;
+var King = chessstuff.pieces.King;
+var KingCastle = chessstuff.pieces.KingCastle;
+var ar = chessstuff.relations.ActionsRelation;
+var Board = chessstuff.board.Board;
+var BoardInitialCastle = chessstuff.board.BoardInitialCastle;
 
 
 describe('Test pieces', function () {
