@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Yegor Bitensky
+Copyright 2020-2021 Yegor Bitensky
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 
-var relations = require('./relations');
+const { SquarePieces } = require('./relations');
 
 
 class SquareName {
@@ -408,7 +408,7 @@ class Square {
 
         this._board = board;
         this._piece = null;
-        this.pieces = new relations.ActionsRelation(this, 'squares');
+        this.pieces = new SquarePieces(this);
         this.onEdge = new SquareOnEdge(this.coordinates);
         this.neighbors = new SquareNeighbors(this);
         this._isLight = this._getIsLight();

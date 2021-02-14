@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Yegor Bitensky
+Copyright 2020-2021 Yegor Bitensky
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,24 +15,16 @@ limitations under the License.
 */
 
 
-var assert = require('assert');
-var chessstuff = require('../');
-var Square = chessstuff.square.Square;
-var Piece = chessstuff.pieces.Piece;
-var Pawn = chessstuff.pieces.Pawn;
-var Knight = chessstuff.pieces.Knight;
-var Bishop = chessstuff.pieces.Bishop;
-var Rook = chessstuff.pieces.Rook;
-var Queen = chessstuff.pieces.Queen;
-var KingCastleRoad = chessstuff.pieces.KingCastleRoad;
-var KingCastleInitial = chessstuff.pieces.KingCastleInitial;
-var KingCastle = chessstuff.pieces.KingCastle;
-var KingCheckers = chessstuff.pieces.KingCheckers;
-var King = chessstuff.pieces.King;
-var KingCastle = chessstuff.pieces.KingCastle;
-var ar = chessstuff.relations.ActionsRelation;
-var Board = chessstuff.board.Board;
-var BoardInitialCastle = chessstuff.board.BoardInitialCastle;
+const assert = require('assert');
+const {
+    board: { Board, BoardInitialCastle },
+    pieces: {
+        Piece, Pawn, Knight, Bishop, Rook, Queen, King,
+        KingCastleRoad, KingCastleInitial, KingCastle, KingCheckers
+    },
+    relations: { Relation },
+    square: { Square },
+} = require('../');
 
 
 describe('Test pieces', function () {
@@ -92,11 +84,11 @@ describe('Test pieces', function () {
             assert.ok(!piece.canBeReplacedTo(notMoveOrAttackSquare));
 
             let moveSquare = new Square('c3');
-            piece.squares.add(ar.MOVE, moveSquare);
+            piece.squares.add(Relation.MOVE, moveSquare);
             assert.ok(piece.canBeReplacedTo(moveSquare));
 
             let attackSquare = new Square('e3');
-            piece.squares.add(ar.ATTACK, attackSquare);
+            piece.squares.add(Relation.ATTACK, attackSquare);
             assert.ok(!piece.canBeReplacedTo(attackSquare));
             new Piece(Piece.BLACK, attackSquare);
             assert.ok(piece.canBeReplacedTo(attackSquare));
@@ -110,11 +102,11 @@ describe('Test pieces', function () {
             let pieceSquare = new Square('c2');
             let nextSquare = new Square('c3');
             let piece = new Piece(Piece.BLACK, pieceSquare);
-            assert.equal(piece.squares[ar.MOVE], null);
-            assert.equal(piece.squares[ar.CONTROL], null);
+            assert.equal(piece.squares[Relation.MOVE], null);
+            assert.equal(piece.squares[Relation.CONTROL], null);
             piece._nextSquareAction(nextSquare);
-            assert.ok(piece.squares.includes(ar.MOVE, nextSquare));
-            assert.ok(piece.squares.includes(ar.CONTROL, nextSquare));
+            assert.ok(piece.squares.includes(Relation.MOVE, nextSquare));
+            assert.ok(piece.squares.includes(Relation.CONTROL, nextSquare));
         });
 
         it('should add the same color piece next square to cover and control actions', function () {
@@ -122,11 +114,11 @@ describe('Test pieces', function () {
             let nextSquare = new Square('c3');
             let piece1 = new Piece(Piece.WHITE, pieceSquare);
             let piece2 = new Piece(Piece.WHITE, nextSquare);
-            assert.equal(piece1.squares[ar.COVER], null);
-            assert.equal(piece1.squares[ar.CONTROL], null);
+            assert.equal(piece1.squares[Relation.COVER], null);
+            assert.equal(piece1.squares[Relation.CONTROL], null);
             piece1._nextSquareAction(nextSquare);
-            assert.ok(piece1.squares.includes(ar.COVER, nextSquare));
-            assert.ok(piece1.squares.includes(ar.CONTROL, nextSquare));
+            assert.ok(piece1.squares.includes(Relation.COVER, nextSquare));
+            assert.ok(piece1.squares.includes(Relation.CONTROL, nextSquare));
         });
 
         it('should add not the same color piece next square to attack and control actions', function () {
@@ -134,11 +126,11 @@ describe('Test pieces', function () {
             let nextSquare = new Square('c3');
             let piece1 = new Piece(Piece.BLACK, pieceSquare);
             let piece2 = new Piece(Piece.WHITE, nextSquare);
-            assert.equal(piece1.squares[ar.ATTACK], null);
-            assert.equal(piece1.squares[ar.CONTROL], null);
+            assert.equal(piece1.squares[Relation.ATTACK], null);
+            assert.equal(piece1.squares[Relation.CONTROL], null);
             piece1._nextSquareAction(nextSquare);
-            assert.ok(piece1.squares.includes(ar.ATTACK, nextSquare));
-            assert.ok(piece1.squares.includes(ar.CONTROL, nextSquare));
+            assert.ok(piece1.squares.includes(Relation.ATTACK, nextSquare));
+            assert.ok(piece1.squares.includes(Relation.CONTROL, nextSquare));
         });
 
         it('should add next square after piece to xray action if linear', function () {
@@ -148,11 +140,11 @@ describe('Test pieces', function () {
             let piece1 = new Piece(Piece.BLACK, pieceSquare);
             piece1._isLinear = true;
             let piece2 = new Piece(Piece.BLACK, nextSquare);
-            assert.equal(piece1.squares[ar.XRAY], null);
+            assert.equal(piece1.squares[Relation.XRAY], null);
             piece1._nextSquareAction(nextSquare);
-            assert.equal(piece1.squares[ar.XRAY], null);
+            assert.equal(piece1.squares[Relation.XRAY], null);
             piece1._nextSquareAction(afterNextSquare);
-            assert.ok(piece1.squares.includes(ar.XRAY, afterNextSquare));
+            assert.ok(piece1.squares.includes(Relation.XRAY, afterNextSquare));
         });
 
         it('should add next square after other color King to controll action if linear', function () {
@@ -160,11 +152,11 @@ describe('Test pieces', function () {
             let piece1 = new Piece(Piece.WHITE, board.squares.g1);
             piece1._isLinear = true;
             let piece2 = new King(Piece.BLACK, board.squares.d4);
-            assert.ok(!piece1.squares.includes(ar.CONTROL, board.squares.c5));
+            assert.ok(!piece1.squares.includes(Relation.CONTROL, board.squares.c5));
             piece1._nextSquareAction(board.squares.d4);
-            assert.ok(!piece1.squares.includes(ar.CONTROL, board.squares.c5));
+            assert.ok(!piece1.squares.includes(Relation.CONTROL, board.squares.c5));
             piece1._nextSquareAction(board.squares.c5);
-            assert.ok(piece1.squares.includes(ar.CONTROL, board.squares.c5));
+            assert.ok(piece1.squares.includes(Relation.CONTROL, board.squares.c5));
         });
 
         it('should make a piece as binder to next square piece before King', function () {
@@ -189,45 +181,45 @@ describe('Test pieces', function () {
             piece1._isLinear = true;
             let piece2 = new Piece(Piece.BLACK, pieceSquare);
             let b5 = new Square('b5');
-            piece2.squares.add(ar.ATTACK, b5);
-            piece2.squares.add(ar.CONTROL, b5);
+            piece2.squares.add(Relation.ATTACK, b5);
+            piece2.squares.add(Relation.CONTROL, b5);
             let b4 = new Square('b4');
-            piece2.squares.add(ar.MOVE, b4);
-            piece2.squares.add(ar.CONTROL, b4);
+            piece2.squares.add(Relation.MOVE, b4);
+            piece2.squares.add(Relation.CONTROL, b4);
             let a3 = new Square('a3');
-            piece2.squares.add(ar.ATTACK, a3);
-            piece2.squares.add(ar.CONTROL, a3);
+            piece2.squares.add(Relation.ATTACK, a3);
+            piece2.squares.add(Relation.CONTROL, a3);
             let c3 = new Square('c3');
-            piece2.squares.add(ar.MOVE, c3);
-            piece2.squares.add(ar.CONTROL, c3);
+            piece2.squares.add(Relation.MOVE, c3);
+            piece2.squares.add(Relation.CONTROL, c3);
             let d3 = new Square('d3');
-            piece2.squares.add(ar.COVER, d3);
-            piece2.squares.add(ar.CONTROL, d3);
+            piece2.squares.add(Relation.COVER, d3);
+            piece2.squares.add(Relation.CONTROL, d3);
             let d4 = new Square('d4');
-            piece2.squares.add(ar.XRAY, d4);
+            piece2.squares.add(Relation.XRAY, d4);
             let b2 = new Square('b2');
-            piece2.squares.add(ar.MOVE, b2);
-            piece2.squares.add(ar.CONTROL, b2);
+            piece2.squares.add(Relation.MOVE, b2);
+            piece2.squares.add(Relation.CONTROL, b2);
             let b1 = new Square('b1');
-            piece2.squares.add(ar.COVER, b1);
-            piece2.squares.add(ar.CONTROL, b1);
+            piece2.squares.add(Relation.COVER, b1);
+            piece2.squares.add(Relation.CONTROL, b1);
             piece2.binder = piece1;
             piece2.getBind(b1);
-            assert.ok(!piece2.squares[ar.XRAY]);
-            assert.ok(piece2.squares.includes(ar.MOVE, b4));
-            assert.ok(!piece2.squares.includes(ar.MOVE, c3));
-            assert.ok(piece2.squares.includes(ar.MOVE, b2));
-            assert.ok(piece2.squares.includes(ar.ATTACK, b5));
-            assert.ok(!piece2.squares.includes(ar.ATTACK, a3));
-            assert.ok(!piece2.squares.includes(ar.COVER, d3));
-            assert.ok(piece2.squares.includes(ar.COVER, b1));
-            assert.ok(piece2.squares.includes(ar.CONTROL, b5));
-            assert.ok(piece2.squares.includes(ar.CONTROL, b4));
-            assert.ok(piece2.squares.includes(ar.CONTROL, a3));
-            assert.ok(piece2.squares.includes(ar.CONTROL, c3));
-            assert.ok(piece2.squares.includes(ar.CONTROL, d3));
-            assert.ok(piece2.squares.includes(ar.CONTROL, b2));
-            assert.ok(piece2.squares.includes(ar.CONTROL, b1));
+            assert.ok(!piece2.squares[Relation.XRAY]);
+            assert.ok(piece2.squares.includes(Relation.MOVE, b4));
+            assert.ok(!piece2.squares.includes(Relation.MOVE, c3));
+            assert.ok(piece2.squares.includes(Relation.MOVE, b2));
+            assert.ok(piece2.squares.includes(Relation.ATTACK, b5));
+            assert.ok(!piece2.squares.includes(Relation.ATTACK, a3));
+            assert.ok(!piece2.squares.includes(Relation.COVER, d3));
+            assert.ok(piece2.squares.includes(Relation.COVER, b1));
+            assert.ok(piece2.squares.includes(Relation.CONTROL, b5));
+            assert.ok(piece2.squares.includes(Relation.CONTROL, b4));
+            assert.ok(piece2.squares.includes(Relation.CONTROL, a3));
+            assert.ok(piece2.squares.includes(Relation.CONTROL, c3));
+            assert.ok(piece2.squares.includes(Relation.CONTROL, d3));
+            assert.ok(piece2.squares.includes(Relation.CONTROL, b2));
+            assert.ok(piece2.squares.includes(Relation.CONTROL, b1));
         });
 
         it('should handle check logic', function () {
@@ -236,28 +228,28 @@ describe('Test pieces', function () {
             let kingSquare = new Square('e8');
             let piece1 = new Piece(Piece.WHITE, checkerSquare);
             let piece2 = new Piece(Piece.BLACK, pieceSquare);
-            piece2.squares.add(ar.ATTACK, checkerSquare);
+            piece2.squares.add(Relation.ATTACK, checkerSquare);
             let c1 = new Square('c1');
-            piece2.squares.add(ar.ATTACK, c1);
+            piece2.squares.add(Relation.ATTACK, c1);
             let e6 = new Square('e6');
-            piece2.squares.add(ar.MOVE, e6);
+            piece2.squares.add(Relation.MOVE, e6);
             let e2 = new Square('e2');
-            piece2.squares.add(ar.MOVE, e2);
+            piece2.squares.add(Relation.MOVE, e2);
             let a4 = new Square('a4');
-            piece2.squares.add(ar.MOVE, a4);
+            piece2.squares.add(Relation.MOVE, a4);
             let c7 = new Square('c7');
-            piece2.squares.add(ar.COVER, c7);
+            piece2.squares.add(Relation.COVER, c7);
             let c8 = new Square('c8');
-            piece2.squares.add(ar.XRAY, c8);
+            piece2.squares.add(Relation.XRAY, c8);
             let betweenSquares = piece1.square.getBetweenSquaresNames(kingSquare);
             piece2.getCheck(piece1, betweenSquares);
-            assert.ok(!piece2.squares[ar.XRAY]);
-            assert.ok(!piece2.squares[ar.COVER]);
-            assert.ok(piece2.squares.includes(ar.ATTACK, checkerSquare));
-            assert.ok(!piece2.squares.includes(ar.ATTACK, c1));
-            assert.ok(piece2.squares.includes(ar.MOVE, e6));
-            assert.ok(!piece2.squares.includes(ar.MOVE, e2));
-            assert.ok(!piece2.squares.includes(ar.MOVE, a4));
+            assert.ok(!piece2.squares[Relation.XRAY]);
+            assert.ok(!piece2.squares[Relation.COVER]);
+            assert.ok(piece2.squares.includes(Relation.ATTACK, checkerSquare));
+            assert.ok(!piece2.squares.includes(Relation.ATTACK, c1));
+            assert.ok(piece2.squares.includes(Relation.MOVE, e6));
+            assert.ok(!piece2.squares.includes(Relation.MOVE, e2));
+            assert.ok(!piece2.squares.includes(Relation.MOVE, a4));
         })
     });
 
@@ -289,7 +281,7 @@ describe('Test pieces', function () {
             assert.equal(pawn1MoveCoordinates[0][0], 4);
             assert.equal(pawn1MoveCoordinates[0][1], 3);
             pawn1._getMoveSquares();
-            assert.ok(pawn1.squares.includes(ar.MOVE, board.squares.e4));
+            assert.ok(pawn1.squares.includes(Relation.MOVE, board.squares.e4));
 
             let pawn2 = new Pawn(Piece.WHITE, board.squares.a2);
             let pawn2MoveCoordinates = pawn2._getMoveCoordinates();
@@ -299,8 +291,8 @@ describe('Test pieces', function () {
             assert.equal(pawn2MoveCoordinates[1][0], 0);
             assert.equal(pawn2MoveCoordinates[1][1], 3);
             pawn2._getMoveSquares();
-            assert.ok(pawn2.squares.includes(ar.MOVE, board.squares.a3));
-            assert.ok(pawn2.squares.includes(ar.MOVE, board.squares.a4));
+            assert.ok(pawn2.squares.includes(Relation.MOVE, board.squares.a3));
+            assert.ok(pawn2.squares.includes(Relation.MOVE, board.squares.a4));
 
             new Piece(Piece.WHITE, board.squares.g5);
             let pawn3 = new Pawn(Piece.BLACK, board.squares.g7);
@@ -311,8 +303,8 @@ describe('Test pieces', function () {
             assert.equal(pawn3MoveCoordinates[1][0], 6);
             assert.equal(pawn3MoveCoordinates[1][1], 4);
             pawn3._getMoveSquares();
-            assert.ok(pawn3.squares.includes(ar.MOVE, board.squares.g6));
-            assert.ok(!pawn3.squares.includes(ar.MOVE, board.squares.g5));
+            assert.ok(pawn3.squares.includes(Relation.MOVE, board.squares.g6));
+            assert.ok(!pawn3.squares.includes(Relation.MOVE, board.squares.g5));
 
             new Piece(Piece.BLACK, board.squares.f5);
             let pawn4 = new Pawn(Piece.WHITE, board.squares.f4);
@@ -321,7 +313,7 @@ describe('Test pieces', function () {
             assert.equal(pawn4MoveCoordinates[0][0], 5);
             assert.equal(pawn4MoveCoordinates[0][1], 4);
             pawn4._getMoveSquares();
-            assert.ok(!pawn4.squares.includes(ar.MOVE, board.squares.f5));
+            assert.ok(!pawn4.squares.includes(Relation.MOVE, board.squares.f5));
         });
 
         it('should check pawn attack maters', function () {
@@ -336,12 +328,12 @@ describe('Test pieces', function () {
             assert.equal(pawn1AttackCoordinates[1][0], 0);
             assert.equal(pawn1AttackCoordinates[1][1], 4);
             pawn1._getAttackSquares();
-            assert.ok(pawn1.squares.includes(ar.CONTROL, board.squares.a5));
-            assert.ok(pawn1.squares.includes(ar.CONTROL, board.squares.c5));
-            assert.ok(!pawn1.squares.includes(ar.ATTACK, board.squares.a5));
-            assert.ok(pawn1.squares.includes(ar.ATTACK, board.squares.c5));
-            assert.ok(!pawn1.squares.includes(ar.COVER, board.squares.a5));
-            assert.ok(!pawn1.squares.includes(ar.COVER, board.squares.c5));
+            assert.ok(pawn1.squares.includes(Relation.CONTROL, board.squares.a5));
+            assert.ok(pawn1.squares.includes(Relation.CONTROL, board.squares.c5));
+            assert.ok(!pawn1.squares.includes(Relation.ATTACK, board.squares.a5));
+            assert.ok(pawn1.squares.includes(Relation.ATTACK, board.squares.c5));
+            assert.ok(!pawn1.squares.includes(Relation.COVER, board.squares.a5));
+            assert.ok(!pawn1.squares.includes(Relation.COVER, board.squares.c5));
 
             let pawn2 = new Pawn(Piece.WHITE, board.squares.f2);
             new Piece(Piece.BLACK, board.squares.e3);
@@ -353,12 +345,12 @@ describe('Test pieces', function () {
             assert.equal(pawn2AttackCoordinates[1][0], 4);
             assert.equal(pawn2AttackCoordinates[1][1], 2);
             pawn2._getAttackSquares();
-            assert.ok(pawn2.squares.includes(ar.CONTROL, board.squares.e3));
-            assert.ok(pawn2.squares.includes(ar.CONTROL, board.squares.g3));
-            assert.ok(pawn2.squares.includes(ar.ATTACK, board.squares.e3));
-            assert.ok(!pawn2.squares.includes(ar.ATTACK, board.squares.g3));
-            assert.ok(!pawn2.squares.includes(ar.COVER, board.squares.e3));
-            assert.ok(pawn2.squares.includes(ar.COVER, board.squares.g3));
+            assert.ok(pawn2.squares.includes(Relation.CONTROL, board.squares.e3));
+            assert.ok(pawn2.squares.includes(Relation.CONTROL, board.squares.g3));
+            assert.ok(pawn2.squares.includes(Relation.ATTACK, board.squares.e3));
+            assert.ok(!pawn2.squares.includes(Relation.ATTACK, board.squares.g3));
+            assert.ok(!pawn2.squares.includes(Relation.COVER, board.squares.e3));
+            assert.ok(pawn2.squares.includes(Relation.COVER, board.squares.g3));
 
             let pawn3 = new Pawn(Piece.BLACK, board.squares.a3);
             let pawn3AttackCoordinates = pawn3._getAttackCoordinates();
@@ -366,9 +358,9 @@ describe('Test pieces', function () {
             assert.equal(pawn3AttackCoordinates[0][0], 1);
             assert.equal(pawn3AttackCoordinates[0][1], 1);
             pawn3._getAttackSquares();
-            assert.ok(pawn3.squares.includes(ar.CONTROL, board.squares.b2));
-            assert.ok(!pawn3.squares.includes(ar.ATTACK, board.squares.b2));
-            assert.ok(!pawn3.squares.includes(ar.COVER, board.squares.b2));
+            assert.ok(pawn3.squares.includes(Relation.CONTROL, board.squares.b2));
+            assert.ok(!pawn3.squares.includes(Relation.ATTACK, board.squares.b2));
+            assert.ok(!pawn3.squares.includes(Relation.COVER, board.squares.b2));
 
             let pawn4 = new Pawn(Piece.WHITE, board.squares.h5);
             board.setEnPassantSquare('g6');
@@ -378,9 +370,9 @@ describe('Test pieces', function () {
             assert.equal(pawn4AttackCoordinates[0][0], 6);
             assert.equal(pawn4AttackCoordinates[0][1], 5);
             pawn4._getAttackSquares();
-            assert.ok(pawn4.squares.includes(ar.CONTROL, board.squares.g6));
-            assert.ok(pawn4.squares.includes(ar.ATTACK, board.squares.g6));
-            assert.ok(!pawn4.squares.includes(ar.COVER, board.squares.g6));
+            assert.ok(pawn4.squares.includes(Relation.CONTROL, board.squares.g6));
+            assert.ok(pawn4.squares.includes(Relation.ATTACK, board.squares.g6));
+            assert.ok(!pawn4.squares.includes(Relation.COVER, board.squares.g6));
         });
     });
 
@@ -402,50 +394,50 @@ describe('Test pieces', function () {
             new Piece(Piece.BLACK, board.squares.c3);
             new Piece(Piece.WHITE, board.squares.b6);
 
-            assert.equal(knight.squares[ar.MOVE].length, 4);
-            assert.ok(knight.squares.includes(ar.MOVE, board.squares.c7));
-            assert.ok(knight.squares.includes(ar.MOVE, board.squares.f6));
-            assert.ok(knight.squares.includes(ar.MOVE, board.squares.e3));
-            assert.ok(knight.squares.includes(ar.MOVE, board.squares.b4));
+            assert.equal(knight.squares[Relation.MOVE].length, 4);
+            assert.ok(knight.squares.includes(Relation.MOVE, board.squares.c7));
+            assert.ok(knight.squares.includes(Relation.MOVE, board.squares.f6));
+            assert.ok(knight.squares.includes(Relation.MOVE, board.squares.e3));
+            assert.ok(knight.squares.includes(Relation.MOVE, board.squares.b4));
 
-            assert.equal(knight.squares[ar.ATTACK].length, 2);
-            assert.ok(knight.squares.includes(ar.ATTACK, board.squares.e7));
-            assert.ok(knight.squares.includes(ar.ATTACK, board.squares.c3));
+            assert.equal(knight.squares[Relation.ATTACK].length, 2);
+            assert.ok(knight.squares.includes(Relation.ATTACK, board.squares.e7));
+            assert.ok(knight.squares.includes(Relation.ATTACK, board.squares.c3));
 
-            assert.equal(knight.squares[ar.COVER].length, 2);
-            assert.ok(knight.squares.includes(ar.COVER, board.squares.b6));
-            assert.ok(knight.squares.includes(ar.COVER, board.squares.f4));
+            assert.equal(knight.squares[Relation.COVER].length, 2);
+            assert.ok(knight.squares.includes(Relation.COVER, board.squares.b6));
+            assert.ok(knight.squares.includes(Relation.COVER, board.squares.f4));
 
-            assert.equal(knight.squares[ar.CONTROL].length, 8);
-            assert.ok(knight.squares.includes(ar.CONTROL, board.squares.b6));
-            assert.ok(knight.squares.includes(ar.CONTROL, board.squares.c7));
-            assert.ok(knight.squares.includes(ar.CONTROL, board.squares.e7));
-            assert.ok(knight.squares.includes(ar.CONTROL, board.squares.f6));
-            assert.ok(knight.squares.includes(ar.CONTROL, board.squares.f4));
-            assert.ok(knight.squares.includes(ar.CONTROL, board.squares.e3));
-            assert.ok(knight.squares.includes(ar.CONTROL, board.squares.c3));
-            assert.ok(knight.squares.includes(ar.CONTROL, board.squares.b4));
+            assert.equal(knight.squares[Relation.CONTROL].length, 8);
+            assert.ok(knight.squares.includes(Relation.CONTROL, board.squares.b6));
+            assert.ok(knight.squares.includes(Relation.CONTROL, board.squares.c7));
+            assert.ok(knight.squares.includes(Relation.CONTROL, board.squares.e7));
+            assert.ok(knight.squares.includes(Relation.CONTROL, board.squares.f6));
+            assert.ok(knight.squares.includes(Relation.CONTROL, board.squares.f4));
+            assert.ok(knight.squares.includes(Relation.CONTROL, board.squares.e3));
+            assert.ok(knight.squares.includes(Relation.CONTROL, board.squares.c3));
+            assert.ok(knight.squares.includes(Relation.CONTROL, board.squares.b4));
 
-            assert.equal(knight.squares[ar.XRAY], null);
+            assert.equal(knight.squares[Relation.XRAY], null);
         });
 
         it('should check knight get bind', function () {
             let board = new Board();
             let knight = new Knight(Piece.BLACK, board.squares.f6);
 
-            assert.equal(knight.squares[ar.MOVE].length, 8);
-            assert.equal(knight.squares[ar.ATTACK], null);
-            assert.equal(knight.squares[ar.COVER], null);
-            assert.equal(knight.squares[ar.CONTROL].length, 8);
-            assert.equal(knight.squares[ar.XRAY], null);
+            assert.equal(knight.squares[Relation.MOVE].length, 8);
+            assert.equal(knight.squares[Relation.ATTACK], null);
+            assert.equal(knight.squares[Relation.COVER], null);
+            assert.equal(knight.squares[Relation.CONTROL].length, 8);
+            assert.equal(knight.squares[Relation.XRAY], null);
 
             knight.getBind();
 
-            assert.equal(knight.squares[ar.MOVE], null);
-            assert.equal(knight.squares[ar.ATTACK], null);
-            assert.equal(knight.squares[ar.COVER], null);
-            assert.equal(knight.squares[ar.CONTROL].length, 8);
-            assert.equal(knight.squares[ar.XRAY], null);
+            assert.equal(knight.squares[Relation.MOVE], null);
+            assert.equal(knight.squares[Relation.ATTACK], null);
+            assert.equal(knight.squares[Relation.COVER], null);
+            assert.equal(knight.squares[Relation.CONTROL].length, 8);
+            assert.equal(knight.squares[Relation.XRAY], null);
         });
     });
 
@@ -465,34 +457,34 @@ describe('Test pieces', function () {
             new Piece(Piece.WHITE, board.squares.b8);
             new Piece(Piece.BLACK, board.squares.d6);
 
-            assert.equal(bishop.squares[ar.MOVE].length, 5);
-            assert.ok(bishop.squares.includes(ar.MOVE, board.squares.e5));
-            assert.ok(bishop.squares.includes(ar.MOVE, board.squares.g3));
-            assert.ok(bishop.squares.includes(ar.MOVE, board.squares.e3));
-            assert.ok(bishop.squares.includes(ar.MOVE, board.squares.d2));
-            assert.ok(bishop.squares.includes(ar.MOVE, board.squares.c1));
+            assert.equal(bishop.squares[Relation.MOVE].length, 5);
+            assert.ok(bishop.squares.includes(Relation.MOVE, board.squares.e5));
+            assert.ok(bishop.squares.includes(Relation.MOVE, board.squares.g3));
+            assert.ok(bishop.squares.includes(Relation.MOVE, board.squares.e3));
+            assert.ok(bishop.squares.includes(Relation.MOVE, board.squares.d2));
+            assert.ok(bishop.squares.includes(Relation.MOVE, board.squares.c1));
 
-            assert.equal(bishop.squares[ar.ATTACK].length, 1);
-            assert.ok(bishop.squares.includes(ar.ATTACK, board.squares.g5));
+            assert.equal(bishop.squares[Relation.ATTACK].length, 1);
+            assert.ok(bishop.squares.includes(Relation.ATTACK, board.squares.g5));
 
-            assert.equal(bishop.squares[ar.COVER].length, 2);
-            assert.ok(bishop.squares.includes(ar.COVER, board.squares.d6));
-            assert.ok(bishop.squares.includes(ar.COVER, board.squares.h2));
+            assert.equal(bishop.squares[Relation.COVER].length, 2);
+            assert.ok(bishop.squares.includes(Relation.COVER, board.squares.d6));
+            assert.ok(bishop.squares.includes(Relation.COVER, board.squares.h2));
 
-            assert.equal(bishop.squares[ar.CONTROL].length, 8);
-            assert.ok(bishop.squares.includes(ar.CONTROL, board.squares.e5));
-            assert.ok(bishop.squares.includes(ar.CONTROL, board.squares.g3));
-            assert.ok(bishop.squares.includes(ar.CONTROL, board.squares.e3));
-            assert.ok(bishop.squares.includes(ar.CONTROL, board.squares.d2));
-            assert.ok(bishop.squares.includes(ar.CONTROL, board.squares.c1));
-            assert.ok(bishop.squares.includes(ar.CONTROL, board.squares.g5));
-            assert.ok(bishop.squares.includes(ar.CONTROL, board.squares.d6));
-            assert.ok(bishop.squares.includes(ar.CONTROL, board.squares.h2));
+            assert.equal(bishop.squares[Relation.CONTROL].length, 8);
+            assert.ok(bishop.squares.includes(Relation.CONTROL, board.squares.e5));
+            assert.ok(bishop.squares.includes(Relation.CONTROL, board.squares.g3));
+            assert.ok(bishop.squares.includes(Relation.CONTROL, board.squares.e3));
+            assert.ok(bishop.squares.includes(Relation.CONTROL, board.squares.d2));
+            assert.ok(bishop.squares.includes(Relation.CONTROL, board.squares.c1));
+            assert.ok(bishop.squares.includes(Relation.CONTROL, board.squares.g5));
+            assert.ok(bishop.squares.includes(Relation.CONTROL, board.squares.d6));
+            assert.ok(bishop.squares.includes(Relation.CONTROL, board.squares.h2));
 
-            assert.equal(bishop.squares[ar.XRAY].length, 3);
-            assert.ok(bishop.squares.includes(ar.XRAY, board.squares.h6));
-            assert.ok(bishop.squares.includes(ar.XRAY, board.squares.c7));
-            assert.ok(bishop.squares.includes(ar.XRAY, board.squares.b8));
+            assert.equal(bishop.squares[Relation.XRAY].length, 3);
+            assert.ok(bishop.squares.includes(Relation.XRAY, board.squares.h6));
+            assert.ok(bishop.squares.includes(Relation.XRAY, board.squares.c7));
+            assert.ok(bishop.squares.includes(Relation.XRAY, board.squares.b8));
         });
     });
 
@@ -513,39 +505,39 @@ describe('Test pieces', function () {
             new Piece(Piece.WHITE, board.squares.c2);
             new Piece(Piece.BLACK, board.squares.c1);
 
-            assert.equal(rook.squares[ar.MOVE].length, 7);
-            assert.ok(rook.squares.includes(ar.MOVE, board.squares.c6));
-            assert.ok(rook.squares.includes(ar.MOVE, board.squares.d5));
-            assert.ok(rook.squares.includes(ar.MOVE, board.squares.e5));
-            assert.ok(rook.squares.includes(ar.MOVE, board.squares.c4));
-            assert.ok(rook.squares.includes(ar.MOVE, board.squares.c3));
-            assert.ok(rook.squares.includes(ar.MOVE, board.squares.b5));
-            assert.ok(rook.squares.includes(ar.MOVE, board.squares.a5));
+            assert.equal(rook.squares[Relation.MOVE].length, 7);
+            assert.ok(rook.squares.includes(Relation.MOVE, board.squares.c6));
+            assert.ok(rook.squares.includes(Relation.MOVE, board.squares.d5));
+            assert.ok(rook.squares.includes(Relation.MOVE, board.squares.e5));
+            assert.ok(rook.squares.includes(Relation.MOVE, board.squares.c4));
+            assert.ok(rook.squares.includes(Relation.MOVE, board.squares.c3));
+            assert.ok(rook.squares.includes(Relation.MOVE, board.squares.b5));
+            assert.ok(rook.squares.includes(Relation.MOVE, board.squares.a5));
 
-            assert.equal(rook.squares[ar.ATTACK].length, 2);
-            assert.ok(rook.squares.includes(ar.ATTACK, board.squares.f5));
-            assert.ok(rook.squares.includes(ar.ATTACK, board.squares.c2));
+            assert.equal(rook.squares[Relation.ATTACK].length, 2);
+            assert.ok(rook.squares.includes(Relation.ATTACK, board.squares.f5));
+            assert.ok(rook.squares.includes(Relation.ATTACK, board.squares.c2));
 
-            assert.equal(rook.squares[ar.COVER].length, 1);
-            assert.ok(rook.squares.includes(ar.COVER, board.squares.c7));
+            assert.equal(rook.squares[Relation.COVER].length, 1);
+            assert.ok(rook.squares.includes(Relation.COVER, board.squares.c7));
 
-            assert.equal(rook.squares[ar.CONTROL].length, 10);
-            assert.ok(rook.squares.includes(ar.MOVE, board.squares.c6));
-            assert.ok(rook.squares.includes(ar.MOVE, board.squares.d5));
-            assert.ok(rook.squares.includes(ar.MOVE, board.squares.e5));
-            assert.ok(rook.squares.includes(ar.MOVE, board.squares.c4));
-            assert.ok(rook.squares.includes(ar.MOVE, board.squares.c3));
-            assert.ok(rook.squares.includes(ar.MOVE, board.squares.b5));
-            assert.ok(rook.squares.includes(ar.MOVE, board.squares.a5));
-            assert.ok(rook.squares.includes(ar.ATTACK, board.squares.f5));
-            assert.ok(rook.squares.includes(ar.ATTACK, board.squares.c2));
-            assert.ok(rook.squares.includes(ar.COVER, board.squares.c7));
+            assert.equal(rook.squares[Relation.CONTROL].length, 10);
+            assert.ok(rook.squares.includes(Relation.MOVE, board.squares.c6));
+            assert.ok(rook.squares.includes(Relation.MOVE, board.squares.d5));
+            assert.ok(rook.squares.includes(Relation.MOVE, board.squares.e5));
+            assert.ok(rook.squares.includes(Relation.MOVE, board.squares.c4));
+            assert.ok(rook.squares.includes(Relation.MOVE, board.squares.c3));
+            assert.ok(rook.squares.includes(Relation.MOVE, board.squares.b5));
+            assert.ok(rook.squares.includes(Relation.MOVE, board.squares.a5));
+            assert.ok(rook.squares.includes(Relation.ATTACK, board.squares.f5));
+            assert.ok(rook.squares.includes(Relation.ATTACK, board.squares.c2));
+            assert.ok(rook.squares.includes(Relation.COVER, board.squares.c7));
 
-            assert.equal(rook.squares[ar.XRAY].length, 4);
-            assert.ok(rook.squares.includes(ar.XRAY, board.squares.c8));
-            assert.ok(rook.squares.includes(ar.XRAY, board.squares.g5));
-            assert.ok(rook.squares.includes(ar.XRAY, board.squares.h5));
-            assert.ok(rook.squares.includes(ar.XRAY, board.squares.c1));
+            assert.equal(rook.squares[Relation.XRAY].length, 4);
+            assert.ok(rook.squares.includes(Relation.XRAY, board.squares.c8));
+            assert.ok(rook.squares.includes(Relation.XRAY, board.squares.g5));
+            assert.ok(rook.squares.includes(Relation.XRAY, board.squares.h5));
+            assert.ok(rook.squares.includes(Relation.XRAY, board.squares.c1));
         });
     });
 
@@ -566,55 +558,55 @@ describe('Test pieces', function () {
             new Piece(Piece.BLACK, board.squares.e5);
             new Piece(Piece.WHITE, board.squares.b5);
 
-            assert.equal(queen.squares[ar.MOVE].length, 12);
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.e1));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.d1));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.d2));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.c2));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.d3));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.c4));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.e3));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.e4));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.f3));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.f2));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.g2));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.h2));
+            assert.equal(queen.squares[Relation.MOVE].length, 12);
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.e1));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.d1));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.d2));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.c2));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.d3));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.c4));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.e3));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.e4));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.f3));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.f2));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.g2));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.h2));
 
-            assert.equal(queen.squares[ar.ATTACK].length, 3);
-            assert.ok(queen.squares.includes(ar.ATTACK, board.squares.g4));
-            assert.ok(queen.squares.includes(ar.ATTACK, board.squares.b2));
-            assert.ok(queen.squares.includes(ar.ATTACK, board.squares.b5));
+            assert.equal(queen.squares[Relation.ATTACK].length, 3);
+            assert.ok(queen.squares.includes(Relation.ATTACK, board.squares.g4));
+            assert.ok(queen.squares.includes(Relation.ATTACK, board.squares.b2));
+            assert.ok(queen.squares.includes(Relation.ATTACK, board.squares.b5));
 
-            assert.equal(queen.squares[ar.COVER].length, 2);
-            assert.ok(queen.squares.includes(ar.COVER, board.squares.f1));
-            assert.ok(queen.squares.includes(ar.COVER, board.squares.e5));
+            assert.equal(queen.squares[Relation.COVER].length, 2);
+            assert.ok(queen.squares.includes(Relation.COVER, board.squares.f1));
+            assert.ok(queen.squares.includes(Relation.COVER, board.squares.e5));
 
-            assert.equal(queen.squares[ar.CONTROL].length, 17);
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.e1));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.d1));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.d2));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.c2));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.d3));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.c4));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.e3));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.e4));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.f3));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.f2));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.g2));
-            assert.ok(queen.squares.includes(ar.MOVE, board.squares.h2));
-            assert.ok(queen.squares.includes(ar.ATTACK, board.squares.g4));
-            assert.ok(queen.squares.includes(ar.ATTACK, board.squares.b2));
-            assert.ok(queen.squares.includes(ar.ATTACK, board.squares.b5));
-            assert.ok(queen.squares.includes(ar.COVER, board.squares.f1));
-            assert.ok(queen.squares.includes(ar.COVER, board.squares.e5));
+            assert.equal(queen.squares[Relation.CONTROL].length, 17);
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.e1));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.d1));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.d2));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.c2));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.d3));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.c4));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.e3));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.e4));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.f3));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.f2));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.g2));
+            assert.ok(queen.squares.includes(Relation.MOVE, board.squares.h2));
+            assert.ok(queen.squares.includes(Relation.ATTACK, board.squares.g4));
+            assert.ok(queen.squares.includes(Relation.ATTACK, board.squares.b2));
+            assert.ok(queen.squares.includes(Relation.ATTACK, board.squares.b5));
+            assert.ok(queen.squares.includes(Relation.COVER, board.squares.f1));
+            assert.ok(queen.squares.includes(Relation.COVER, board.squares.e5));
 
-            assert.equal(queen.squares[ar.XRAY].length, 6);
-            assert.ok(queen.squares.includes(ar.XRAY, board.squares.h5));
-            assert.ok(queen.squares.includes(ar.XRAY, board.squares.a2));
-            assert.ok(queen.squares.includes(ar.XRAY, board.squares.e6));
-            assert.ok(queen.squares.includes(ar.XRAY, board.squares.e7));
-            assert.ok(queen.squares.includes(ar.XRAY, board.squares.e8));
-            assert.ok(queen.squares.includes(ar.XRAY, board.squares.a6));
+            assert.equal(queen.squares[Relation.XRAY].length, 6);
+            assert.ok(queen.squares.includes(Relation.XRAY, board.squares.h5));
+            assert.ok(queen.squares.includes(Relation.XRAY, board.squares.a2));
+            assert.ok(queen.squares.includes(Relation.XRAY, board.squares.e6));
+            assert.ok(queen.squares.includes(Relation.XRAY, board.squares.e7));
+            assert.ok(queen.squares.includes(Relation.XRAY, board.squares.e8));
+            assert.ok(queen.squares.includes(Relation.XRAY, board.squares.a6));
         });
     });
 
@@ -1019,38 +1011,38 @@ describe('Test pieces', function () {
             let knight = new Knight(Piece.WHITE, board.squares.e4);
             let pawn = new Pawn(Piece.WHITE, board.squares.d5);
 
-            assert.equal(king.squares[ar.MOVE].length, 4);
-            assert.ok(king.squares.includes(ar.MOVE, board.squares.e5));
-            assert.ok(king.squares.includes(ar.MOVE, board.squares.c4));
-            assert.ok(king.squares.includes(ar.MOVE, board.squares.d3));
-            assert.ok(king.squares.includes(ar.MOVE, board.squares.e3));
+            assert.equal(king.squares[Relation.MOVE].length, 4);
+            assert.ok(king.squares.includes(Relation.MOVE, board.squares.e5));
+            assert.ok(king.squares.includes(Relation.MOVE, board.squares.c4));
+            assert.ok(king.squares.includes(Relation.MOVE, board.squares.d3));
+            assert.ok(king.squares.includes(Relation.MOVE, board.squares.e3));
 
-            assert.equal(king.squares[ar.ATTACK].length, 2);
-            assert.ok(king.squares.includes(ar.ATTACK, board.squares.d5));
-            assert.ok(king.squares.includes(ar.ATTACK, board.squares.e4));
+            assert.equal(king.squares[Relation.ATTACK].length, 2);
+            assert.ok(king.squares.includes(Relation.ATTACK, board.squares.d5));
+            assert.ok(king.squares.includes(Relation.ATTACK, board.squares.e4));
 
             let bishop = new Bishop(Piece.WHITE, board.squares.a6);
 
-            assert.equal(king.squares[ar.MOVE].length, 2);
-            assert.ok(king.squares.includes(ar.MOVE, board.squares.e5));
-            assert.ok(king.squares.includes(ar.MOVE, board.squares.e3));
+            assert.equal(king.squares[Relation.MOVE].length, 2);
+            assert.ok(king.squares.includes(Relation.MOVE, board.squares.e5));
+            assert.ok(king.squares.includes(Relation.MOVE, board.squares.e3));
 
-            assert.equal(king.squares[ar.ATTACK].length, 2);
-            assert.ok(king.squares.includes(ar.ATTACK, board.squares.d5));
-            assert.ok(king.squares.includes(ar.ATTACK, board.squares.e4));
+            assert.equal(king.squares[Relation.ATTACK].length, 2);
+            assert.ok(king.squares.includes(Relation.ATTACK, board.squares.d5));
+            assert.ok(king.squares.includes(Relation.ATTACK, board.squares.e4));
 
             let rook = new Rook(Piece.WHITE, board.squares.e2);
 
-            assert.equal(king.squares[ar.MOVE].length, 1);
-            assert.ok(king.squares.includes(ar.MOVE, board.squares.e5));
+            assert.equal(king.squares[Relation.MOVE].length, 1);
+            assert.ok(king.squares.includes(Relation.MOVE, board.squares.e5));
 
-            assert.equal(king.squares[ar.ATTACK].length, 1);
-            assert.ok(king.squares.includes(ar.ATTACK, board.squares.d5));
+            assert.equal(king.squares[Relation.ATTACK].length, 1);
+            assert.ok(king.squares.includes(Relation.ATTACK, board.squares.d5));
 
             let queen = new Queen(Piece.WHITE, board.squares.g5);
 
-            assert.equal(king.squares[ar.MOVE], null);
-            assert.equal(king.squares[ar.ATTACK], null);
+            assert.equal(king.squares[Relation.MOVE], null);
+            assert.equal(king.squares[Relation.ATTACK], null);
         });
 
         it('should check castle moves handle', function () {
@@ -1060,13 +1052,13 @@ describe('Test pieces', function () {
             new Rook(Piece.WHITE, board.squares.a1);
             let king = new King(Piece.WHITE, board.squares.e1);
 
-            assert.ok(king.squares.includes(ar.MOVE, board.squares.g1));
-            assert.ok(king.squares.includes(ar.MOVE, board.squares.c1));
+            assert.ok(king.squares.includes(Relation.MOVE, board.squares.g1));
+            assert.ok(king.squares.includes(Relation.MOVE, board.squares.c1));
 
             king.getCheck();
 
-            assert.ok(!king.squares.includes(ar.MOVE, board.squares.g1));
-            assert.ok(!king.squares.includes(ar.MOVE, board.squares.c1));
+            assert.ok(!king.squares.includes(Relation.MOVE, board.squares.g1));
+            assert.ok(!king.squares.includes(Relation.MOVE, board.squares.c1));
         });
     });
 });

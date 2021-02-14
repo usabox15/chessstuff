@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Yegor Bitensky
+Copyright 2020-2021 Yegor Bitensky
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,18 +15,12 @@ limitations under the License.
 */
 
 
-var piecesModule = require('./pieces');
-var Piece = piecesModule.Piece;
-var KingCastle = piecesModule.KingCastle;
-var KingCastleRoad = piecesModule.KingCastleRoad;
-var KingCastleInitial = piecesModule.KingCastleInitial;
-
-var relationsModule = require('./relations');
-var ar = relationsModule.ActionsRelation;
-
-var squareModule = require('./square');
-var Square = squareModule.Square;
-var SquareName = squareModule.SquareName;
+const {
+    Piece, Pawn, Knight, Bishop, Rook, Queen, King,
+    KingCastleRoad, KingCastleInitial, KingCastle
+} = require('./pieces');
+const { Relation } = require('./relations');
+const { Square, SquareName } = require('./square');
 
 
 class BoardSquares {
@@ -484,12 +478,12 @@ class Board {
     static INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
     #piecesBox = {
-        [Piece.PAWN]: piecesModule.Pawn,
-        [Piece.KNIGHT]: piecesModule.Knight,
-        [Piece.BISHOP]: piecesModule.Bishop,
-        [Piece.ROOK]: piecesModule.Rook,
-        [Piece.QUEEN]: piecesModule.Queen,
-        [Piece.KING]: piecesModule.King,
+        [Piece.PAWN]: Pawn,
+        [Piece.KNIGHT]: Knight,
+        [Piece.BISHOP]: Bishop,
+        [Piece.ROOK]: Rook,
+        [Piece.QUEEN]: Queen,
+        [Piece.KING]: King,
     };
 
     constructor(FEN=Board.EMPTY_FEN) {
@@ -663,9 +657,9 @@ class Board {
         */
 
         return (
-            !king.squares[ar.ATTACK]
+            !king.squares[Relation.ATTACK]
         ||
-            king.squares[ar.ATTACK].filter(s => s.piece.isKing).length == 0
+            king.squares[Relation.ATTACK].filter(s => s.piece.isKing).length == 0
         );
     }
 
@@ -904,7 +898,7 @@ class Board {
             );
         }
         // catch other pawn en passant
-        else if (pawn.squares.includes(ar.ATTACK, toSquare) && !toSquare.piece) {
+        else if (pawn.squares.includes(Relation.ATTACK, toSquare) && !toSquare.piece) {
             let x = toSquare.coordinates.x;
             let y = fromSquare.coordinates.y;
             this._removePiece(this._squares.getFromCoordinates(x, y).name.value);
@@ -1207,7 +1201,7 @@ class Board {
 
         this._replacePiece(fromSquare, toSquare, piece, false);
 
-        if (piece.isPawn || piece.squares.includes(ar.ATTACK, toSquare)) {
+        if (piece.isPawn || piece.squares.includes(Relation.ATTACK, toSquare)) {
             this._fiftyMovesRuleCounter.switch();
         }
 

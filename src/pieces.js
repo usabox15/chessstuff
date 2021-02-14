@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Yegor Bitensky
+Copyright 2020-2021 Yegor Bitensky
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@ limitations under the License.
 */
 
 
-var relations = require('./relations');
-var square = require('./square');
-var ar = relations.ActionsRelation;
-var SquareCoordinates = square.SquareCoordinates;
+const { Relation, PieceSquares } = require('./relations');
+const { SquareCoordinates } = require('./square');
 
 
 class Piece {
@@ -51,7 +49,7 @@ class Piece {
         this._setColor(color);
         this._isLinear = Piece.ALL_LINEARS.includes(kind);
         this._getKind();
-        this.squares = new relations.PieceSquares(this, 'pieces');
+        this.squares = new PieceSquares(this);
         this._refreshSquareFinder();
         this.getInitState();
         this.getPlace(square, refresh);
@@ -63,7 +61,7 @@ class Piece {
 
     get stuck() {
         // check the piece get stucked
-        return !this.squares[ar.MOVE] && !this.squares[ar.ATTACK];
+        return !this.squares[Relation.MOVE] && !this.squares[Relation.ATTACK];
     }
 
     get kind() {
@@ -134,9 +132,9 @@ class Piece {
         */
 
         if (this.sqrBeforeXray) {
-            this.squares.add(ar.XRAY, nextSquare);
+            this.squares.add(Relation.XRAY, nextSquare);
             if (this.xrayControl) {
-                this.squares.add(ar.CONTROL, nextSquare);
+                this.squares.add(Relation.CONTROL, nextSquare);
                 this.xrayControl = false;
             }
             if (nextSquare.piece) {
@@ -150,21 +148,21 @@ class Piece {
         }
         else if (nextSquare.piece) {
             if (this.sameColor(nextSquare.piece)) {
-                this.squares.add(ar.COVER, nextSquare);
+                this.squares.add(Relation.COVER, nextSquare);
             }
             else {
-                this.squares.add(ar.ATTACK, nextSquare);
+                this.squares.add(Relation.ATTACK, nextSquare);
                 if (nextSquare.piece.isKing) {
                     nextSquare.piece.checkers.add(this.square.piece);
                     this.xrayControl = true;
                 }
             }
-            this.squares.add(ar.CONTROL, nextSquare);
+            this.squares.add(Relation.CONTROL, nextSquare);
             if (this.isLinear) this.sqrBeforeXray = nextSquare;
         }
         else {
-            this.squares.add(ar.MOVE, nextSquare);
-            this.squares.add(ar.CONTROL, nextSquare);
+            this.squares.add(Relation.MOVE, nextSquare);
+            this.squares.add(Relation.CONTROL, nextSquare);
         }
     }
 
@@ -228,7 +226,7 @@ class Piece {
         return (
             !square.piece
             &&
-            this.squares.includes(ar.MOVE, square)
+            this.squares.includes(Relation.MOVE, square)
         ||
             !!square.piece
             &&
@@ -236,14 +234,14 @@ class Piece {
             &&
             !this.sameColor(square.piece)
             &&
-            this.squares.includes(ar.ATTACK, square)
+            this.squares.includes(Relation.ATTACK, square)
         );
     }
 
     getTotalImmobilize() {
         // Immobilize piece.
 
-        for (let kind of [ar.MOVE, ar.ATTACK, ar.COVER]) {
+        for (let kind of [Relation.MOVE, Relation.ATTACK, Relation.COVER]) {
             this.squares.refresh(kind);
         }
     }
@@ -251,9 +249,9 @@ class Piece {
     getBind(kingSquare) {
         // Bind piece.
 
-        this.squares.refresh(ar.XRAY);
+        this.squares.refresh(Relation.XRAY);
         let betweenSquares = this.binder.square.getBetweenSquaresNames(kingSquare, true, true);
-        for (let actonKind of [ar.MOVE, ar.ATTACK, ar.COVER]) {
+        for (let actonKind of [Relation.MOVE, Relation.ATTACK, Relation.COVER]) {
             this.squares.limit(actonKind, betweenSquares);
         }
     }
@@ -261,10 +259,10 @@ class Piece {
     getCheck(checker, betweenSquaresNames) {
         // Change piece action abilities after its king was checked
 
-        this.squares.refresh(ar.COVER);
-        this.squares.refresh(ar.XRAY);
-        this.squares.limit(ar.ATTACK, [checker.square.name.value]);
-        this.squares.limit(ar.MOVE, betweenSquaresNames);
+        this.squares.refresh(Relation.COVER);
+        this.squares.refresh(Relation.XRAY);
+        this.squares.limit(Relation.ATTACK, [checker.square.name.value]);
+        this.squares.limit(Relation.MOVE, betweenSquaresNames);
     }
 }
 
@@ -314,7 +312,7 @@ class Pawn extends Piece {
         for (let [x, y] of this._getMoveCoordinates()) {
             let square = this.board.squares.getFromCoordinates(x, y);
             if (square.piece) break;
-            this.squares.add(ar.MOVE, square);
+            this.squares.add(Relation.MOVE, square);
         }
     }
 
@@ -350,20 +348,20 @@ class Pawn extends Piece {
     _getAttackSquares() {
         for (let [x, y] of this._getAttackCoordinates()) {
             let square = this.board.squares.getFromCoordinates(x, y);
-            this.squares.add(ar.CONTROL, square);
+            this.squares.add(Relation.CONTROL, square);
             if (square.piece) {
                 if (this.sameColor(square.piece)) {
-                    this.squares.add(ar.COVER, square);
+                    this.squares.add(Relation.COVER, square);
                 }
                 else {
-                    this.squares.add(ar.ATTACK, square);
+                    this.squares.add(Relation.ATTACK, square);
                     if (square.piece.isKing) {
                         square.piece.checkers.add(this.square.piece);
                     }
                 }
             } else if (this._checkEnPassantSquare(square)) {
-                this.squares.add(ar.ATTACK, square);
-                this.squares.add(ar.MOVE, square);
+                this.squares.add(Relation.ATTACK, square);
+                this.squares.add(Relation.MOVE, square);
             }
         }
     }
@@ -689,8 +687,8 @@ class KingCastleRoad {
     get isSafe() {
         for (let square of this._needToBeSafeSquares) {
             let controlledByOppositeColorPeace = (
-                square.pieces[ar.CONTROL] &&
-                square.pieces[ar.CONTROL].filter(p => !p.hasColor(this._castle.king.color)).length > 0
+                square.pieces[Relation.CONTROL] &&
+                square.pieces[Relation.CONTROL].filter(p => !p.hasColor(this._castle.king.color)).length > 0
             )
             if (controlledByOppositeColorPeace) return false;
         }
@@ -870,7 +868,7 @@ class KingCheckers extends Array {
         return (
             this.filter(p => p.isKing).length == 0
         &&
-            this.filter(p => !p.squares.includes(ar.CONTROL, this._king.square)).length == 0
+            this.filter(p => !p.squares.includes(Relation.CONTROL, this._king.square)).length == 0
         );
     }
 
@@ -886,7 +884,7 @@ class KingCheckers extends Array {
         let discoveredAttackSquaresNames = discoveredAttacker.square.getBetweenSquaresNames(this._king.square);
         for (let squareName of discoveredAttackSquaresNames) {
             let square = this._king.board.squares[squareName];
-            if (!square.piece && discoverer.squares.includes(ar.CONTROL, square)) {
+            if (!square.piece && discoverer.squares.includes(Relation.CONTROL, square)) {
                 return true;
             }
         }
@@ -948,11 +946,11 @@ class King extends StepPiece {
     }
 
     _removeEnemyControlledSquares() {
-        for (let kingAction of [ar.MOVE, ar.ATTACK]) {
+        for (let kingAction of [Relation.MOVE, Relation.ATTACK]) {
             if (this.squares[kingAction]) {
                 let squaresToRemove = [];
                 for (let square of this.squares[kingAction]) {
-                    if (square.pieces[ar.CONTROL].filter(p => !this.sameColor(p)).length > 0) {
+                    if (square.pieces[Relation.CONTROL].filter(p => !this.sameColor(p)).length > 0) {
                         squaresToRemove.push(square);
                     }
                 }
@@ -966,7 +964,7 @@ class King extends StepPiece {
     _addCastleMoves() {
         for (let side of KingCastleRoad.ALL_SIDES) {
             if (this.castle[side] && this.castle[side].isLegal) {
-                this.squares.add(ar.MOVE, this.castle[side].toSquare);
+                this.squares.add(Relation.MOVE, this.castle[side].toSquare);
             }
         }
     }
@@ -974,7 +972,7 @@ class King extends StepPiece {
     _removeCastleMoves() {
         for (let side of KingCastleRoad.ALL_SIDES) {
             if (this.castle[side]) {
-                this.squares.remove(ar.MOVE, this.castle[side].toSquare);
+                this.squares.remove(Relation.MOVE, this.castle[side].toSquare);
             }
         }
     }
