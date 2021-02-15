@@ -18,33 +18,36 @@ limitations under the License.
 const { SquarePieces } = require('./relations');
 
 
+/**
+ * Relation between pieces and squares by piece action.
+ * Human readable chess board square name.
+ *   _ _ _ _ _ _ _ _
+ * 8|_|_|_|_|_|_|_|_|
+ * 7|_|_|_|_|_|_|_|_|
+ * 6|_|_|_|_|_|_|_|_|
+ * 5|_|_|_|_|_|_|_|_|
+ * 4|_|_|_|_|_|_|_|_|
+ * 3|_|_|_|_|_|_|_|_|
+ * 2|_|_|_|_|_|_|_|_|
+ * 1|_|_|_|_|_|_|_|_|
+ *   a b c d e f g h
+ *
+ * ```javascript
+ * new SquareName('a1');
+ * ```
+ *
+ * @class
+ */
 class SquareName {
-    /*
-    Human readable chess board square name.
-      _ _ _ _ _ _ _ _
-    8|_|_|_|_|_|_|_|_|
-    7|_|_|_|_|_|_|_|_|
-    6|_|_|_|_|_|_|_|_|
-    5|_|_|_|_|_|_|_|_|
-    4|_|_|_|_|_|_|_|_|
-    3|_|_|_|_|_|_|_|_|
-    2|_|_|_|_|_|_|_|_|
-    1|_|_|_|_|_|_|_|_|
-      a b c d e f g h
-
-    Example:
-        new SquareName('a1');
-    */
 
     static symbols = ["a", "b", "c", "d", "e", "f", "g", "h"]; // possible symbols
     static numbers = ["1", "2", "3", "4", "5", "6", "7", "8"]; // possible numbers
 
+    /**
+     * Creation.
+     * @param {string} name - two characters square name (symbol and number).
+     */
     constructor(name) {
-        /*
-        Params:
-            name {string} - two characters square name (includes symbol and number).
-        */
-
         let symbol = name[0];
         let number = name[1];
         if (!SquareName.symbols.includes(symbol)) {
@@ -71,54 +74,53 @@ class SquareName {
     }
 }
 
-
+/**
+ * Chess board square coordinates.
+ *   _ _ _ _ _ _ _ _
+ * 7|_|_|_|_|_|_|_|_|
+ * 6|_|_|_|_|_|_|_|_|
+ * 5|_|_|_|_|_|_|_|_|
+ * 4|_|_|_|_|_|_|_|_|
+ * 3|_|_|_|_|_|_|_|_|
+ * 2|_|_|_|_|_|_|_|_|
+ * 1|_|_|_|_|_|_|_|_|
+ * 0|_|_|_|_|_|_|_|_|
+ *   0 1 2 3 4 5 6 7
+ *
+ * ```javascript
+ * new SquareCoordinates([0, 0]);
+ * ```
+ *
+ * @class
+ */
 class SquareCoordinates {
-    /*
-    Chess board square coordinates.
-      _ _ _ _ _ _ _ _
-    7|_|_|_|_|_|_|_|_|
-    6|_|_|_|_|_|_|_|_|
-    5|_|_|_|_|_|_|_|_|
-    4|_|_|_|_|_|_|_|_|
-    3|_|_|_|_|_|_|_|_|
-    2|_|_|_|_|_|_|_|_|
-    1|_|_|_|_|_|_|_|_|
-    0|_|_|_|_|_|_|_|_|
-      0 1 2 3 4 5 6 7
-
-    Example:
-        new SquareCoordinates([0, 0]);
-    */
 
     static numbers = [0, 1, 2, 3, 4, 5, 6, 7]; // possible numbers
 
+    /**
+     * Check whether coordinate is correct or not.
+     * @param {integer} coordinate - One of possible numbers.
+     * @return {boolean} Whether coordinate is correct or not.
+     */
     static correctCoordinate(coordinate) {
-        /*
-        Check whether coordinate is correct or not.
-        Params:
-            coordinate {number}.
-        */
-
         return SquareCoordinates.numbers.includes(coordinate);
     }
 
+    /**
+     * Check whether coordinates (x and y) are correct or not.
+     * @param {integer} x - One of possible numbers.
+     * @param {integer} y - One of possible numbers.
+     * @return {boolean} Whether coordinates are correct or not.
+     */
     static correctCoordinates(x, y) {
-        /*
-        Check whether coordinates (x and y) are correct or not.
-        Params:
-            x {number};
-            y {number}.
-        */
-
         return SquareCoordinates.correctCoordinate(x) && SquareCoordinates.correctCoordinate(y);
     }
 
+    /**
+     * Creation.
+     * @param {integer[]} coordinates - two numbers from possible numbers.
+     */
     constructor(coordinates) {
-        /*
-        Params:
-            coordinates {Array} - two numbers from 0 to 7.
-        */
-
         let x = coordinates[0];
         let y = coordinates[1];
         if (!SquareCoordinates.correctCoordinate(x)) {
@@ -146,15 +148,23 @@ class SquareCoordinates {
 }
 
 
+/**
+ * Chess board square location on edge.
+ *
+ * ```javascript
+ * let coordinates = new SquareCoordinates([0, 0]);
+ * new SquareOnEdge(coordinates);
+ * ```
+ *
+ * @class
+ */
 class SquareOnEdge {
-    // Chess board square location on edge.
 
+    /**
+     * Creation.
+     * @param {SquareCoordinates} coordinates - Square coordinates.
+     */
     constructor(coordinates) {
-        /*
-        Params:
-            coordinates {SquareCoordinates}.
-        */
-
         this._up = false;
         this._right = false;
         this._down = false;
@@ -189,88 +199,87 @@ class SquareOnEdge {
 }
 
 
+/**
+ * Line between two chess board squares.
+ *
+ * ```javascript
+ * let startSquare = new Square('a1');
+ * let endSquare = new Square('c3');
+ * new SquaresLine(startSquare, endSquare);
+ * ```
+ *
+ * @class
+ */
 class SquaresLine {
-    // Line between two chess board squares.
 
+    /**
+     * Creation.
+     * @param {Square} startSquare - Start square.
+     * @param {Square} endSquare - End square.
+     */
     constructor(startSquare, endSquare) {
-        /*
-        Params:
-            startSquare {Square};
-            endSquare {Square}.
-        */
-
-        this._startSquare = startSquare;
-        this._endSquare = endSquare;
         this._dx = Math.abs(startSquare.coordinates.x - endSquare.coordinates.x);
         this._dy = Math.abs(startSquare.coordinates.y - endSquare.coordinates.y);
-        this._direction = {x: 0, y: 0};
-        this._betweenSquaresNames = [];
-        this._betweenSquaresCount = 0;
-        this._getBetweenSquaresData();
-    }
-
-    _checkOnTheSameLine() {
-        // Throw error if squares aren't located on the same line
-
         if (this._dx != this._dy && this._dx != 0 && this._dy != 0) {
             throw Error(`
                 Squares ${this._startSquare.name.value} and ${this._endSquare.name.value}
                 aren't located on the same line (horizontal, vertical, diagonal).
             `);
         }
+
+        this._startSquare = startSquare;
+        this._endSquare = endSquare;
+
+        this._betweenSquaresNames = [];
+        this._betweenSquaresCount = 0;
+        this._getBetweenSquaresData();
     }
 
-    _getDirection() {
-        // Get direction of distance between start square and end square
+    /**
+     * Get squares names between start square and end square.
+     * @param {boolean} includeStart - Whether include start square name or not.
+     * @param {boolean} includeEnd - Whether include end square name or not.
+     * @return {string[]} Between squares names.
+     */
+    betweenSquaresNames(includeStart=false, includeEnd=false) {
+        return [
+            ...(includeStart ? [this._startSquare.name.value] : []),
+            ...this._betweenSquaresNames,
+            ...(includeEnd ? [this._endSquare.name.value] : []),
+        ];
+    }
 
-        this._checkOnTheSameLine();
+    /**
+     * Get squares count between start square and end square.
+     * @param {boolean} includeStart - Whether include start square or not.
+     * @param {boolean} includeEnd - Whether include end square or not.
+     * @return {string[]} Between squares count.
+     */
+    betweenSquaresCount(includeStart=false, includeEnd=false) {
+        return this._betweenSquaresCount + (includeStart ? 1 : 0) + (includeEnd ? 1 : 0);
+    }
+
+    /** Get names and count of squares between start square and end square. */
+    _getBetweenSquaresData() {
+        // Direction of distance between start square and end square
+        let direction = {x: 0, y: 0};
         for (let i of ['x', 'y']) {
             if (this._startSquare.coordinates[i] > this._endSquare.coordinates[i]) {
-                this._direction[i] = -1;
-            }
-            else if (this._startSquare.coordinates[i] < this._endSquare.coordinates[i]) {
-                this._direction[i] = 1;
+                direction[i] = -1;
+            } else if (this._startSquare.coordinates[i] < this._endSquare.coordinates[i]) {
+                direction[i] = 1;
             }
         }
-    }
 
-    _getBetweenSquaresData() {
-        // Get names and count of squares between start square and end square
-
-        this._getDirection();
         let distance = Math.max(this._dx, this._dy);
-        for (let i = 1; i <= distance - 1; i++) {
+        for (let i = 1; i < distance; i++) {
             let coordinates = [];
             for (let j of ['x', 'y']) {
-                coordinates.push(this._startSquare.coordinates[j] + i * this._direction[j]);
+                coordinates.push(this._startSquare.coordinates[j] + i * direction[j]);
             }
             this._betweenSquaresNames.push(Square.coordinatesToName(...coordinates));
         }
         this._betweenSquaresCount = this._betweenSquaresNames.length;
-    }
-
-    betweenSquaresNames(includeStart=false, includeEnd=false) {
-        /*
-        Get squares names between start square and end square
-        Params:
-            includeStart {boolean} - whether include start square name or not;
-            includeEnd {boolean} - whether include end square name or not.
-        */
-
-        let start = includeStart ? [this._startSquare.name.value] : [];
-        let end = includeEnd ? [this._endSquare.name.value] : [];
-        return [...start, ...this._betweenSquaresNames, ...end];
-    }
-
-    betweenSquaresCount(includeStart=false, includeEnd=false) {
-        /*
-        Get squares count between start square and end square
-        Params:
-            includeStart {boolean} - whether include start square or not;
-            includeEnd {boolean} - whether include end square or not.
-        */
-
-        return this._betweenSquaresCount + (includeStart ? 1 : 0) + (includeEnd ? 1 : 0);
     }
 }
 
