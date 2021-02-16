@@ -109,8 +109,6 @@ describe('Test square', function () {
 
             let a5 = new Square('a5');
             let c3a5 = new SquaresLine(c3, a5);
-            assert.equal(c3a5._direction.x, -1);
-            assert.equal(c3a5._direction.y, 1);
             assert.ok(!c3a5.betweenSquaresNames().includes('c3'));
             assert.ok(c3a5.betweenSquaresNames().includes('b4'));
             assert.ok(!c3a5.betweenSquaresNames().includes('a5'));
@@ -130,8 +128,6 @@ describe('Test square', function () {
 
             let f3 = new Square('f3');
             let c3f3 = new SquaresLine(c3, f3);
-            assert.equal(c3f3._direction.x, 1);
-            assert.equal(c3f3._direction.y, 0);
             assert.ok(!c3f3.betweenSquaresNames().includes('c3'));
             assert.ok(c3f3.betweenSquaresNames().includes('d3'));
             assert.ok(c3f3.betweenSquaresNames().includes('e3'));
@@ -155,8 +151,6 @@ describe('Test square', function () {
 
             let c7 = new Square('c7');
             let c3c7 = new SquaresLine(c3, c7);
-            assert.equal(c3c7._direction.x, 0);
-            assert.equal(c3c7._direction.y, 1);
             assert.ok(!c3c7.betweenSquaresNames().includes('c3'));
             assert.ok(c3c7.betweenSquaresNames().includes('c4'));
             assert.ok(c3c7.betweenSquaresNames().includes('c5'));

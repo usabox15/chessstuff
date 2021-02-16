@@ -222,7 +222,7 @@ class SquaresLine {
         this._dy = Math.abs(startSquare.coordinates.y - endSquare.coordinates.y);
         if (this._dx != this._dy && this._dx != 0 && this._dy != 0) {
             throw Error(`
-                Squares ${this._startSquare.name.value} and ${this._endSquare.name.value}
+                Squares ${startSquare.name.value} and ${endSquare.name.value}
                 aren't located on the same line (horizontal, vertical, diagonal).
             `);
         }
@@ -253,7 +253,7 @@ class SquaresLine {
      * Get squares count between start square and end square.
      * @param {boolean} includeStart - Whether include start square or not.
      * @param {boolean} includeEnd - Whether include end square or not.
-     * @return {string[]} Between squares count.
+     * @return {integer} Between squares count.
      */
     betweenSquaresCount(includeStart=false, includeEnd=false) {
         return this._betweenSquaresCount + (includeStart ? 1 : 0) + (includeEnd ? 1 : 0);
@@ -284,8 +284,17 @@ class SquaresLine {
 }
 
 
+/**
+ * Chess board square neighbors squares.
+ *
+ * ```javascript
+ * let square = new Square('a1');
+ * new SquaresLine(square);
+ * ```
+ *
+ * @class
+ */
 class SquareNeighbors {
-    // Chess board square neighbors squares.
 
     static UP_LEFT = 'upLeft';
     static UP = 'up';
@@ -317,12 +326,11 @@ class SquareNeighbors {
         [SquareNeighbors.LEFT]: {x: -1, y: 0},
     };
 
+    /**
+     * Creation.
+     * @param {Square} square - Square.
+     */
     constructor(square) {
-        /*
-        Params:
-            square {Square}.
-        */
-
         this._square = square;
     }
 
@@ -358,13 +366,12 @@ class SquareNeighbors {
         return this._getSquare(SquareNeighbors.LEFT);
     }
 
+    /**
+     * Get neighbor square.
+     * @param {string} kind - Direction name.
+     * @return {Square} Neighbor square.
+     */
     _getSquare(kind) {
-        /*
-        Get neighbor.
-        Params:
-            kind {string} - direction name.
-        */
-
         if (!this._square.board || !this.#validate[kind](this._square)) return null;
         let x = this._square.coordinates.x + this.#delta[kind].x;
         let y = this._square.coordinates.y + this.#delta[kind].y;
@@ -374,33 +381,42 @@ class SquareNeighbors {
 }
 
 
+/**
+ * Chess board square.
+ *
+ * ```javascript
+ * new Square('a1');
+ * ```
+ *
+ * @class
+ */
 class Square {
-    // Chess board square.
 
     static symbolToNumber = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7};
     static numberToSymbol = {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"};
 
+    /**
+     * Convert square coordinates to square name.
+     * @param {integer} x - X coordinate.
+     * @param {integer} y - Y coordinate.
+     * @return {string} Square name value.
+     */
     static coordinatesToName(x, y) {
-        /*
-        Convert square coordinates to square name.
-        Params:
-            x {number};
-            y {number}.
-        */
-
         if (!SquareCoordinates.correctCoordinates(x, y)) {
             throw Error(`Incorrect square coordinates (x - ${x}, y - ${y}).`);
         }
-        return Square.numberToSymbol[x] + (y + 1);
+        x = Square.numberToSymbol[x];
+        y++;
+        return `${x}${y}`;
     }
 
+    /**
+     * Creation.
+     * @param {Square} identifier - SquareName create param.
+     * @param {integer[]} identifier - SquareCoordinates create param.
+     * @param {Board} [board] - link to the Board.
+     */
     constructor(identifier, board=null) {
-        /*
-        Params:
-            identifier {string or Array} - SquareName or SquareCoordinates create param;
-            board {Board} - link to the Board (optional).
-        */
-
         if (typeof(identifier) === 'string') {
             this._name = new SquareName(identifier);
             let x = Square.symbolToNumber[this._name.symbol];
@@ -443,22 +459,19 @@ class Square {
         return this._isLight;
     }
 
+    /** Check whether square is light or not. */
     _getIsLight() {
-        // Check whether square is light or not.
-
         let xIsEven = this.coordinates.x % 2 == 0;
         let yIsEven = this.coordinates.y % 2 == 0;
         return xIsEven && !yIsEven || !xIsEven && yIsEven;
     }
 
+    /**
+     * Place piece to square.
+     * @param {Piece} piece - Piece.
+     * @param {boolean} [refresh=true] - whether need to refresh board or not.
+     */
     placePiece(piece, refresh=true) {
-        /*
-        Place piece to square.
-        Params:
-            piece {Piece or its subclass};
-            refresh {boolean} - whether need to refresh board after piece has been placed or not.
-        */
-
         if (this.board && !piece.canBeReplacedTo(this)) {
             let positionIsSetted = (
                 this.board.positionIsSetted
@@ -476,68 +489,62 @@ class Square {
         if (refresh && this.board) this.board.refreshAllSquares();
     }
 
+    /**
+     * Remove piece from square.
+     * @param {boolean} [refresh=true] - whether need to refresh board or not.
+     */
     removePiece(refresh=true) {
-        /*
-        Remove piece from square.
-        Params:
-            refresh {boolean} - whether need to refresh board after piece has been placed or not.
-        */
-
         this._piece = null;
         if (refresh && this.board) this.board.refreshAllSquares();
     }
 
+    /**
+     * Check square is the same with other square.
+     * @param {Square} otherSquare - Other square.
+     * @return {boolean} Whether square is the same with other square or not.
+     */
     theSame(otherSquare) {
-        /*
-        Check square is the same with other square.
-        Params:
-            otherSquare {Square}.
-        */
-
         return this.name.value === otherSquare.name.value;
     }
 
+    /**
+     * Check square is placed on particular vertical.
+     * @param {string} vertical - Vertical.
+     * @return {boolean} Whether square is placed on particular vertical or not.
+     */
     onVertical(vertical) {
-        /*
-        Check square is placed on particular vertical.
-        Params:
-            vertical {string}.
-        */
-
         return this.name.symbol === vertical;
     }
 
+    /**
+     * Check square is placed on particular rank.
+     * @param {string} rank - Rank.
+     * @param {integer} rank - Rank.
+     * @return {boolean} Whether square is placed on particular rank or not.
+     */
     onRank(rank) {
-        /*
-        Check square is placed on particular rank.
-        Params:
-            rank {number or string}.
-        */
-
         return this.name.number == rank;
     }
 
+    /**
+     * Get squares names between this square and other square.
+     * @param {Square} otherSquare - Other square.
+     * @param {boolean} [includeThisSquare=false] - Include this square.
+     * @param {boolean} [includeOtherSquare=false] - Include other square.
+     * @return {string[]} Between squares names.
+     */
     getBetweenSquaresNames(otherSquare, includeThisSquare=false, includeOtherSquare=false) {
-        /*
-        Get squares names between this square and other square
-        Params:
-            otherSquare {Square};
-            includeThisSquare {boolean};
-            includeOtherSquare {boolean}.
-        */
-
         return new SquaresLine(this, otherSquare).betweenSquaresNames(includeThisSquare, includeOtherSquare);
     }
 
+    /**
+     * Get squares count between this square and other square
+     * @param {Square} otherSquare - Other square.
+     * @param {boolean} [includeThisSquare=false] - Include this square.
+     * @param {boolean} [includeOtherSquare=false] - Include other square.
+     * @return {integer} Between squares count.
+     */
     getBetweenSquaresCount(otherSquare, includeThisSquare=false, includeOtherSquare=false) {
-        /*
-        Get squares count between this square and other square
-        Params:
-            otherSquare {Square};
-            includeThisSquare {boolean};
-            includeOtherSquare {boolean}.
-        */
-
         return new SquaresLine(this, otherSquare).betweenSquaresCount(includeThisSquare, includeOtherSquare);
     }
 }
