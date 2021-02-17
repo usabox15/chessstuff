@@ -18,7 +18,7 @@ limitations under the License.
 const {
     Piece, Pawn, Knight, Bishop, Rook, Queen, King,
     KingCastleRoad, KingCastleInitial, KingCastle
-} = require('./pieces');
+} = require('./pieces/main');
 const { Relation } = require('./relations');
 const { Square, SquareName } = require('./square');
 
@@ -985,7 +985,7 @@ class Board {
         */
 
         for (let piece of this.allPieces) {
-            piece.getInitState();
+            piece.setInitState();
         }
         for (let piece of this.allPieces.filter(p => !p.isKing)) {
             piece.getSquares();
