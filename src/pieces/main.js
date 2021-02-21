@@ -15,42 +15,9 @@ limitations under the License.
 */
 
 
-const { Piece } = require('./base');
 const { Pawn } = require('./pawn');
+const { Piece, StepPiece, LinearPiece } = require('./base');
 const { Relation } = require('../relations');
-const { SquareCoordinates } = require('../square');
-
-
-class StepPiece extends Piece {
-    constructor(color, square, kind, refresh=true) {
-        /*
-        Params:
-            color {string} (white or black);
-            square {Square} - where piece is placed;
-            kind {string} - one of Piece.ALL_KINDS;
-            refresh {boolean} - whether refresh board after piece placed or not.
-        */
-
-        super(color, square, kind, refresh);
-    }
-
-    _getStepSquares(stepPoints) {
-        /*
-        Get step piece squares by piece action.
-        Params:
-            stepPoints {Array} - array of Objects with x and y attributes.
-        */
-
-        this._refreshSquareFinder();
-        for (let stepPoint of stepPoints) {
-            let x = this.square.coordinates.x + stepPoint.x;
-            let y = this.square.coordinates.y + stepPoint.y;
-            if (!SquareCoordinates.correctCoordinates(x, y)) continue;
-
-            this._nextSquareAction(this.board.squares.getFromCoordinates(x, y));
-        }
-    }
-}
 
 
 class Knight extends StepPiece {
@@ -101,41 +68,6 @@ class Knight extends StepPiece {
         // Bind knight.
 
         this.getTotalImmobilize();
-    }
-}
-
-
-class LinearPiece extends Piece {
-    constructor(color, square, kind, refresh=true) {
-        /*
-        Params:
-            color {string} (white or black);
-            square {Square} - where piece is placed;
-            kind {string} - one of Piece.ALL_KINDS;
-            refresh {boolean} - whether refresh board after piece placed or not.
-        */
-
-        super(color, square, kind, refresh);
-    }
-
-    _getLinearSquares(directions) {
-        /*
-        Get linear piece squares by piece action.
-        Params:
-            directions {Array} - array of Objects with x and y attributes.
-        */
-
-        for (let direction of directions) {
-            this._refreshSquareFinder();
-            let x = this.square.coordinates.x + direction.x;
-            let y = this.square.coordinates.y + direction.y;
-            while (SquareCoordinates.correctCoordinates(x, y)) {
-                this._nextSquareAction(this.board.squares.getFromCoordinates(x, y));
-                if (this.endOfALine) break;
-                x += direction.x;
-                y += direction.y;
-            }
-        }
     }
 }
 
