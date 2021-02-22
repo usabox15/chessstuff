@@ -16,183 +16,114 @@ limitations under the License.
 
 
 const { KingCastleRoad, KingCastleInitial, KingCastle } = require('./castle');
+const { KingCheckers } = require('./checkers');
 const { Piece, StepPiece } = require('../base');
 const { Relation } = require('../../relations');
 
 
-class KingCheckers extends Array {
-    constructor(king) {
-        /*
-        Params:
-            king {King}.
-        */
-
-        super();
-        this._king = king;
-    }
-
-    get first() {
-        return this.length > 0 ? this[0] : null;
-    }
-
-    get second() {
-        return this.length == 2 ? this[1] : null;
-    }
-
-    get exist() {
-        return this.length > 0;
-    }
-
-    get single() {
-        return this.length == 1;
-    }
-
-    get several() {
-        return this.length == 2;
-    }
-
-    get isLegal() {
-        return !this.exist || this._isPiecesLegal() && (this.single || this.several && this._isSeveralLegal());
-    }
-
-    _isPiecesLegal() {
-        return (
-            this.filter(p => p.isKing).length == 0
-        &&
-            this.filter(p => !p.squares.includes(Relation.CONTROL, this._king.square)).length == 0
-        );
-    }
-
-    _isDiscoverLegal(discoverer, discoveredAttacker) {
-        /*
-        Legality of a discover check that cause a double check.
-        Params:
-            discoverer {Piece subclass} piece that discover attack;
-            discoveredAttacker {Piece subclass} piece that attack by discover.
-        */
-
-        if (!discoveredAttacker.isLinear) return false;
-        let discoveredAttackSquaresNames = discoveredAttacker.square.getBetweenSquaresNames(this._king.square);
-        for (let squareName of discoveredAttackSquaresNames) {
-            let square = this._king.board.squares[squareName];
-            if (!square.piece && discoverer.squares.includes(Relation.CONTROL, square)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    _isSeveralLegal() {
-        return this._isDiscoverLegal(this.first, this.second) || this._isDiscoverLegal(this.second, this.first);
-    }
-
-    add(piece) {
-        /*
-        Params:
-            piece {Piece subclass}.
-        */
-
-        this.push(piece);
-    }
-}
-
-
+/** King class. */
 class King extends StepPiece {
-    /*  Step points
-         ___ ___ ___
-        | A | B | C |
-       1|___|___|___|
-        | H |Ki | D |
-       0|___| ng|___|
-        | G | F | E |
-      -1|___|___|___|
-          -1   0   1
-    */
 
-    static INITIAL_SQUARE_NAMES = {[Piece.WHITE]: "e1", [Piece.BLACK]: "e8"};
-    static stepPoints = [
-        {x: -1, y: 1},  // A
-        {x: 0, y: 1},   // B
-        {x: 1, y: 1},   // C
-        {x: 1, y: 0},   // D
-        {x: 1, y: -1},  // E
-        {x: 0, y: -1},  // F
-        {x: -1, y: -1}, // G
-        {x: -1, y: 0},  // H
-    ];
+  /*  Step points
+   *    ___ ___ ___
+   *   | A | B | C |
+   *  1|___|___|___|
+   *   | H |Ki | D |
+   *  0|___| ng|___|
+   *   | G | F | E |
+   * -1|___|___|___|
+   *     -1   0   1
+   */
+  static stepPoints = [
+    {x: -1, y: 1},  // A
+    {x: 0, y: 1},   // B
+    {x: 1, y: 1},   // C
+    {x: 1, y: 0},   // D
+    {x: 1, y: -1},  // E
+    {x: 0, y: -1},  // F
+    {x: -1, y: -1}, // G
+    {x: -1, y: 0},  // H
+  ];
 
-    constructor(color, square, refresh=true) {
-        /*
-        Params:
-            color {string} (white or black);
-            square {Square} - where piece is placed;
-            refresh {boolean} - whether refresh board after piece placed or not.
-        */
+  static INITIAL_SQUARE_NAMES = {[Piece.WHITE]: "e1", [Piece.BLACK]: "e8"};
 
-        super(color, square, Piece.KING, refresh);
-    }
+  /**
+   * Creation.
+   * @param {string} color - Either white or black.
+   * @param {Square} square - Square piece place to.
+   * @param {boolean} [refresh=true] - Whether refresh board or not.
+   */
+  constructor(color, square, refresh=true) {
+    super(color, square, Piece.KING, refresh);
+  }
 
-    get onInitialSquare() {
-        return this.square.name.value == King.INITIAL_SQUARE_NAMES[this.color];
-    }
+  /**
+   * Check whether kins is on initial square or not.
+   * @return {boolean} Whether kins is on initial square or not.
+   */
+  get onInitialSquare() {
+    return this.square.name.value == King.INITIAL_SQUARE_NAMES[this.color];
+  }
 
-    _removeEnemyControlledSquares() {
-        for (let kingAction of [Relation.MOVE, Relation.ATTACK]) {
-            if (this.squares[kingAction]) {
-                let squaresToRemove = [];
-                for (let square of this.squares[kingAction]) {
-                    if (square.pieces[Relation.CONTROL].filter(p => !this.sameColor(p)).length > 0) {
-                        squaresToRemove.push(square);
-                    }
-                }
-                for (let square of squaresToRemove) {
-                    this.squares.remove(kingAction, square);
-                }
-            }
+  /** Remove squares controlled by enemy pieces. */
+  _removeEnemyControlledSquares() {
+    for (let kingAction of [Relation.MOVE, Relation.ATTACK]) {
+      if (!this.squares[kingAction]) continue;
+      let squaresToRemove = [];
+      for (let square of this.squares[kingAction]) {
+        if (square.pieces[Relation.CONTROL].filter(p => !this.sameColor(p)).length > 0) {
+          squaresToRemove.push(square);
         }
+      }
+      for (let square of squaresToRemove) {
+        this.squares.remove(kingAction, square);
+      }
     }
+  }
 
-    _addCastleMoves() {
-        for (let side of KingCastleRoad.ALL_SIDES) {
-            if (this.castle[side] && this.castle[side].isLegal) {
-                this.squares.add(Relation.MOVE, this.castle[side].toSquare);
-            }
-        }
+  /** Add castle moves. */
+  _addCastleMoves() {
+    for (let side of KingCastleRoad.ALL_SIDES) {
+      if (this.castle[side] && this.castle[side].isLegal) {
+        this.squares.add(Relation.MOVE, this.castle[side].toSquare);
+      }
     }
+  }
 
-    _removeCastleMoves() {
-        for (let side of KingCastleRoad.ALL_SIDES) {
-            if (this.castle[side]) {
-                this.squares.remove(Relation.MOVE, this.castle[side].toSquare);
-            }
-        }
+  /** Remove castle moves. */
+  _removeCastleMoves() {
+    for (let side of KingCastleRoad.ALL_SIDES) {
+      if (this.castle[side]) {
+        this.squares.remove(Relation.MOVE, this.castle[side].toSquare);
+      }
     }
+  }
 
-    setInitState() {
-        this.checkers = new KingCheckers(this);
-    }
+  /** Set initial state. */
+  setInitState() {
+    this.checkers = new KingCheckers(this);
+  }
 
-    getSquares() {
-        // Get king squares by piece action
+  /** Get king squares by piece action. */
+  getSquares() {
+    this._refreshSquares();
+    this._getStepSquares(King.stepPoints);
+    this._removeEnemyControlledSquares();
+    this._addCastleMoves();
+  }
 
-        this._refreshSquares();
-        this._getStepSquares(King.stepPoints);
-        this._removeEnemyControlledSquares();
-        this._addCastleMoves();
-    }
+  /** Get check. */
+  getCheck() {
+    this._removeCastleMoves();
+  }
 
-    getCheck() {
-        this._removeCastleMoves();
-    }
-
-    setCastle(castleInitial) {
-        /*
-        Params:
-            castleInitial {KingCastleInitial}.
-        */
-
-        this.castle = new KingCastle(this, castleInitial);
-    }
+  /**
+   * Set king castle.
+   * @param {KingCastleInitial} castleInitial - KingCastleInitial instance.
+   */
+  setCastle(castleInitial) {
+    this.castle = new KingCastle(this, castleInitial);
+  }
 }
 
 

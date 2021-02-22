@@ -22,22 +22,22 @@ const { Bishop } = require('./bishop');
 const { Rook } = require('./rook');
 const { Queen } = require('./queen');
 const {
-    KingCastleRoad, KingCastleInitial, KingCastle, KingCheckers, King,
+  KingCastleRoad, KingCastleInitial, KingCastle, KingCheckers, King,
 } = require('./king/main');
 
 
 module.exports = {
-    Piece: Piece,
-    StepPiece: StepPiece,
-    LinearPiece: LinearPiece,
-    Pawn: Pawn,
-    Knight: Knight,
-    Bishop: Bishop,
-    Rook: Rook,
-    Queen: Queen,
-    KingCastleRoad: KingCastleRoad,
-    KingCastleInitial: KingCastleInitial,
-    KingCastle: KingCastle,
-    KingCheckers: KingCheckers,
-    King: King,
+  Piece: Piece,
+  StepPiece: StepPiece,
+  LinearPiece: LinearPiece,
+  Pawn: Pawn,
+  Knight: Knight,
+  Bishop: Bishop,
+  Rook: Rook,
+  Queen: Queen,
+  KingCastleRoad: KingCastleRoad,
+  KingCastleInitial: KingCastleInitial,
+  KingCastle: KingCastle,
+  KingCheckers: KingCheckers,
+  King: King,
 };
