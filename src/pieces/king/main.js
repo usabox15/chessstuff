@@ -128,9 +128,9 @@ class King extends StepPiece {
 
 
 module.exports = {
-    KingCastleRoad: KingCastleRoad,
-    KingCastleInitial: KingCastleInitial,
-    KingCastle: KingCastle,
-    KingCheckers: KingCheckers,
-    King: King,
+  KingCastleRoad: KingCastleRoad,
+  KingCastleInitial: KingCastleInitial,
+  KingCastle: KingCastle,
+  KingCheckers: KingCheckers,
+  King: King,
 };

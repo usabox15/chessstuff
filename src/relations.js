@@ -21,107 +21,107 @@ limitations under the License.
  */
 class Relation {
 
-    static MOVE = 'move';
-    static ATTACK = 'attack';
-    static XRAY = 'xray';
-    static COVER = 'cover';     // protect piece
-    static CONTROL = 'control'; // prevent opponent king move to
+  static MOVE = 'move';
+  static ATTACK = 'attack';
+  static XRAY = 'xray';
+  static COVER = 'cover';     // protect piece
+  static CONTROL = 'control'; // prevent opponent king move to
 
-    #allKinds = [
-        Relation.MOVE,
-        Relation.ATTACK,
-        Relation.XRAY,
-        Relation.COVER,
-        Relation.CONTROL
-    ];
+  #allKinds = [
+    Relation.MOVE,
+    Relation.ATTACK,
+    Relation.XRAY,
+    Relation.COVER,
+    Relation.CONTROL
+  ];
 
-    /**
-     * Creation.
-     * @param {Object} target - Relation target (piece or square).
-     * @param {string} relatedName - Related items attribute.
-     */
-    constructor(target, relatedName) {
-        this._target = target;
-        this._relatedName = relatedName;
-        this.refresh();
+  /**
+   * Creation.
+   * @param {Object} target - Relation target (piece or square).
+   * @param {string} relatedName - Related items attribute.
+   */
+  constructor(target, relatedName) {
+    this._target = target;
+    this._relatedName = relatedName;
+    this.refresh();
+  }
+
+  /**
+   * Check whether piece action kind is valid or not.
+   * @param {string} kind - Piece action kind.
+   * @param {string} except - Additional valid value.
+   */
+  _checkKind(kind, except=null) {
+    if (!this.#allKinds.includes(kind) && except != kind) {
+      throw Error(`Wrong relation kind (${kind}) passed`);
     }
+  }
 
-    /**
-     * Check whether piece action kind is valid or not.
-     * @param {string} kind - Piece action kind.
-     * @param {string} except - Additional valid value.
-     */
-    _checkKind(kind, except=null) {
-        if (!this.#allKinds.includes(kind) && except != kind) {
-            throw Error(`Wrong relation kind (${kind}) passed`);
+  /**
+   * Refersh action kind values.
+   * @param {string} [kind="all"] - Piece action kind.
+   */
+  refresh(kind='all') {
+    this._checkKind(kind, 'all');
+    let kinds = kind === 'all' ? this.#allKinds : [kind];
+    for (let kind of kinds) {
+      if (this[kind]) {
+        for (let item of this[kind]) {
+          item[this._relatedName].remove(kind, this._target, false);
         }
+      }
+      this[kind] = null;
     }
+  }
 
-    /**
-     * Refersh action kind values.
-     * @param {string} [kind="all"] - Piece action kind.
-     */
-    refresh(kind='all') {
-        this._checkKind(kind, 'all');
-        let kinds = kind === 'all' ? this.#allKinds : [kind];
-        for (let kind of kinds) {
-            if (this[kind]) {
-                for (let item of this[kind]) {
-                    item[this._relatedName].remove(kind, this._target, false);
-                }
-            }
-            this[kind] = null;
-        }
+  /**
+   * Add action kind value.
+   * @param {string} kind - Piece action kind.
+   * @param {Object} item - Related item (piece/square).
+   * @param {boolean} relate - Necessity to add target to relate action.
+   */
+  add(kind, item, relate=true) {
+    this._checkKind(kind);
+    if (this[kind]) {
+      this[kind].push(item);
+    } else {
+      this[kind] = [item];
     }
+    if (relate) {
+      item[this._relatedName].add(kind, this._target, false);
+    }
+  }
 
-    /**
-     * Add action kind value.
-     * @param {string} kind - Piece action kind.
-     * @param {Object} item - Related item (piece/square).
-     * @param {boolean} relate - Necessity to add target to relate action.
-     */
-    add(kind, item, relate=true) {
-        this._checkKind(kind);
-        if (this[kind]) {
-            this[kind].push(item);
-        } else {
-            this[kind] = [item];
-        }
-        if (relate) {
-            item[this._relatedName].add(kind, this._target, false);
-        }
+  /**
+   * Remove action kind value.
+   * @param {string} kind - Piece action kind.
+   * @param {Object} item - Related item (piece/square).
+   * @param {boolean} relate - Necessity to add target to relate action.
+   */
+  remove(kind, item, relate=true) {
+    this._checkKind(kind);
+    if (this[kind]) {
+      this[kind] = this[kind].filter(i => !i.theSame(item));
+      if (this[kind].length == 0) {
+        this[kind] = null;
+      }
     }
+    if (relate) {
+      item[this._relatedName].remove(kind, this._target, false);
+    }
+  }
 
-    /**
-     * Remove action kind value.
-     * @param {string} kind - Piece action kind.
-     * @param {Object} item - Related item (piece/square).
-     * @param {boolean} relate - Necessity to add target to relate action.
-     */
-    remove(kind, item, relate=true) {
-        this._checkKind(kind);
-        if (this[kind]) {
-            this[kind] = this[kind].filter(i => !i.theSame(item));
-            if (this[kind].length == 0) {
-                this[kind] = null;
-            }
-        }
-        if (relate) {
-            item[this._relatedName].remove(kind, this._target, false);
-        }
-    }
-
-    /**
-     * Check whether particular action kind includes item.
-     * @param {string} kind - Piece action kind.
-     * @param {Object} item - Related item (piece/square).
-     * @return {boolean} Includes state.
-     */
-    includes(kind, item) {
-        this._checkKind(kind);
-        if (!this[kind]) return false;
-        return this[kind].filter(i => i.theSame(item)).length != 0;
-    }
+  /**
+   * Check whether particular action kind includes item.
+   * @param {string} kind - Piece action kind.
+   * @param {Object} item - Related item (piece/square).
+   * @return {boolean} Includes state.
+   */
+  includes(kind, item) {
+    this._checkKind(kind);
+    if (!this[kind]) return false;
+    return this[kind].filter(i => i.theSame(item)).length != 0;
+  }
 }
 
 
@@ -131,13 +131,13 @@ class Relation {
  */
 class SquarePieces extends Relation {
 
-    /**
-     * Creation.
-     * @param {Object} target - Relation target (square).
-     */
-    constructor(target) {
-        super(target, 'squares');
-    }
+  /**
+   * Creation.
+   * @param {Object} target - Relation target (square).
+   */
+  constructor(target) {
+    super(target, 'squares');
+  }
 }
 
 
@@ -147,35 +147,35 @@ class SquarePieces extends Relation {
  */
 class PieceSquares extends Relation {
 
-    /**
-     * Creation.
-     * @param {Object} target - Relation target (piece).
-     */
-    constructor(target) {
-        super(target, 'pieces');
-    }
+  /**
+   * Creation.
+   * @param {Object} target - Relation target (piece).
+   */
+  constructor(target) {
+    super(target, 'pieces');
+  }
 
-    /**
-     * Limit some kind of Piece actions squares by Array of accepted square names.
-     * @param {string} kind - Piece action kind.
-     * @param {string[]} acceptedNames - Accepted square names.
-     */
-    limit(kind, acceptedNames) {
-        this._checkKind(kind);
-        if (!this[kind]) return;
-        for (let square of this[kind].filter(square => !acceptedNames.includes(square.name.value))) {
-            square[this._relatedName].remove(kind, this._target, false);
-        }
-        this[kind] = this[kind].filter(square => acceptedNames.includes(square.name.value));
-        if (this[kind].length == 0) {
-            this[kind] = null;
-        }
+  /**
+   * Limit some kind of Piece actions squares by Array of accepted square names.
+   * @param {string} kind - Piece action kind.
+   * @param {string[]} acceptedNames - Accepted square names.
+   */
+  limit(kind, acceptedNames) {
+    this._checkKind(kind);
+    if (!this[kind]) return;
+    for (let square of this[kind].filter(square => !acceptedNames.includes(square.name.value))) {
+      square[this._relatedName].remove(kind, this._target, false);
     }
+    this[kind] = this[kind].filter(square => acceptedNames.includes(square.name.value));
+    if (this[kind].length == 0) {
+      this[kind] = null;
+    }
+  }
 }
 
 
 module.exports = {
-    Relation: Relation,
-    SquarePieces: SquarePieces,
-    PieceSquares: PieceSquares
+  Relation: Relation,
+  SquarePieces: SquarePieces,
+  PieceSquares: PieceSquares
 };
