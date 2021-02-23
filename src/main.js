@@ -16,7 +16,7 @@ limitations under the License.
 
 
 module.exports = {
-  board: require('./board'),
+  board: require('./board/main'),
   pieces: require('./pieces/main'),
   relations: require('./relations'),
   square: require('./square')

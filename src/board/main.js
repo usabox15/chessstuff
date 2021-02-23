@@ -15,75 +15,13 @@ limitations under the License.
 */
 
 
+const { BoardSquares } = require('./squares');
 const {
     Piece, Pawn, Knight, Bishop, Rook, Queen, King,
     KingCastleRoad, KingCastleInitial, KingCastle
-} = require('./pieces/main');
-const { Relation } = require('./relations');
-const { Square, SquareName } = require('./square');
-
-
-class BoardSquares {
-    // Board squares handler.
-
-    constructor(board) {
-        /*
-        Params:
-            board {Board}.
-        */
-
-        this._create(board);
-    }
-
-    _create(board) {
-        /*
-        Params:
-            board {Board}.
-        */
-
-        this._items = [];
-        for (let symbol of SquareName.symbols) {
-            for (let number of SquareName.numbers) {
-                let name = `${symbol}${number}`;
-                let square = new Square(name, board);
-                this[name] = square;
-                this._items.push(square);
-            }
-        }
-    }
-
-    get occupied() {
-        // Squares with placed pieces.
-
-        return Object.fromEntries(
-            Object.entries(this)
-            .filter(data => data[1].piece)
-        );
-    }
-
-    getFromCoordinates(x, y) {
-        /*
-        Get square by its coordinates.
-        Params:
-            x {number};
-            y {number}.
-        */
-
-        return this[Square.coordinatesToName(x, y)];
-    }
-
-    removePieces(refresh) {
-        /*
-        Remove pieces from all squares.
-        Params:
-            refresh {boolean} - whether need to refresh board after piece has been placed or not.
-        */
-
-        for (let square of this._items) {
-            square.removePiece(refresh);
-        }
-    }
-}
+} = require('../pieces/main');
+const { Relation } = require('../relations');
+const { Square, SquareName } = require('../square');
 
 
 class BoardColors {
