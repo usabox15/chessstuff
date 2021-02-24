@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 
+const { BoardColors } = require('./colors');
 const { BoardSquares } = require('./squares');
 const {
     Piece, Pawn, Knight, Bishop, Rook, Queen, King,
@@ -22,49 +23,6 @@ const {
 } = require('../pieces/main');
 const { Relation } = require('../relations');
 const { Square, SquareName } = require('../square');
-
-
-class BoardColors {
-    // Board colors handler.
-
-    #priorities = {
-        [Piece.WHITE]: [0, 1],
-        [Piece.BLACK]: [1, 0],
-    }
-    #all = [Piece.WHITE, Piece.BLACK];
-
-    constructor(currentColor) {
-        /*
-        Params:
-            currentColor {string} one of Piece.ALL_COLORS.
-        */
-
-        if (!Piece.ALL_COLORS.includes(currentColor)) {
-            throw Error(`'${currentColor}' is wrong color value. Use any of Piece.ALL_COLORS.`);
-        }
-        this._priority = this.#priorities[currentColor];
-    }
-
-    get current() {
-        return this.#all[this._priority[0]];
-    }
-
-    get opponent() {
-        return this.#all[this._priority[1]];
-    }
-
-    get firstPriority() {
-        return this._priority[0];
-    }
-
-    get secondPriority() {
-        return this._priority[1];
-    }
-
-    changePriority() {
-        this._priority = [this._priority[1], this._priority[0]]
-    }
-}
 
 
 class MovesCounter {
