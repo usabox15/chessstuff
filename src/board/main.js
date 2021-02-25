@@ -16,6 +16,7 @@ limitations under the License.
 
 
 const { BoardColors } = require('./colors');
+const { MovesCounter, FiftyMovesRuleCounter } = require('./counters');
 const { BoardSquares } = require('./squares');
 const {
     Piece, Pawn, Knight, Bishop, Rook, Queen, King,
@@ -23,56 +24,6 @@ const {
 } = require('../pieces/main');
 const { Relation } = require('../relations');
 const { Square, SquareName } = require('../square');
-
-
-class MovesCounter {
-    constructor(initialCount) {
-        /*
-        Params:
-            initialCount {number}.
-        */
-
-        this._value = initialCount;
-    }
-
-    get value() {
-        return this._value;
-    }
-
-    update() {
-        this._value++;
-    }
-}
-
-
-class FiftyMovesRuleCounter extends MovesCounter {
-    constructor(initialCount) {
-        /*
-        Params:
-            initialCount {number}.
-        */
-
-        super(initialCount);
-        this._turnedOn = false;
-        this._needToRefresh = false;
-    }
-
-    switch() {
-        this._turnedOn = true;
-        this._needToRefresh = true;
-    }
-
-    update() {
-        if (!this._turnedOn) return;
-        if (this._needToRefresh) {
-            this._value = 0;
-            this._needToRefresh = false;
-        }
-        else {
-            this._value++;
-        }
-    }
-}
 
 
 class BoardInitialPosition {
