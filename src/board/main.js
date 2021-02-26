@@ -17,6 +17,7 @@ limitations under the License.
 
 const { BoardColors } = require('./colors');
 const { MovesCounter, FiftyMovesRuleCounter } = require('./counters');
+const { BoardInitialPosition } = require('./initial');
 const { BoardSquares } = require('./squares');
 const {
     Piece, Pawn, Knight, Bishop, Rook, Queen, King,
@@ -24,73 +25,6 @@ const {
 } = require('../pieces/main');
 const { Relation } = require('../relations');
 const { Square, SquareName } = require('../square');
-
-
-class BoardInitialPosition {
-    /*
-    Scheme:
-        {
-            color: [
-                [pieceName, squareName],
-                ...
-            ],
-            ...
-        }
-    */
-
-    static PIECES = {
-        'P': [Piece.WHITE, Piece.PAWN],
-        'N': [Piece.WHITE, Piece.KNIGHT],
-        'B': [Piece.WHITE, Piece.BISHOP],
-        'R': [Piece.WHITE, Piece.ROOK],
-        'Q': [Piece.WHITE, Piece.QUEEN],
-        'K': [Piece.WHITE, Piece.KING],
-        'p': [Piece.BLACK, Piece.PAWN],
-        'n': [Piece.BLACK, Piece.KNIGHT],
-        'b': [Piece.BLACK, Piece.BISHOP],
-        'r': [Piece.BLACK, Piece.ROOK],
-        'q': [Piece.BLACK, Piece.QUEEN],
-        'k': [Piece.BLACK, Piece.KING],
-    };
-
-    constructor(data) {
-        /*
-        Params:
-            data {string} FEN piece placement data.
-        */
-
-        for (let color of Piece.ALL_COLORS) {
-            this[color] = [];
-        }
-        this._rows = this._getRows(data);
-        this._fillData();
-    }
-
-    _getRows(data) {
-        /*
-        Params:
-            data {string} FEN piece placement data.
-        */
-
-        return (
-            data
-            .replace(/\d/g, n => {return '0'.repeat(parseInt(n))})
-            .split('/')
-            .reverse()
-        );
-    }
-
-    _fillData() {
-        for (let y = 0; y < 8; y++) {
-            for (let x = 0; x < 8; x++) {
-                if (this._rows[y][x] == '0') continue;
-                let [color, pieceName] = BoardInitialPosition.PIECES[this._rows[y][x]];
-                let squareName = Square.coordinatesToName(x, y);
-                this[color].push([pieceName, squareName]);
-            }
-        }
-    }
-}
 
 
 class BoardInitialCastle {
