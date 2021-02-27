@@ -17,7 +17,7 @@ limitations under the License.
 
 const { BoardColors } = require('./colors');
 const { MovesCounter, FiftyMovesRuleCounter } = require('./counters');
-const { BoardInitialPosition } = require('./initial');
+const { BoardInitialPosition, BoardInitialCastle } = require('./initial');
 const { BoardSquares } = require('./squares');
 const {
     Piece, Pawn, Knight, Bishop, Rook, Queen, King,
@@ -25,79 +25,6 @@ const {
 } = require('../pieces/main');
 const { Relation } = require('../relations');
 const { Square, SquareName } = require('../square');
-
-
-class BoardInitialCastle {
-    /*
-    Scheme:
-        {
-            color: KingCastleInitial,
-            ...
-        }
-
-    Create param:
-      - signs [String] (FEN castling availability data, not required).
-    */
-
-    static WHITE_SHORT = 'K';
-    static WHITE_LONG = 'Q';
-    static BLACK_SHORT = 'k';
-    static BLACK_LONG = 'q';
-    static ALL_SIGNS = [
-        BoardInitialCastle.WHITE_SHORT,
-        BoardInitialCastle.WHITE_LONG,
-        BoardInitialCastle.BLACK_SHORT,
-        BoardInitialCastle.BLACK_LONG,
-    ];
-    static VALUES = {
-        [BoardInitialCastle.WHITE_SHORT]: [Piece.WHITE, KingCastleRoad.SHORT],
-        [BoardInitialCastle.WHITE_LONG]: [Piece.WHITE, KingCastleRoad.LONG],
-        [BoardInitialCastle.BLACK_SHORT]: [Piece.BLACK, KingCastleRoad.SHORT],
-        [BoardInitialCastle.BLACK_LONG]: [Piece.BLACK, KingCastleRoad.LONG],
-    };
-
-    constructor(signs='-') {
-        /*
-        Params:
-            signs {string} FEN castling availability data, not required.
-        */
-
-        this._signs = signs.slice(0, 4);
-        this._fillData();
-    }
-
-    _checkSign(sign) {
-        /*
-        Params:
-            sign {string} FEN castling availability sign.
-        */
-
-        if (!BoardInitialCastle.ALL_SIGNS.includes(sign)) {
-            throw Error(`"${sign}" is not a correct castle rights sign. Use one of ${BoardInitialCastle.ALL_SIGNS}.`);
-        }
-    }
-
-    _getRoadKinds() {
-        let data = {};
-        for (let color of Piece.ALL_COLORS) {
-            data[color] = [];
-        }
-        for (let sign of this._signs) {
-            if (sign == '-') continue;
-            this._checkSign(sign);
-            let [color, roadKind] = BoardInitialCastle.VALUES[sign];
-            data[color].push(roadKind);
-        }
-        return data;
-    }
-
-    _fillData() {
-        let roadKinds = this._getRoadKinds();
-        for (let color of Piece.ALL_COLORS) {
-            this[color] = new KingCastleInitial(roadKinds[color]);
-        }
-    }
-}
 
 
 class FENData {

@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 
-const { Piece } = require('../pieces/main');
+const { Piece, KingCastleRoad, KingCastleInitial } = require('../pieces/main');
 const { Square } = require('../square');
 
 
@@ -88,6 +88,82 @@ class BoardInitialPosition {
 }
 
 
+/**
+ * Board initial castle class.
+ *
+ * Scheme:
+ * {
+ *   color: KingCastleInitial,
+ *   ...
+ * }
+ */
+class BoardInitialCastle {
+
+  static WHITE_SHORT = 'K';
+  static WHITE_LONG = 'Q';
+  static BLACK_SHORT = 'k';
+  static BLACK_LONG = 'q';
+  static ALL_SIGNS = [
+    BoardInitialCastle.WHITE_SHORT,
+    BoardInitialCastle.WHITE_LONG,
+    BoardInitialCastle.BLACK_SHORT,
+    BoardInitialCastle.BLACK_LONG,
+  ];
+  static VALUES = {
+    [BoardInitialCastle.WHITE_SHORT]: [Piece.WHITE, KingCastleRoad.SHORT],
+    [BoardInitialCastle.WHITE_LONG]: [Piece.WHITE, KingCastleRoad.LONG],
+    [BoardInitialCastle.BLACK_SHORT]: [Piece.BLACK, KingCastleRoad.SHORT],
+    [BoardInitialCastle.BLACK_LONG]: [Piece.BLACK, KingCastleRoad.LONG],
+  };
+
+  /**
+   * Creation.
+   * @param {string} [signs="-"] - FEN castling data.
+   */
+  constructor(signs='-') {
+    this._signs = signs.slice(0, 4);
+    this._fillData();
+  }
+
+  /**
+   * Check sign.
+   * @param {string} sign - FEN castling sign.
+   */
+  _checkSign(sign) {
+    if (!BoardInitialCastle.ALL_SIGNS.includes(sign)) {
+      throw Error(`"${sign}" is not a correct castle rights sign. Use one of ${BoardInitialCastle.ALL_SIGNS}.`);
+    }
+  }
+
+  /**
+   * Get road kinds.
+   * @return {Object} Road kinds.
+   */
+  _getRoadKinds() {
+    let data = {};
+    for (let color of Piece.ALL_COLORS) {
+      data[color] = [];
+    }
+    for (let sign of this._signs) {
+      if (sign == '-') continue;
+      this._checkSign(sign);
+      let [color, roadKind] = BoardInitialCastle.VALUES[sign];
+      data[color].push(roadKind);
+    }
+    return data;
+  }
+
+  /** Fill data. */
+  _fillData() {
+    let roadKinds = this._getRoadKinds();
+    for (let color of Piece.ALL_COLORS) {
+      this[color] = new KingCastleInitial(roadKinds[color]);
+    }
+  }
+}
+
+
 module.exports = {
   BoardInitialPosition: BoardInitialPosition,
+  BoardInitialCastle: BoardInitialCastle,
 };
