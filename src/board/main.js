@@ -17,7 +17,7 @@ limitations under the License.
 
 const { BoardColors } = require('./colors');
 const { MovesCounter, FiftyMovesRuleCounter } = require('./counters');
-const { BoardInitialPosition, BoardInitialCastle } = require('./initial');
+const { BoardInitialPosition, BoardInitialCastle, BoardInitial } = require('./initial');
 const { BoardSquares } = require('./squares');
 const {
     Piece, Pawn, Knight, Bishop, Rook, Queen, King,
@@ -56,37 +56,6 @@ class FENData {
             this.fiftyMovesRuleData,
             this.movesCounterData,
         ] = data.split(' ');
-    }
-}
-
-
-class BoardInitial {
-    /*
-    Scheme:
-        {
-            position: BoardInitialPosition,
-            currentColor: String,
-            castleRights: BoardInitialCastle,
-            enPassantSquareName: String or null,
-            fiftyMovesRuleCounter: Number,
-            movesCounter: Number
-        }
-    */
-
-    #colors = {'w': Piece.WHITE, 'b': Piece.BLACK};
-
-    constructor(data) {
-        /*
-        Params:
-            data {FENData} parsed FEN data.
-        */
-
-        this.position = new BoardInitialPosition(data.positionData);
-        this.currentColor = this.#colors[data.currentColorData];
-        this.castleRights = new BoardInitialCastle(data.castleRightsData);
-        this.enPassantSquareName = data.enPassantData == '-' ? null : data.enPassantData;
-        this.fiftyMovesRuleCounter = parseInt(data.fiftyMovesRuleData);
-        this.movesCounter = parseInt(data.movesCounterData);
     }
 }
 

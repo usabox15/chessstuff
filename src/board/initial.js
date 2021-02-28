@@ -163,7 +163,40 @@ class BoardInitialCastle {
 }
 
 
+/**
+ * Board initial class.
+ *
+ * Scheme:
+ * {
+ *   position: BoardInitialPosition,
+ *   currentColor: String,
+ *   castleRights: BoardInitialCastle,
+ *   enPassantSquareName: String or null,
+ *   fiftyMovesRuleCounter: Number,
+ *   movesCounter: Number,
+ * }
+ */
+class BoardInitial {
+
+  #colors = {'w': Piece.WHITE, 'b': Piece.BLACK};
+
+  /**
+   * Creation.
+   * @param {FENData} data - Parsed FEN data.
+   */
+  constructor(data) {
+    this.position = new BoardInitialPosition(data.positionData);
+    this.currentColor = this.#colors[data.currentColorData];
+    this.castleRights = new BoardInitialCastle(data.castleRightsData);
+    this.enPassantSquareName = data.enPassantData == '-' ? null : data.enPassantData;
+    this.fiftyMovesRuleCounter = parseInt(data.fiftyMovesRuleData);
+    this.movesCounter = parseInt(data.movesCounterData);
+  }
+}
+
+
 module.exports = {
   BoardInitialPosition: BoardInitialPosition,
   BoardInitialCastle: BoardInitialCastle,
+  BoardInitial: BoardInitial,
 };
