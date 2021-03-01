@@ -17,6 +17,7 @@ limitations under the License.
 
 const { BoardColors } = require('./colors');
 const { MovesCounter, FiftyMovesRuleCounter } = require('./counters');
+const { FENData } = require('./fen');
 const { BoardInitialPosition, BoardInitialCastle, BoardInitial } = require('./initial');
 const { BoardSquares } = require('./squares');
 const {
@@ -25,39 +26,6 @@ const {
 } = require('../pieces/main');
 const { Relation } = require('../relations');
 const { Square, SquareName } = require('../square');
-
-
-class FENData {
-    /*
-    Parse data from FEN string.
-
-    Scheme:
-        {
-            positionData: String,
-            currentColorData: String,
-            castleRightsData: String,
-            enPassantData: String,
-            fiftyMovesRuleData: String,
-            movesCounterData: String
-        }
-    */
-
-    constructor(data) {
-        /*
-        Params:
-            data {string} FEN data string.
-        */
-
-        [
-            this.positionData,
-            this.currentColorData,
-            this.castleRightsData,
-            this.enPassantData,
-            this.fiftyMovesRuleData,
-            this.movesCounterData,
-        ] = data.split(' ');
-    }
-}
 
 
 class FENDataCreator {
