@@ -17,103 +17,11 @@ limitations under the License.
 
 const { BoardColors } = require('./colors');
 const { MovesCounter, FiftyMovesRuleCounter } = require('./counters');
-const { FENData } = require('./fen');
+const { FENData, FENDataCreator } = require('./fen');
 const { BoardInitialPosition, BoardInitialCastle, BoardInitial } = require('./initial');
 const { BoardSquares } = require('./squares');
-const {
-    Piece, Pawn, Knight, Bishop, Rook, Queen, King,
-    KingCastleRoad, KingCastleInitial, KingCastle
-} = require('../pieces/main');
+const { Piece, Pawn, Knight, Bishop, Rook, Queen, King } = require('../pieces/main');
 const { Relation } = require('../relations');
-const { Square, SquareName } = require('../square');
-
-
-class FENDataCreator {
-    // Create FEN string.
-
-    #pieces = {
-        [Piece.WHITE]: {
-            [Piece.PAWN]: 'P',
-            [Piece.KNIGHT]: 'N',
-            [Piece.BISHOP]: 'B',
-            [Piece.ROOK]: 'R',
-            [Piece.QUEEN]: 'Q',
-            [Piece.KING]: 'K',
-        },
-        [Piece.BLACK]: {
-            [Piece.PAWN]: 'p',
-            [Piece.KNIGHT]: 'n',
-            [Piece.BISHOP]: 'b',
-            [Piece.ROOK]: 'r',
-            [Piece.QUEEN]: 'q',
-            [Piece.KING]: 'k',
-        },
-    };
-    #colors = {[Piece.WHITE]: 'w', [Piece.BLACK]: 'b'};
-    #castleRights = {
-        [Piece.WHITE]: {
-            [KingCastleRoad.SHORT]: 'K',
-            [KingCastleRoad.LONG]: 'Q',
-        },
-        [Piece.BLACK]: {
-            [KingCastleRoad.SHORT]: 'k',
-            [KingCastleRoad.LONG]: 'q',
-        },
-    };
-
-    constructor(board) {
-        /*
-        Params:
-            board {Board}.
-        */
-
-        this._board = board;
-        this.value = [
-            this._getPositionData(),
-            this.#colors[board.colors.current],
-            this._getCastleRightsData(),
-            board.enPassantSquare ? board.enPassantSquare.name.value : '-',
-            board.fiftyMovesRuleCounter.value.toString(),
-            board.movesCounter.value.toString(),
-        ].join(' ');
-    }
-
-    _getPositionData() {
-        let data = [];
-        for (let number of SquareName.numbers) {
-            let rowData = [];
-            for (let symbol of SquareName.symbols) {
-                let square = this._board.squares[`${symbol}${number}`];
-                if (square.piece) {
-                    rowData.push(this.#pieces[square.piece.color][square.piece.kind]);
-                } else {
-                    rowData.push('0');
-                }
-            }
-            data.push(
-                rowData
-                .join('')
-                .replace(/0+/g, n => {return n.length})
-            );
-        }
-        return data.reverse().join('/');
-    }
-
-    _getCastleRightsData() {
-        let data = [];
-        for (let color of Piece.ALL_COLORS) {
-            let king = this._board.kings[color];
-            if (king) {
-                for (let side of KingCastleRoad.ALL_SIDES) {
-                    if (king.castle[side]) {
-                        data.push(this.#castleRights[color][side]);
-                    }
-                }
-            }
-        }
-        return data.join('') || '-';
-    }
-}
 
 
 class Board {
