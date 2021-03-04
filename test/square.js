@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Yegor Bitensky
+Copyright 2020-2021 Yegor Bitensky
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,15 +15,11 @@ limitations under the License.
 */
 
 
-var assert = require('assert');
-var chessstuff = require('../');
-var SquareNeighbors = chessstuff.square.SquareNeighbors;
-var SquareName = chessstuff.square.SquareName;
-var SquareCoordinates = chessstuff.square.SquareCoordinates;
-var SquareOnEdge = chessstuff.square.SquareOnEdge;
-var Square = chessstuff.square.Square;
-var SquaresLine = chessstuff.square.SquaresLine;
-var Board = chessstuff.board.Board;
+const assert = require('assert');
+const {
+    board: { Board },
+    square: { Square, SquareCoordinates, SquaresLine, SquareName, SquareNeighbors, SquareOnEdge },
+} = require('../');
 
 
 describe('Test square', function () {

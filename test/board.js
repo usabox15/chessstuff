@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Yegor Bitensky
+Copyright 2020-2021 Yegor Bitensky
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,27 +15,18 @@ limitations under the License.
 */
 
 
-var assert = require('assert');
-var chessstuff = require('../');
-var SquareName = chessstuff.square.SquareName;
-var Piece = chessstuff.pieces.Piece;
-var Pawn = chessstuff.pieces.Pawn;
-var Knight = chessstuff.pieces.Knight;
-var Bishop = chessstuff.pieces.Bishop;
-var Rook = chessstuff.pieces.Rook;
-var Queen = chessstuff.pieces.Queen;
-var King = chessstuff.pieces.King;
-var KingCastleRoad = chessstuff.pieces.KingCastleRoad;
-var Board = chessstuff.board.Board;
-var BoardColors = chessstuff.board.BoardColors;
-var BoardInitial = chessstuff.board.BoardInitial;
-var BoardInitialCastle = chessstuff.board.BoardInitialCastle;
-var BoardInitialPosition = chessstuff.board.BoardInitialPosition;
-var BoardSquares = chessstuff.board.BoardSquares;
-var FENData = chessstuff.board.FENData;
-var FENDataCreator = chessstuff.board.FENDataCreator;
-var FiftyMovesRuleCounter = chessstuff.board.FiftyMovesRuleCounter;
-var MovesCounter = chessstuff.board.MovesCounter;
+const assert = require('assert');
+const {
+    board: {
+        Board,
+        BoardColors, BoardSquares,
+        BoardInitial, BoardInitialCastle, BoardInitialPosition,
+        FENData, FENDataCreator,
+        MovesCounter, FiftyMovesRuleCounter,
+    },
+    pieces: { Piece, Pawn, Knight, Bishop, Rook, Queen, King, KingCastleRoad },
+    square: { SquareName },
+} = require('../');
 
 
 describe('Test board', function () {
