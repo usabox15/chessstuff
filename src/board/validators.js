@@ -26,49 +26,107 @@ class BoardEnPassantSquareValidator {
    * @param {Square} square - Board square.
    */
   constructor(square) {
+    this._square = square;
     this.isLegal = !square || !square.piece && (
-      square.onRank(3) && this._checkThirdRank(square)
+      square.onRank(3) && this._checkThirdRank()
     ||
-      square.onRank(6) && this._checkSixthRank(square)
+      square.onRank(6) && this._checkSixthRank()
     );
   }
 
   /**
    * Check whether third rank square is en passant or not.
-   * @param {Square} square - Board square.
    * @return {boolean} Check result.
    */
-  _checkThirdRank(square) {
+  _checkThirdRank() {
     return (
-      !square.neighbors.down.piece
+      !this._square.neighbors.down.piece
     &&
-      square.neighbors.up.piece
+      this._square.neighbors.up.piece
     &&
-      square.neighbors.up.piece.isPawn
+      this._square.neighbors.up.piece.isPawn
     &&
-      square.neighbors.up.piece.hasColor(Piece.WHITE)
+      this._square.neighbors.up.piece.hasColor(Piece.WHITE)
     );
   }
 
   /**
    * Check whether sixth rank square is en passant or not.
-   * @param {Square} square - Board square.
    * @return {boolean} Check result.
    */
-  _checkSixthRank(square) {
+  _checkSixthRank() {
     return (
-      !square.neighbors.up.piece
+      !this._square.neighbors.up.piece
     &&
-      square.neighbors.down.piece
+      this._square.neighbors.down.piece
     &&
-      square.neighbors.down.piece.isPawn
+      this._square.neighbors.down.piece.isPawn
     &&
-      square.neighbors.down.piece.hasColor(Piece.BLACK)
+      this._square.neighbors.down.piece.hasColor(Piece.BLACK)
     );
+  }
+}
+
+
+/** Pieces count validator. */
+class BoardPiecesCountValidator {
+
+  /**
+   * Creation.
+   * @param {Piece[]} pieces - Board pieces.
+   * @param {string} color - Pieces color.
+   */
+  constructor(pieces, color) {
+    this._pieces = pieces;
+    this._color = color;
+    this.isLegal = (
+      this._checkKingsCount()
+    &&
+      this._checkQueensCount()
+    &&
+      this._checkRooksCount()
+    &&
+      this._checkBishopsCount()
+    &&
+      this._checkKnightsCount()
+    &&
+      this._checkPawnsCount()
+    );
+  }
+
+  /** Check kings count. */
+  _checkKingsCount() {
+    return this._pieces.filter(p => p.isKing && p.hasColor(this._color)).length == 1;
+  }
+
+  /** Check queens count. */
+  _checkQueensCount() {
+    return this._pieces.filter(p => p.isQueen && p.hasColor(this._color)).length <= 9;
+  }
+
+  /** Check rooks count. */
+  _checkRooksCount() {
+    return this._pieces.filter(p => p.isRook && p.hasColor(this._color)).length <= 10;
+  }
+
+  /** Check bishops count. */
+  _checkBishopsCount() {
+    return this._pieces.filter(p => p.isBishop && p.hasColor(this._color)).length <= 10;
+  }
+
+  /** Check knights count. */
+  _checkKnightsCount() {
+    return this._pieces.filter(p => p.isKnight && p.hasColor(this._color)).length <= 10;
+  }
+
+  /** Check pawns count. */
+  _checkPawnsCount() {
+    return this._pieces.filter(p => p.isPawn && p.hasColor(this._color)).length <= 8;
   }
 }
 
 
 module.exports = {
   BoardEnPassantSquareValidator: BoardEnPassantSquareValidator,
+  BoardPiecesCountValidator: BoardPiecesCountValidator,
 };

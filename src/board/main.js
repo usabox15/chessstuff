@@ -20,7 +20,7 @@ const { MovesCounter, FiftyMovesRuleCounter } = require('./counters');
 const { FENData, FENDataCreator } = require('./fen');
 const { BoardInitialPosition, BoardInitialCastle, BoardInitial } = require('./initial');
 const { BoardSquares } = require('./squares');
-const { BoardEnPassantSquareValidator } = require('./validators');
+const { BoardEnPassantSquareValidator, BoardPiecesCountValidator } = require('./validators');
 const { Piece, Pawn, Knight, Bishop, Rook, Queen, King } = require('../pieces/main');
 const { Relation } = require('../relations');
 
@@ -173,28 +173,6 @@ class Board {
     this._enPassantSquare = null;
   }
 
-  _checkPieceCountLegal(color, allPieces) {
-    /*
-    Params:
-      color {string} one of Piece.ALL_COLORS;
-      allPieces {Array of Piece subclasses}.
-    */
-
-    return (
-      allPieces.filter(p => p.isKing && p.hasColor(color)).length == 1
-    &&
-      allPieces.filter(p => p.isQueen && p.hasColor(color)).length <= 9
-    &&
-      allPieces.filter(p => p.isRook && p.hasColor(color)).length <= 10
-    &&
-      allPieces.filter(p => p.isBishop && p.hasColor(color)).length <= 10
-    &&
-      allPieces.filter(p => p.isKnight && p.hasColor(color)).length <= 10
-    &&
-      allPieces.filter(p => p.isPawn && p.hasColor(color)).length <= 8
-    );
-  }
-
   _checkPawnsPlacementLegal(allPieces) {
     /*
     Params:
@@ -228,10 +206,6 @@ class Board {
     return king.checkers.isLegal && (!king.checkers.exist || king.hasColor(kingColor));
   }
 
-  _checkEnPassantSquareLegal() {
-    return (new BoardEnPassantSquareValidator(this._enPassantSquare)).isLegal;
-  }
-
   _checkPositionIsLegal(beforeMove=true) {
     /*
     Params:
@@ -243,7 +217,7 @@ class Board {
     for (let color of Piece.ALL_COLORS) {
       let king = this.kings[color];
       this._positionIsLegal = this._positionIsLegal && (
-        this._checkPieceCountLegal(color, allPieces)
+        (new BoardPiecesCountValidator(allPieces, color)).isLegal
       &&
         this._checkKingPlacementLegal(king)
       &&
@@ -256,7 +230,7 @@ class Board {
     &&
       this._checkPawnsPlacementLegal(allPieces)
     &&
-      this._checkEnPassantSquareLegal()
+      (new BoardEnPassantSquareValidator(this._enPassantSquare)).isLegal
     );
   }
 
