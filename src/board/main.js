@@ -20,7 +20,9 @@ const { MovesCounter, FiftyMovesRuleCounter } = require('./counters');
 const { FENData, FENDataCreator } = require('./fen');
 const { BoardInitialPosition, BoardInitialCastle, BoardInitial } = require('./initial');
 const { BoardSquares } = require('./squares');
-const { BoardEnPassantSquareValidator, BoardPiecesCountValidator } = require('./validators');
+const {
+  BoardEnPassantSquareValidator, BoardPiecesCountValidator, BoardPawnsPlacementValidator,
+} = require('./validators');
 const { Piece, Pawn, Knight, Bishop, Rook, Queen, King } = require('../pieces/main');
 const { Relation } = require('../relations');
 
@@ -173,15 +175,6 @@ class Board {
     this._enPassantSquare = null;
   }
 
-  _checkPawnsPlacementLegal(allPieces) {
-    /*
-    Params:
-      allPieces {Array of Piece subclasses}.
-    */
-
-    return allPieces.filter(p => p.isPawn && (p.square.onEdge.up || p.square.onEdge.down)).length == 0;
-  }
-
   _checkKingPlacementLegal(king) {
     /*
     Params:
@@ -228,7 +221,7 @@ class Board {
     this._positionIsLegal = (
       this._positionIsLegal
     &&
-      this._checkPawnsPlacementLegal(allPieces)
+      (new BoardPawnsPlacementValidator(allPieces)).isLegal
     &&
       (new BoardEnPassantSquareValidator(this._enPassantSquare)).isLegal
     );

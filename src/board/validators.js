@@ -126,7 +126,21 @@ class BoardPiecesCountValidator {
 }
 
 
+/** Pawns placement validator. */
+class BoardPawnsPlacementValidator {
+
+  /**
+   * Creation.
+   * @param {Piece[]} pieces - Board pieces.
+   */
+  constructor(pieces) {
+    this.isLegal = pieces.filter(p => p.isPawn && (p.square.onEdge.up || p.square.onEdge.down)).length == 0;
+  }
+}
+
+
 module.exports = {
   BoardEnPassantSquareValidator: BoardEnPassantSquareValidator,
   BoardPiecesCountValidator: BoardPiecesCountValidator,
+  BoardPawnsPlacementValidator: BoardPawnsPlacementValidator,
 };
