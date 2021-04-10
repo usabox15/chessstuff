@@ -16,7 +16,7 @@ limitations under the License.
 
 
 const { Piece } = require('../pieces/main');
-
+const { Relation } = require('../relations');
 
 /** En passant square placement validator. */
 class BoardEnPassantSquareValidator {
@@ -139,8 +139,26 @@ class BoardPawnsPlacementValidator {
 }
 
 
+/** King placement validator. */
+class BoardKingPlacementValidator {
+
+ /**
+   * Creation.
+   * @param {King} king - King piece.
+   */
+  constructor(king) {
+    this.isLegal = (
+      !king.squares[Relation.ATTACK]
+    ||
+      king.squares[Relation.ATTACK].filter(s => s.piece.isKing).length == 0
+    );
+  }
+}
+
+
 module.exports = {
   BoardEnPassantSquareValidator: BoardEnPassantSquareValidator,
   BoardPiecesCountValidator: BoardPiecesCountValidator,
   BoardPawnsPlacementValidator: BoardPawnsPlacementValidator,
+  BoardKingPlacementValidator: BoardKingPlacementValidator,
 };

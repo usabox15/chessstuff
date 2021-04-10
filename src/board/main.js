@@ -22,6 +22,7 @@ const { BoardInitialPosition, BoardInitialCastle, BoardInitial } = require('./in
 const { BoardSquares } = require('./squares');
 const {
   BoardEnPassantSquareValidator, BoardPiecesCountValidator, BoardPawnsPlacementValidator,
+  BoardKingPlacementValidator,
 } = require('./validators');
 const { Piece, Pawn, Knight, Bishop, Rook, Queen, King } = require('../pieces/main');
 const { Relation } = require('../relations');
@@ -175,19 +176,6 @@ class Board {
     this._enPassantSquare = null;
   }
 
-  _checkKingPlacementLegal(king) {
-    /*
-    Params:
-      king {King}.
-    */
-
-    return (
-      !king.squares[Relation.ATTACK]
-    ||
-      king.squares[Relation.ATTACK].filter(s => s.piece.isKing).length == 0
-    );
-  }
-
   _checkCheckersLegal(king, beforeMove) {
     /*
     Params:
@@ -212,7 +200,7 @@ class Board {
       this._positionIsLegal = this._positionIsLegal && (
         (new BoardPiecesCountValidator(allPieces, color)).isLegal
       &&
-        this._checkKingPlacementLegal(king)
+        (new BoardKingPlacementValidator(king)).isLegal
       &&
         this._checkCheckersLegal(king, beforeMove)
       );
