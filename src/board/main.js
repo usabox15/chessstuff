@@ -22,7 +22,7 @@ const { BoardInitialPosition, BoardInitialCastle, BoardInitial } = require('./in
 const { BoardSquares } = require('./squares');
 const {
   BoardEnPassantSquareValidator, BoardPiecesCountValidator, BoardPawnsPlacementValidator,
-  BoardKingPlacementValidator,
+  BoardKingPlacementValidator, BoardInsufficientMaterialPiecesValidator,
 } = require('./validators');
 const { Piece, Pawn, Knight, Bishop, Rook, Queen, King } = require('../pieces/main');
 const { Relation } = require('../relations');
@@ -109,20 +109,7 @@ class Board {
   }
 
   get insufficientMaterial() {
-    let allPieces = this.allPieces;
-    return this._positionIsLegal && !(
-      allPieces.filter(p => p.isPawn || p.isRook || p.isQueen).length > 0
-    ||
-      allPieces.filter(p => p.isKnight).length > 0
-      &&
-      allPieces.filter(p => p.isBishop).length > 0
-    ||
-      allPieces.filter(p => p.isKnight).length > 1
-    ||
-      allPieces.filter(p => p.isBishop && p.square.isLight).length > 0
-      &&
-      allPieces.filter(p => p.isBishop && !p.square.isLight).length > 0
-    );
+    return this._positionIsLegal && (new BoardInsufficientMaterialPiecesValidator(this.allPieces)).isLegal;
   }
 
   get state() {

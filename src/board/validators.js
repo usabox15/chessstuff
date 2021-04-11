@@ -156,9 +156,45 @@ class BoardKingPlacementValidator {
 }
 
 
+/** Insufficient material pieces validator. */
+class BoardInsufficientMaterialPiecesValidator {
+
+  /**
+   * Creation.
+   * @param {Piece[]} pieces - Board pieces.
+   */
+  constructor(pieces) {
+    this._pieces = pieces;
+    this.isLegal = (
+      this._checkPawnsAndRooksAndQueensCount()
+    &&
+      this._checkBishopsAndKnightsCount()
+    );
+  }
+
+  /** Check pawns and rooks and queens count. */
+  _checkPawnsAndRooksAndQueensCount() {
+    return this._pieces.filter(p => p.isPawn || p.isRook || p.isQueen).length == 0;
+  }
+
+  /** Check bishop and knights count. */
+  _checkBishopsAndKnightsCount() {
+    let lightPieces = this._pieces.filter(p => p.isBishop || p.isKnight);
+    return lightPieces.length < 2 || (
+      lightPieces.filter(p => p.isKnight) == 0
+    && (
+      lightPieces.filter(p => p.square.isLight).length == 0
+    ||
+      lightPieces.filter(p => !p.square.isLight).length == 0
+    ));
+  }
+}
+
+
 module.exports = {
   BoardEnPassantSquareValidator: BoardEnPassantSquareValidator,
   BoardPiecesCountValidator: BoardPiecesCountValidator,
   BoardPawnsPlacementValidator: BoardPawnsPlacementValidator,
   BoardKingPlacementValidator: BoardKingPlacementValidator,
+  BoardInsufficientMaterialPiecesValidator: BoardInsufficientMaterialPiecesValidator,
 };
