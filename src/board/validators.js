@@ -179,13 +179,13 @@ class BoardInsufficientMaterialPiecesValidator {
 
   /** Check bishop and knights count. */
   _checkBishopsAndKnightsCount() {
-    let lightPieces = this._pieces.filter(p => p.isBishop || p.isKnight);
-    return lightPieces.length < 2 || (
-      lightPieces.filter(p => p.isKnight) == 0
+    let minorPieces = this._pieces.filter(p => p.isBishop || p.isKnight);
+    return minorPieces.length < 2 || (
+      minorPieces.filter(p => p.isKnight) == 0
     && (
-      lightPieces.filter(p => p.square.isLight).length == 0
+      minorPieces.filter(p => p.square.isLight).length == 0
     ||
-      lightPieces.filter(p => !p.square.isLight).length == 0
+      minorPieces.filter(p => !p.square.isLight).length == 0
     ));
   }
 }

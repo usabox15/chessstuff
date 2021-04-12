@@ -101,11 +101,7 @@ class Board {
   }
 
   get allPieces() {
-    let pieces = [];
-    for (let square of Object.values(this._squares.occupied)) {
-      pieces.push(square.piece);
-    }
-    return pieces;
+    return Object.values(this._squares.occupied).map(s => s.piece);
   }
 
   get insufficientMaterial() {
@@ -163,15 +159,16 @@ class Board {
     this._enPassantSquare = null;
   }
 
+  /**
+   * Check king checkers legal.
+   * @param {King} king - King.
+   * @param {boolean} beforeMove - Whether check before move or not.
+   * @return {boolean} Whether king checkers legal or not.
+   */
   _checkCheckersLegal(king, beforeMove) {
-    /*
-    Params:
-      king {King};
-      beforeMove {boolean} whether check before move or after.
-    */
-
-    let kingColor = beforeMove ? this._colors.current : this._colors.opponent;
-    return king.checkers.isLegal && (!king.checkers.exist || king.hasColor(kingColor));
+    return king.checkers.isLegal && (!king.checkers.exist || king.hasColor(
+      beforeMove ? this._colors.current : this._colors.opponent
+    ));
   }
 
   _checkPositionIsLegal(beforeMove=true) {
@@ -184,7 +181,7 @@ class Board {
     let allPieces = this.allPieces;
     for (let color of Piece.ALL_COLORS) {
       let king = this.kings[color];
-      this._positionIsLegal = this._positionIsLegal && (
+      this._positionIsLegal = (
         (new BoardPiecesCountValidator(allPieces, color)).isLegal
       &&
         (new BoardKingPlacementValidator(king)).isLegal
@@ -194,8 +191,6 @@ class Board {
       if (!this._positionIsLegal) return;
     }
     this._positionIsLegal = (
-      this._positionIsLegal
-    &&
       (new BoardPawnsPlacementValidator(allPieces)).isLegal
     &&
       (new BoardEnPassantSquareValidator(this._enPassantSquare)).isLegal
