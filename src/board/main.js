@@ -28,6 +28,56 @@ const { Piece, Pawn, Knight, Bishop, Rook, Queen, King } = require('../pieces/ma
 const { Relation } = require('../relations');
 
 
+/** Board transformation class. */
+class BoardTransformation {
+
+  /** Creation. */
+  constructor() {
+    this.refreshSquareNames();
+  }
+
+  /**
+   * Transformation from square name.
+   * @return {string|null} Square name or null.
+   */
+  get fromSquareName() {
+    return this._fromSquareName;
+  }
+
+  /**
+   * Transformation to square name.
+   * @return {string|null} Square name or null.
+   */
+  get toSquareName() {
+    return this._toSquareName;
+  }
+
+  /**
+   * Get whether transformation enable or not.
+   * @return {boolean} Whether transformation enable or not.
+   */
+  get on() {
+    return this.fromSquareName !== null && this.toSquareName !== null;
+  }
+
+  /**
+   * Set squares.
+   * @param {string} fromSquareName - Transformation from square.
+   * @param {string} toSquareName - Transformation to square.
+   */
+  setSquaresNames(fromSquareName, toSquareName) {
+    this._fromSquareName = fromSquareName;
+    this._toSquareName = toSquareName;
+  }
+
+  /** Refresh squares. */
+  refreshSquareNames() {
+    this._fromSquareName = null;
+    this._toSquareName = null;
+  }
+}
+
+
 class Board {
   // Chess board class.
 
@@ -51,7 +101,7 @@ class Board {
 
     this._squares = new BoardSquares(this);
     this._result = null;
-    this._transformation = null;
+    this._transformation = new BoardTransformation;
     this._setKingsInitial();
     this._positionIsLegal = false;
     this._positionIsSetted = false;
@@ -141,42 +191,28 @@ class Board {
     this._result = [whitePoints, blackPoints];
   }
 
-  _setTransformation(fromSquareName, toSquareName) {
-    /*
-    Params:
-      fromSquareName {string};
-      toSquareName {string}.
-    */
-
-    this._transformation = {
-      fromSquareName: fromSquareName,
-      toSquareName: toSquareName
-    };
-  }
-
   _refreshState() {
-    this._transformation = null;
+    this._transformation.refreshSquareNames();
     this._enPassantSquare = null;
   }
 
   /**
-   * Check king checkers legal.
+   * Check king checkers is legal.
    * @param {King} king - King.
-   * @param {boolean} beforeMove - Whether check before move or not.
+   * @param {boolean} afterMove - Whether check after move or not.
    * @return {boolean} Whether king checkers legal or not.
    */
-  _checkCheckersLegal(king, beforeMove) {
+  _checkCheckersIsLegal(king, afterMove) {
     return king.checkers.isLegal && (!king.checkers.exist || king.hasColor(
-      beforeMove ? this._colors.current : this._colors.opponent
+      afterMove ? this._colors.opponent : this._colors.current
     ));
   }
 
-  _checkPositionIsLegal(beforeMove=true) {
-    /*
-    Params:
-      beforeMove {boolean} whether check before move or after.
-    */
-
+  /**
+   * Check position is legal.
+   * @param {boolean} [afterMove=false] - Whether check after move or not.
+   */
+  _checkPositionIsLegal(afterMove=false) {
     this._positionIsLegal = true;
     let allPieces = this.allPieces;
     for (let color of Piece.ALL_COLORS) {
@@ -186,7 +222,7 @@ class Board {
       &&
         (new BoardKingPlacementValidator(king)).isLegal
       &&
-        this._checkCheckersLegal(king, beforeMove)
+        this._checkCheckersIsLegal(king, afterMove)
       );
       if (!this._positionIsLegal) return;
     }
@@ -403,7 +439,7 @@ class Board {
   }
 
   _moveEnd() {
-    this.refreshAllSquares(false);
+    this.refreshAllSquares(true);
     if (!this._positionIsLegal) {
       this._rollBack();
       return this._response("The position would be illegal after that.", false);
@@ -449,12 +485,12 @@ class Board {
     return this._response("Success!");
   }
 
-  refreshAllSquares(beforeMove=true) {
-    /*
-    Params:
-      beforeMove {boolean} whether check before move or after.
-    */
-
+  /**
+   * Refresh all squares.
+   * @param {boolean} [afterMove=false] - whether refresh after move or not.
+   * @return {Object} Response.
+   */
+  refreshAllSquares(afterMove=false) {
     for (let piece of this.allPieces) {
       piece.setInitState();
     }
@@ -468,7 +504,7 @@ class Board {
       piece.getSquares();
     }
 
-    this._checkPositionIsLegal(beforeMove);
+    this._checkPositionIsLegal(afterMove);
 
     let oppColor;
     let firstPriority;
@@ -619,7 +655,7 @@ class Board {
     if (this._result) return this._response("The result is already reached.", false);
     this._checkPositionIsLegal();
     if (!this._positionIsLegal) return this._response("The position isn't legal.", false);
-    if (!this.transformation) return this._response("There isn't transformation.", false);
+    if (!this.transformation.on) return this._response("There isn't transformation.", false);
 
     this._placePiece(this._colors.current, kind, this.transformation.toSquareName);
     this._removePiece(this.transformation.fromSquareName);
@@ -664,7 +700,7 @@ class Board {
     }
     else if (piece.isPawn) {
       if (toSquare.onEdge.up || toSquare.onEdge.down) {
-        this._setTransformation(from, to);
+        this._transformation.setSquaresNames(from, to);
         return this._response(`Pawn is ready to transform on ${to} square.`, true, true);
       }
       this._enPassantMatter(fromSquare, toSquare, piece);

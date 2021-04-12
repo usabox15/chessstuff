@@ -476,7 +476,7 @@ class Square {
       let positionIsSetted = (
         this.board.positionIsSetted
       &&
-        (!this.board.transformation || this.name.value != this.board.transformation.toSquareName)
+        (!this.board.transformation.on || this.name.value != this.board.transformation.toSquareName)
       );
       if (positionIsSetted) {
         throw Error('Board position is already setted.');
