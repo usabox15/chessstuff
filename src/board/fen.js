@@ -132,14 +132,10 @@ class FENDataCreator {
    */
   _getCastleRightsData() {
     let data = [];
-    for (let color of Piece.ALL_COLORS) {
-      let king = this._board.kings[color];
-      if (king) {
-        for (let side of KingCastleRoad.ALL_SIDES) {
-          if (king.castle[side]) {
-            data.push(this.#castleRights[color][side]);
-          }
-        }
+    for (let king of this._board.kings) {
+      for (let side of KingCastleRoad.ALL_SIDES) {
+        if (!king.castle[side]) continue;
+        data.push(this.#castleRights[king.color][side]);
       }
     }
     return data.join('') || '-';

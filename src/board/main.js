@@ -78,6 +78,40 @@ class BoardTransformation {
 }
 
 
+/** Board kings class. */
+class BoardKings {
+
+  /** Creation. */
+  constructor() {
+    for (let color of Piece.ALL_COLORS) {
+      this[color] = null;
+    }
+  }
+
+  /**
+   * Items iterator.
+   * @yield {King} King instance.
+   */
+  *[Symbol.iterator]() {
+    for (let color of Piece.ALL_COLORS) {
+      if (!this[color]) continue;
+      yield this[color];
+    }
+  }
+
+  /**
+   * Set item.
+   * @param {King} king - King instance.
+   */
+  setItem(king) {
+    if (!(king instanceof King)) {
+      throw Error('King instance expected.');
+    }
+    this[king.color] = king;
+  }
+}
+
+
 class Board {
   // Chess board class.
 
@@ -102,7 +136,7 @@ class Board {
     this._squares = new BoardSquares(this);
     this._result = null;
     this._transformation = new BoardTransformation;
-    this._setKingsInitial();
+    this._kings = new BoardKings;
     this._positionIsLegal = false;
     this._positionIsSetted = false;
     this._colors = null;
@@ -177,10 +211,6 @@ class Board {
     this._setPosition(initialData.position);
   }
 
-  _setKingsInitial() {
-    this._kings = {[Piece.WHITE]: null, [Piece.BLACK]: null};
-  }
-
   _setResult(whitePoints, blackPoints) {
     /*
     Params:
@@ -216,7 +246,7 @@ class Board {
     this._positionIsLegal = true;
     let allPieces = this.allPieces;
     for (let color of Piece.ALL_COLORS) {
-      let king = this.kings[color];
+      let king = this._kings[color];
       this._positionIsLegal = (
         (new BoardPiecesCountValidator(allPieces, color)).isLegal
       &&
@@ -336,10 +366,8 @@ class Board {
       };
     }
     this._initialCastleRights = castleRights;
-    for (let king of Object.values(this.kings)) {
-      if (king) {
-        king.setCastle(castleRights[king.color]);
-      }
+    for (let king of this._kings) {
+      king.setCastle(castleRights[king.color]);
     }
     return {success: true};
   }
@@ -427,7 +455,7 @@ class Board {
     // Roll position back to latest setted position
 
     this._positionIsSetted = false;
-    this._setKingsInitial();
+    this._kings = new BoardKings;
     this._init(this._latestFEN);
   }
 
@@ -474,10 +502,10 @@ class Board {
     if (!king.isKing) {
       throw Error(`Piece need to be a king not ${king.kind}.`);
     }
-    if (this.kings[king.color]) {
+    if (this._kings[king.color]) {
       throw Error(`${king.color} king is already exists on this board.`);
     }
-    this.kings[king.color] = king;
+    this._kings.setItem(king);
     if (this._initialCastleRights && this._initialCastleRights[king.color]) {
       king.setCastle(this._initialCastleRights[king.color]);
     }
