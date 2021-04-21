@@ -112,6 +112,38 @@ class BoardKings {
 }
 
 
+/** Board result class. */
+class BoardResult {
+
+  static VALUES_CHOICES = [0, 0.5, 1];
+
+  /** Creation. */
+  constructor() {
+    this._value = null;
+  }
+
+  /**
+   * Value.
+   * @return {null|float[]|integer[]} Value.
+   */
+  get value() {
+    return this._value;
+  }
+
+  /**
+   * Set value.
+   * @param {float|integer} whitePoints - White side points.
+   * @param {float|integer} blackPoints - Black side points.
+   */
+  setValue(whitePoints, blackPoints) {
+    if (!BoardResult.VALUES_CHOICES.includes(whitePoints) || !BoardResult.VALUES_CHOICES.includes(blackPoints)) {
+      throw Error(`Wrong points value. Try one of ${BoardResult.VALUES_CHOICES}.`);
+    }
+    this._value = [whitePoints, blackPoints];
+  }
+}
+
+
 class Board {
   // Chess board class.
 
@@ -134,7 +166,7 @@ class Board {
     */
 
     this._squares = new BoardSquares(this);
-    this._result = null;
+    this._result = new BoardResult;
     this._transformation = new BoardTransformation;
     this._kings = new BoardKings;
     this._positionIsLegal = false;
@@ -197,7 +229,7 @@ class Board {
       positionIsLegal: this._positionIsLegal,
       FEN: this.FEN,
       insufficientMaterial: this.insufficientMaterial,
-      result: this._result
+      result: this._result.value
     }
   }
 
@@ -209,16 +241,6 @@ class Board {
     this._setFiftyMovesRuleCounter(initialData.fiftyMovesRuleCounter);
     this._setMovesCounter(initialData.movesCounter);
     this._setPosition(initialData.position);
-  }
-
-  _setResult(whitePoints, blackPoints) {
-    /*
-    Params:
-      whitePoints {number} 0 || 0.5 || 1;
-      blackPoints {number} 0 || 0.5 || 1.
-    */
-
-    this._result = [whitePoints, blackPoints];
   }
 
   _refreshState() {
@@ -557,16 +579,16 @@ class Board {
           piece.getCheck(checker, betweenSquares);
           if (!piece.stuck) noMoves = false;
         }
-        if (noMoves) this._setResult(secondPriority, firstPriority);
+        if (noMoves) this._result.setValue(secondPriority, firstPriority);
       }
       else if (oppKing.checkers.several) {
         for (let piece of this.allPieces.filter(p => p.sameColor(oppKing) && !p.isKing)) {
           piece.getTotalImmobilize();
         }
-        if (oppKing.stuck) this._setResult(secondPriority, firstPriority);
+        if (oppKing.stuck) this._result.setValue(secondPriority, firstPriority);
       }
       else if (this.insufficientMaterial) {
-        this._setResult(0.5, 0.5);
+        this._result.setValue(0.5, 0.5);
       }
       else {
         let noMoves = true;
@@ -576,7 +598,7 @@ class Board {
             break;
           }
         }
-        if (noMoves) this._setResult(0.5, 0.5);
+        if (noMoves) this._result.setValue(0.5, 0.5);
       }
     }
 
@@ -680,7 +702,7 @@ class Board {
     */
 
     if (!this._positionIsSetted) return this._response("The position isn't setted.", false);
-    if (this._result) return this._response("The result is already reached.", false);
+    if (this._result.value) return this._response("The result is already reached.", false);
     this._checkPositionIsLegal();
     if (!this._positionIsLegal) return this._response("The position isn't legal.", false);
     if (!this.transformation.on) return this._response("There isn't transformation.", false);
@@ -701,7 +723,7 @@ class Board {
     */
 
     if (!this._positionIsSetted) return this._response("The position isn't setted.", false);
-    if (this._result) return this._response("The result is already reached.", false);
+    if (this._result.value) return this._response("The result is already reached.", false);
     this._checkPositionIsLegal();
     if (!this._positionIsLegal) return this._response("The position isn't legal.", false);
 

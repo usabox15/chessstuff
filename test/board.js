@@ -356,7 +356,7 @@ describe('Test board', function () {
 
       assert.equal(board.allPieces.length, 0);
       assert.equal(board.colors.current, Piece.WHITE);
-      assert.equal(board._result, null);
+      assert.equal(board._result.value, null);
       assert.equal(board.enPassantSquare, null);
       assert.equal(board._latestFEN, Board.EMPTY_FEN);
       assert.ok(!board._positionIsLegal);
@@ -377,7 +377,7 @@ describe('Test board', function () {
 
       assert.equal(board.allPieces.length, 32);
       assert.equal(board.colors.current, Piece.WHITE);
-      assert.equal(board._result, null);
+      assert.equal(board._result.value, null);
       assert.equal(board.enPassantSquare, null);
       assert.equal(board._latestFEN, Board.INITIAL_FEN);
       assert.ok(board._positionIsLegal);
@@ -399,7 +399,7 @@ describe('Test board', function () {
 
       assert.equal(board.allPieces.length, 25);
       assert.equal(board.colors.current, Piece.BLACK);
-      assert.equal(board._result, null);
+      assert.equal(board._result.value, null);
       assert.ok(board.enPassantSquare.theSame(board.squares.e3));
       assert.equal(board._latestFEN, fenString);
       assert.ok(board._positionIsLegal);
