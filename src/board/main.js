@@ -144,8 +144,8 @@ class BoardResult {
 }
 
 
+/** Chess board class. */
 class Board {
-  // Chess board class.
 
   static EMPTY_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
   static INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -159,12 +159,11 @@ class Board {
     [Piece.KING]: King,
   };
 
+  /**
+   * Creation.
+   * @param {string} [FEN=Board.EMPTY_FEN] - FEN data string.
+   */
   constructor(FEN=Board.EMPTY_FEN) {
-    /*
-    Params:
-      FEN {string} - FEN data string, not required.
-    */
-
     this._squares = new BoardSquares(this);
     this._result = new BoardResult;
     this._transformation = new BoardTransformation;
@@ -229,10 +228,12 @@ class Board {
       positionIsLegal: this._positionIsLegal,
       FEN: this.FEN,
       insufficientMaterial: this.insufficientMaterial,
+      transformation: this._transformation.on,
       result: this._result.value
     }
   }
 
+  /** Initialize. */
   _init(FEN) {
     let initialData = new BoardInitial(new FENData(FEN));
     this._setCurrentColor(initialData.currentColor);
@@ -243,6 +244,7 @@ class Board {
     this._setPosition(initialData.position);
   }
 
+  /** Refresh state. */
   _refreshState() {
     this._transformation.refreshSquareNames();
     this._enPassantSquare = null;
@@ -285,39 +287,37 @@ class Board {
     );
   }
 
+  /**
+   * Place piece.
+   * @param {string} color - Piece color (one of Piece.ALL_COLORS).
+   * @param {string} kind - Piece kind (one of Piece.ALL_KINDS).
+   * @param {string} squareName - Name of a square piece place to.
+   */
   _placePiece(color, kind, squareName) {
-    /*
-    Params:
-      color {string} one of Piece.ALL_COLORS;
-      kind {string} one of Piece.ALL_KINDS;
-      squareName {string}.
-    */
-
     new this.#piecesBox[kind](color, this._squares[squareName], false);
   }
 
+  /**
+   * Remove piece.
+   * @param {string} squareName - Name of a square piece place to.
+   */
   _removePiece(squareName) {
-    /*
-    Params:
-      squareName {string}.
-    */
-
     this._squares[squareName].removePiece(false);
   }
 
+  /**
+   * Replace piece.
+   * @param {string} fromSquareName - Name of a square piece replacing from.
+   * @param {string} toSquareName - Name of a square piece replacing to.
+   * @param {Piece} piece - Piece instance.
+   * @param {boolean} [refresh=true] - Whether need to refresh board or not.
+   */
   _replacePiece(fromSquare, toSquare, piece, refresh=true) {
-    /*
-    Params:
-      fromSquareName {string};
-      toSquareName {string};
-      piece {Piece subclass};
-      refresh {boolean} - whether need to refresh board after piece has been placed or not.
-    */
-
     fromSquare.removePiece(false);
     piece.getPlace(toSquare, refresh);
   }
 
+  /** Mark position as setted. */
   _markPositionAsSetted() {
     this.refreshAllSquares();
     if (!this._positionIsLegal) {
@@ -497,21 +497,18 @@ class Board {
     this._colors.changePriority();
     this._updateCounters();
     this._latestFEN = this.FEN;
-    return this._response("Success!");
+    return this._response();
   }
 
-  _response(description, success=true, transformation=false) {
-    /*
-    Params:
-      description {string};
-      success {boolean};
-      transformation {boolean} - whether there is pawn transformation time or not.
-    */
-
+  /**
+   * Response.
+   * @param {string} [description=""] - Description.
+   * @param {boolean} [success=true] - Whether responce is successfull or not.
+   */
+  _response(description="", success=true) {
     return Object.assign(this.state, {
       description: description,
       success: success,
-      transformation: transformation,
     });
   }
 
@@ -532,7 +529,7 @@ class Board {
       king.setCastle(this._initialCastleRights[king.color]);
     }
 
-    return this._response("Success!");
+    return this._response();
   }
 
   /**
@@ -602,7 +599,7 @@ class Board {
       }
     }
 
-    return this._response("Success!");
+    return this._response();
   }
 
   markPositionAsSetted() {
@@ -621,7 +618,7 @@ class Board {
     */
 
     this._placePiece(color, kind, squareName);
-    return this._response("Successfully placed!");
+    return this._response();
   }
 
   removePiece(squareName) {
@@ -632,13 +629,13 @@ class Board {
     */
 
     this._removePiece(squareName);
-    return this._response("Successfully removed!");
+    return this._response();
   }
 
   setPosition(positionData) {
     /*
     Params:
-      positionData {booleBoardInitialPositionan}.
+      positionData {BoardInitialPosition}.
     Decorators: handleSetBoardDataMethodResponse.
     */
 
@@ -705,10 +702,10 @@ class Board {
     if (this._result.value) return this._response("The result is already reached.", false);
     this._checkPositionIsLegal();
     if (!this._positionIsLegal) return this._response("The position isn't legal.", false);
-    if (!this.transformation.on) return this._response("There isn't transformation.", false);
+    if (!this._transformation.on) return this._response("There isn't transformation.", false);
 
-    this._placePiece(this._colors.current, kind, this.transformation.toSquareName);
-    this._removePiece(this.transformation.fromSquareName);
+    this._placePiece(this._colors.current, kind, this._transformation.toSquareName);
+    this._removePiece(this._transformation.fromSquareName);
     this._refreshState();
     this._fiftyMovesRuleCounter.switch();
     return this._moveEnd();
@@ -751,7 +748,7 @@ class Board {
     else if (piece.isPawn) {
       if (toSquare.onEdge.up || toSquare.onEdge.down) {
         this._transformation.setSquaresNames(from, to);
-        return this._response(`Pawn is ready to transform on ${to} square.`, true, true);
+        return this._response(`Pawn is ready to transform on ${to} square.`);
       }
       this._enPassantMatter(fromSquare, toSquare, piece);
     }
@@ -835,7 +832,7 @@ function handleSetBoardDataMethodResponse(setBoardDataMethod) {
   function wrapper(...args) {
     let result = setBoardDataMethod.call(this, ...args);
     if (!result.success) return this._response(result.description, false);
-    return this._response("Success!");
+    return this._response();
   }
   return wrapper;
 }
