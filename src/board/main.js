@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 
+const { BoardTransformation, BoardKings, BoardResult } = require('./base');
 const { BoardColors } = require('./colors');
 const { MovesCounter, FiftyMovesRuleCounter } = require('./counters');
 const { FENData, FENDataCreator } = require('./fen');
@@ -26,122 +27,6 @@ const {
 } = require('./validators');
 const { Piece, Pawn, Knight, Bishop, Rook, Queen, King } = require('../pieces/main');
 const { Relation } = require('../relations');
-
-
-/** Board transformation class. */
-class BoardTransformation {
-
-  /** Creation. */
-  constructor() {
-    this.refreshSquareNames();
-  }
-
-  /**
-   * Transformation from square name.
-   * @return {string|null} Square name or null.
-   */
-  get fromSquareName() {
-    return this._fromSquareName;
-  }
-
-  /**
-   * Transformation to square name.
-   * @return {string|null} Square name or null.
-   */
-  get toSquareName() {
-    return this._toSquareName;
-  }
-
-  /**
-   * Get whether transformation enable or not.
-   * @return {boolean} Whether transformation enable or not.
-   */
-  get on() {
-    return this.fromSquareName !== null && this.toSquareName !== null;
-  }
-
-  /**
-   * Set squares.
-   * @param {string} fromSquareName - Transformation from square.
-   * @param {string} toSquareName - Transformation to square.
-   */
-  setSquaresNames(fromSquareName, toSquareName) {
-    this._fromSquareName = fromSquareName;
-    this._toSquareName = toSquareName;
-  }
-
-  /** Refresh squares. */
-  refreshSquareNames() {
-    this._fromSquareName = null;
-    this._toSquareName = null;
-  }
-}
-
-
-/** Board kings class. */
-class BoardKings {
-
-  /** Creation. */
-  constructor() {
-    for (let color of Piece.ALL_COLORS) {
-      this[color] = null;
-    }
-  }
-
-  /**
-   * Items iterator.
-   * @yield {King} King instance.
-   */
-  *[Symbol.iterator]() {
-    for (let color of Piece.ALL_COLORS) {
-      if (!this[color]) continue;
-      yield this[color];
-    }
-  }
-
-  /**
-   * Set item.
-   * @param {King} king - King instance.
-   */
-  setItem(king) {
-    if (!(king instanceof King)) {
-      throw Error('King instance expected.');
-    }
-    this[king.color] = king;
-  }
-}
-
-
-/** Board result class. */
-class BoardResult {
-
-  static VALUES_CHOICES = [0, 0.5, 1];
-
-  /** Creation. */
-  constructor() {
-    this._value = null;
-  }
-
-  /**
-   * Value.
-   * @return {null|float[]|integer[]} Value.
-   */
-  get value() {
-    return this._value;
-  }
-
-  /**
-   * Set value.
-   * @param {float|integer} whitePoints - White side points.
-   * @param {float|integer} blackPoints - Black side points.
-   */
-  setValue(whitePoints, blackPoints) {
-    if (!BoardResult.VALUES_CHOICES.includes(whitePoints) || !BoardResult.VALUES_CHOICES.includes(blackPoints)) {
-      throw Error(`Wrong points value. Try one of ${BoardResult.VALUES_CHOICES}.`);
-    }
-    this._value = [whitePoints, blackPoints];
-  }
-}
 
 
 /** Chess board class. */
@@ -512,23 +397,15 @@ class Board {
     });
   }
 
+  /**
+   * Place King.
+   * @param {King} king - King instance.
+   */
   placeKing(king) {
-    /*
-    Params:
-      king {King}.
-    */
-
-    if (!king.isKing) {
-      throw Error(`Piece need to be a king not ${king.kind}.`);
-    }
-    if (this._kings[king.color]) {
-      throw Error(`${king.color} king is already exists on this board.`);
-    }
     this._kings.setItem(king);
     if (this._initialCastleRights && this._initialCastleRights[king.color]) {
       king.setCastle(this._initialCastleRights[king.color]);
     }
-
     return this._response();
   }
 
