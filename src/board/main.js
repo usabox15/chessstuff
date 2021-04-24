@@ -216,14 +216,27 @@ class Board {
     return {success: true};
   }
 
-  _setPosition(positionData) {
-    /*
-    Params:
-      positionData {booleBoardInitialPositionan}.
-    Decorators: checkPositionIsSetted.
-    */
+  _responsePositionAlreadySetted() {
+    return {
+      success: false,
+      description: "Position has been already setted."
+    };
+  }
 
-    if (!positionData instanceof BoardInitialPosition) {
+  _responseCounterCountNotNumber() {
+    return {
+      success: false,
+      description: 'Count need to be an number.'
+    };
+  }
+
+  /**
+   * Set position.
+   * @param {BoardInitialPosition} positionData - Board position data.
+   */
+  _setPosition(positionData) {
+    if (this._positionIsSetted) return this._responsePositionAlreadySetted();
+    if (!(positionData instanceof BoardInitialPosition)) {
       return {
         success: false,
         description: "Position data has to be an instance of BoardInitialPosition."
@@ -245,10 +258,9 @@ class Board {
   /**
    * Set current color.
    * @param {string} color - one of Piece.ALL_COLORS.
-   *
-   * Decorators: checkPositionIsSetted.
    */
   _setCurrentColor(color) {
+    if (this._positionIsSetted) return this._responsePositionAlreadySetted();
     try {
       this._colors.setCurrent(color);
     } catch (err) {
@@ -261,9 +273,9 @@ class Board {
     /*
     Params:
       castleRights {BoardInitialCastle}.
-    Decorators: checkPositionIsSetted.
     */
 
+    if (this._positionIsSetted) return this._responsePositionAlreadySetted();
     if (!castleRights instanceof BoardInitialCastle) {
       return {
         success: false,
@@ -281,9 +293,9 @@ class Board {
     /*
     Params:
       squareName {string}.
-    Decorators: checkPositionIsSetted.
     */
 
+    if (this._positionIsSetted) return this._responsePositionAlreadySetted();
     if (squareName) {
       let allSaquaresNames = Object.keys(this.squares);
       if (!allSaquaresNames.includes(squareName)) {
@@ -303,9 +315,10 @@ class Board {
     /*
     Params:
       count {number}.
-    Decorators: checkPositionIsSetted, checkCounterArgument.
     */
 
+    if (this._positionIsSetted) return this._responsePositionAlreadySetted();
+    if (typeof count != 'number') return this._responseCounterCountNotNumber();
     this._fiftyMovesRuleCounter = new FiftyMovesRuleCounter(count);
     return {success: true};
   }
@@ -314,9 +327,10 @@ class Board {
     /*
     Params:
       count {number}.
-    Decorators: checkPositionIsSetted, checkCounterArgument.
     */
 
+    if (this._positionIsSetted) return this._responsePositionAlreadySetted();
+    if (typeof count != 'number') return this._responseCounterCountNotNumber();
     this._movesCounter = new MovesCounter(count);
     return {success: true};
   }
@@ -477,10 +491,23 @@ class Board {
     return this._response();
   }
 
-  markPositionAsSetted() {
-    // Decorators: handleSetBoardDataMethodResponse.
+  /**
+   * Response by result.
+   * @param {Object} result - Result to response with.
+   * @param {string} [result.description=''] - Result description.
+   * @param {boolean} result.success - Whether result is successfull or not.
+   * @return {Object} Board response.
+   */
+  _responseByResult(result) {
+    return this._response(result.description || '', result.success);
+  }
 
-    return this._markPositionAsSetted();
+  /**
+   * Mark position as setted.
+   * @return {Object} Board response.
+   */
+  markPositionAsSetted() {
+    return this._responseByResult(this._markPositionAsSetted());
   }
 
   placePiece(color, kind, squareName) {
@@ -489,9 +516,9 @@ class Board {
       color {string} one of Piece.ALL_COLORS;
       kind {string} one of Piece.ALL_KINDS;
       squareName {string}.
-    Decorators: checkPositionIsSetted.
     */
 
+    if (this._positionIsSetted) return this._responsePositionAlreadySetted();
     this._placePiece(color, kind, squareName);
     return this._response();
   }
@@ -500,71 +527,65 @@ class Board {
     /*
     Params:
       squareName {string}.
-    Decorators: checkPositionIsSetted.
     */
 
+    if (this._positionIsSetted) return this._responsePositionAlreadySetted();
     this._removePiece(squareName);
     return this._response();
   }
 
+  /**
+   * Set position.
+   * @param {BoardInitialPosition} positionData - Board position data.
+   * @return {Object} Board response.
+   */
   setPosition(positionData) {
-    /*
-    Params:
-      positionData {BoardInitialPosition}.
-    Decorators: handleSetBoardDataMethodResponse.
-    */
-
-    return this._setPosition(positionData);
+    return this._responseByResult(this._setPosition(positionData));
   }
 
+  /**
+   * Set current color.
+   * @param {string} color - one of Piece.ALL_COLORS.
+   * @return {Object} Board response.
+   */
   setCurrentColor(color) {
-    /*
-    Params:
-      color {string} one of Piece.ALL_COLORS.
-    Decorators: handleSetBoardDataMethodResponse.
-    */
-
-    return this._setCurrentColor(color);
+    return this._responseByResult(this._setCurrentColor(color));
   }
 
+  /**
+   * Set castle rights.
+   * @param {BoardInitialCastle} castleRights - Board castle rights.
+   * @return {Object} Board response.
+   */
   setCastleRights(castleRights) {
-    /*
-    Params:
-      castleRights {BoardInitialCastle}.
-    Decorators: handleSetBoardDataMethodResponse.
-    */
-
-    return this._setCastleRights(castleRights);
+    return this._responseByResult(this._setCastleRights(castleRights));
   }
 
+  /**
+   * Set en passant square.
+   * @param {string} squareName - En passant square name.
+   * @return {Object} Board response.
+   */
   setEnPassantSquare(squareName) {
-    /*
-    Params:
-      squareName {string}.
-    Decorators: handleSetBoardDataMethodResponse.
-    */
-
-    return this._setEnPassantSquare(squareName);
+    return this._responseByResult(this._setEnPassantSquare(squareName));
   }
 
+  /**
+   * Set fifty moves rule counter.
+   * @param {integer} count - Fifty moves rule count.
+   * @return {Object} Board response.
+   */
   setFiftyMovesRuleCounter(count) {
-    /*
-    Params:
-      count {number}.
-    Decorators: handleSetBoardDataMethodResponse.
-    */
-
-    return this._setFiftyMovesRuleCounter(count);
+    return this._responseByResult(this._setFiftyMovesRuleCounter(count));
   }
 
+  /**
+   * Set moves counter.
+   * @param {integer} count - Moves count.
+   * @return {Object} Board response.
+   */
   setMovesCounter(count) {
-    /*
-    Params:
-      count {number}.
-    Decorators: handleSetBoardDataMethodResponse.
-    */
-
-    return this._setMovesCounter(count);
+    return this._responseByResult(this._setMovesCounter(count));
   }
 
   pawnTransformation(kind) {
@@ -636,92 +657,6 @@ class Board {
 
     if (refresh) return this._moveEnd();
   }
-}
-
-
-function checkPositionIsSetted(setBoardDataMethod) {
-  /*
-  Decorator to check whether board pisition is setted or not when set board data method is called.
-  Params:
-    setBoardDataMethod {string} - decorated method name.
-  */
-
-  function wrapper(...args) {
-    if (this._positionIsSetted) {
-      return {
-        success: false,
-        description: "Position has been already setted."
-      };
-    }
-    return setBoardDataMethod.call(this, ...args);
-  }
-  return wrapper;
-}
-let checkPositionIsSettedApplyFor = [
-  'placePiece',
-  'removePiece',
-  '_setPosition',
-  '_setCurrentColor',
-  '_setCastleRights',
-  '_setEnPassantSquare',
-  '_setFiftyMovesRuleCounter',
-  '_setMovesCounter'
-];
-for (let methodName of checkPositionIsSettedApplyFor) {
-  Board.prototype[methodName] = checkPositionIsSetted(Board.prototype[methodName]);
-}
-
-
-function checkCounterArgument(setBoardCounterMethod) {
-  /*
-  Decorator to check whether count argument is number or not when set board counter method is called.
-  Params:
-    setBoardCounterMethod {string} - decorated method name.
-  */
-
-  function wrapper(count) {
-    let countType = typeof count;
-    if (countType != 'number') {
-      return {
-        success: false,
-        description: `Count need to be an number. Not "${countType}".`
-      };
-    }
-    return setBoardCounterMethod.call(this, count);
-  }
-  return wrapper;
-}
-let checkCounterArgumentApplyFor = ['_setFiftyMovesRuleCounter', '_setMovesCounter'];
-for (let methodName of checkCounterArgumentApplyFor) {
-  Board.prototype[methodName] = checkPositionIsSetted(Board.prototype[methodName]);
-}
-
-
-function handleSetBoardDataMethodResponse(setBoardDataMethod) {
-  /*
-  Decorator to handle set board data method response.
-  Params:
-    handleSetBoardDataMethodResponse {string} - decorated method name.
-  */
-
-  function wrapper(...args) {
-    let result = setBoardDataMethod.call(this, ...args);
-    if (!result.success) return this._response(result.description, false);
-    return this._response();
-  }
-  return wrapper;
-}
-let handleSetBoardDataMethodResponseApplyFor = [
-  'markPositionAsSetted',
-  'setPosition',
-  'setCurrentColor',
-  'setCastleRights',
-  'setEnPassantSquare',
-  'setFiftyMovesRuleCounter',
-  'setMovesCounter'
-];
-for (let methodName of handleSetBoardDataMethodResponseApplyFor) {
-  Board.prototype[methodName] = checkPositionIsSetted(Board.prototype[methodName]);
 }
 
 
