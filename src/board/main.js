@@ -55,7 +55,7 @@ class Board {
     this._kings = new BoardKings;
     this._positionIsLegal = false;
     this._positionIsSetted = false;
-    this._colors = null;
+    this._colors = new BoardColors;
     this._initialCastleRights = null;
     this._enPassantSquare = null;
     this._fiftyMovesRuleCounter = null;
@@ -242,20 +242,18 @@ class Board {
     return this._markPositionAsSetted();
   }
 
+  /**
+   * Set current color.
+   * @param {string} color - one of Piece.ALL_COLORS.
+   *
+   * Decorators: checkPositionIsSetted.
+   */
   _setCurrentColor(color) {
-    /*
-    Params:
-      color {string} one of Piece.ALL_COLORS.
-    Decorators: checkPositionIsSetted.
-    */
-
-    if (!Piece.ALL_COLORS.includes(color)) {
-      return {
-        success: false,
-        description: `"${color}" is wrong color value. Try one of ${Piece.ALL_COLORS}.`
-      };
+    try {
+      this._colors.setCurrent(color);
+    } catch (err) {
+      return {success: false, description: err.message};
     }
-    this._colors = new BoardColors(color);
     return {success: true};
   }
 

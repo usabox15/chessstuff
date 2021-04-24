@@ -65,23 +65,26 @@ describe('Test board', function () {
 
   describe('Test BoardColors', function () {
     it('should throw error by wrong color', function () {
-      assert.throws(() => {new BoardColors('wrong color');});
+      let boardColors = new BoardColors;
+      assert.throws(() => {boardColors.setCurrent('wrong color');});
     });
 
-    it('should check initial', function () {
-      let boardColors = new BoardColors(Piece.WHITE);
+    it('should check set current', function () {
+      let boardColors = new BoardColors;
+      boardColors.setCurrent(Piece.WHITE);
       assert.equal(boardColors._priority.length, 2);
       assert.equal(boardColors._priority[0], 0);
       assert.equal(boardColors._priority[1], 1);
 
-      boardColors = new BoardColors(Piece.BLACK);
+      boardColors.setCurrent(Piece.BLACK);
       assert.equal(boardColors._priority.length, 2);
       assert.equal(boardColors._priority[0], 1);
       assert.equal(boardColors._priority[1], 0);
     });
 
     it('should check change priority', function () {
-      let boardColors = new BoardColors(Piece.WHITE);
+      let boardColors = new BoardColors;
+      boardColors.setCurrent(Piece.WHITE);
 
       assert.equal(boardColors.current, Piece.WHITE);
       assert.equal(boardColors.opponent, Piece.BLACK);

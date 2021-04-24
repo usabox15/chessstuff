@@ -27,31 +27,9 @@ class BoardColors {
   }
   #all = [Piece.WHITE, Piece.BLACK];
 
-  /**
-   * Creation.
-   * @param {string} currentColor - One of `Piece.ALL_COLORS`.
-   */
-  constructor(currentColor) {
-    if (!Piece.ALL_COLORS.includes(currentColor)) {
-      throw Error(`'${currentColor}' is wrong color value. Use any of Piece.ALL_COLORS.`);
-    }
-    this._priority = this.#priorities[currentColor];
-  }
-
-  /**
-   * Current color.
-   * @return {string} Color.
-   */
-  get current() {
-    return this.#all[this._priority[0]];
-  }
-
-  /**
-   * Opponent color.
-   * @return {string} Color.
-   */
-  get opponent() {
-    return this.#all[this._priority[1]];
+  /** Creation. */
+  constructor() {
+    this._priority = null;
   }
 
   /**
@@ -59,6 +37,7 @@ class BoardColors {
    * @return {intger} Index.
    */
   get firstPriority() {
+    this._checkWasSetted();
     return this._priority[0];
   }
 
@@ -67,12 +46,48 @@ class BoardColors {
    * @return {intger} Index.
    */
   get secondPriority() {
+    this._checkWasSetted();
     return this._priority[1];
+  }
+
+  /**
+   * Current color.
+   * @return {string} Color.
+   */
+  get current() {
+    
+    return this.#all[this.firstPriority];
+  }
+
+  /**
+   * Opponent color.
+   * @return {string|null} Color.
+   */
+  get opponent() {
+    return this.#all[this.secondPriority];
+  }
+
+  /** Check whether color was setted or not. */
+  _checkWasSetted() {
+    if (!this._priority) {
+      throw Error('Board color wasn\'t setted.');
+    }
+  }
+
+  /**
+   * Set current.
+   * @param {string} color - One of `Piece.ALL_COLORS`.
+   */
+  setCurrent(color) {
+    if (!Piece.ALL_COLORS.includes(color)) {
+      throw Error(`'${color}' is wrong color value. Use any of ${Piece.ALL_COLORS}.`);
+    }
+    this._priority = this.#priorities[color];
   }
 
   /** Change colors priority. */
   changePriority() {
-    this._priority = [this._priority[1], this._priority[0]]
+    this._priority = [this.secondPriority, this.firstPriority];
   }
 }
 
