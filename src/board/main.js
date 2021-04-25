@@ -207,20 +207,10 @@ class Board {
     this.refreshAllSquares();
     if (!this._positionIsLegal) {
       this._positionIsSetted = false;
-      return {
-        success: false,
-        description: "The position is illegal."
-      };
+      return this._responseFailAction("The position is illegal.");
     }
     this._positionIsSetted = true;
-    return {success: true};
-  }
-
-  _responsePositionAlreadySetted() {
-    return {
-      success: false,
-      description: "Position has been already setted."
-    };
+    return this._responseAction();
   }
 
   /**
@@ -230,10 +220,7 @@ class Board {
   _setPosition(positionData) {
     if (this._positionIsSetted) return this._responsePositionAlreadySetted();
     if (!(positionData instanceof BoardInitialPosition)) {
-      return {
-        success: false,
-        description: "Position data has to be an instance of BoardInitialPosition."
-      };
+      return this._responseFailAction("Position data has to be an instance of BoardInitialPosition.");
     }
     this.squares.removePieces(false);
     for (let color of Piece.ALL_COLORS) {
@@ -257,51 +244,52 @@ class Board {
     try {
       this._colors.setCurrent(color);
     } catch (err) {
-      return {success: false, description: err.message};
+      return this._responseFailAction(err.message);
     }
-    return {success: true};
+    return this._responseAction();
   }
 
+  /**
+   * Set castle rights.
+   * @param {BoardInitialCastle} castleRights - Board castle data.
+   * @return {Object} Action response.
+   */
   _setCastleRights(castleRights) {
-    /*
-    Params:
-      castleRights {BoardInitialCastle}.
-    */
-
     if (this._positionIsSetted) return this._responsePositionAlreadySetted();
-    if (!castleRights instanceof BoardInitialCastle) {
-      return {
-        success: false,
-        description: "Setted data has to be an instance of BoardInitialCastle."
-      };
+    if (!(castleRights instanceof BoardInitialCastle)) {
+      return this._responseFailAction("Setted data has to be an instance of BoardInitialCastle.");
     }
     this._initialCastleRights = castleRights;
     for (let king of this._kings) {
       king.setCastle(castleRights[king.color]);
     }
-    return {success: true};
+    return this._responseAction();
   }
 
-  _setEnPassantSquare(squareName) {
-    /*
-    Params:
-      squareName {string}.
-    */
+  /** Rook castle move. */
+  _rookCastleMove(castleRoad) {
+    let rookFromSquareName = castleRoad.rook.square.name.value;
+    let rookToSquareName = castleRoad.rookToSquare.name.value;
+    this.movePiece(rookFromSquareName, rookToSquareName, false);
+  }
 
+  /**
+   * Set en passant square.
+   * @param {string} squareName - Square name.
+   * @return {Object} Action response.
+   */
+  _setEnPassantSquare(squareName) {
     if (this._positionIsSetted) return this._responsePositionAlreadySetted();
     if (squareName) {
       let allSaquaresNames = Object.keys(this.squares);
       if (!allSaquaresNames.includes(squareName)) {
-        return {
-          success: false,
-          description: `"${squareName}" is wrong square name. Try one of ${allSaquaresNames}.`
-        };
+        return this._responseFailAction(`"${squareName}" is wrong square name. Try one of ${allSaquaresNames}.`);
       }
       this._enPassantSquare = this.squares[squareName];
     } else {
       this._enPassantSquare = null;
     }
-    return {success: true};
+    return this._responseAction();
   }
 
   /**
@@ -315,9 +303,9 @@ class Board {
     try {
       counter.value = count;
     } catch (err) {
-      return {success: false, description: err.message};
+      return this._responseFailAction(err.message);
     }
-    return {success: true};
+    return this._responseAction();
   }
 
   /**
@@ -336,6 +324,14 @@ class Board {
    */
   _setMovesCounter(count) {
     return this._setCounterValue(this._movesCounter, count);
+  }
+
+  /** Update counters. */
+  _updateCounters() {
+    this._fiftyMovesRuleCounter.update();
+    if (this._colors.current == Piece.WHITE) {
+      this._movesCounter.update();
+    }
   }
 
   _enPassantMatter(fromSquare, toSquare, pawn) {
@@ -362,17 +358,6 @@ class Board {
     }
   }
 
-  _rookCastleMove(castleRoad) {
-    /*
-    Params:
-      castleRoad {KingCastleRoad}.
-    */
-
-    let rookFromSquareName = castleRoad.rook.square.name.value;
-    let rookToSquareName = castleRoad.rookToSquare.name.value;
-    this.movePiece(rookFromSquareName, rookToSquareName, false);
-  }
-
   _rollBack() {
     // Roll position back to latest setted position
 
@@ -381,35 +366,16 @@ class Board {
     this._init(this._latestFEN);
   }
 
-  _updateCounters() {
-    this._fiftyMovesRuleCounter.update();
-    if (this._colors.current == Piece.WHITE) {
-      this._movesCounter.update();
-    }
-  }
-
   _moveEnd() {
     this.refreshAllSquares(true);
     if (!this._positionIsLegal) {
       this._rollBack();
-      return this._response("The position would be illegal after that.", false);
+      return this._responseFail("The position would be illegal after that.");
     }
     this._colors.changePriority();
     this._updateCounters();
     this._latestFEN = this.FEN;
     return this._response();
-  }
-
-  /**
-   * Response.
-   * @param {string} [description=""] - Description.
-   * @param {boolean} [success=true] - Whether responce is successfull or not.
-   */
-  _response(description="", success=true) {
-    return Object.assign(this.state, {
-      description: description,
-      success: success,
-    });
   }
 
   /**
@@ -492,17 +458,6 @@ class Board {
     }
 
     return this._response();
-  }
-
-  /**
-   * Response by result.
-   * @param {Object} result - Result to response with.
-   * @param {string} [result.description=''] - Result description.
-   * @param {boolean} result.success - Whether result is successfull or not.
-   * @return {Object} Board response.
-   */
-  _responseByResult(result) {
-    return this._response(result.description || '', result.success);
   }
 
   /**
@@ -597,11 +552,11 @@ class Board {
       kind {string} one of Piece.ALL_KINDS.
     */
 
-    if (!this._positionIsSetted) return this._response("The position isn't setted.", false);
-    if (this._result.value) return this._response("The result is already reached.", false);
+    if (!this._positionIsSetted) return this._responseFail("The position isn't setted.");
+    if (this._result.value) return this._responseFail("The result is already reached.");
     this._checkPositionIsLegal();
-    if (!this._positionIsLegal) return this._response("The position isn't legal.", false);
-    if (!this._transformation.on) return this._response("There isn't transformation.", false);
+    if (!this._positionIsLegal) return this._responseFail("The position isn't legal.");
+    if (!this._transformation.on) return this._responseFail("There isn't transformation.");
 
     this._placePiece(this._colors.current, kind, this._transformation.toSquareName);
     this._removePiece(this._transformation.fromSquareName);
@@ -618,18 +573,18 @@ class Board {
       refresh {boolean} - whether need to refresh board after piece has been placed or not.
     */
 
-    if (!this._positionIsSetted) return this._response("The position isn't setted.", false);
-    if (this._result.value) return this._response("The result is already reached.", false);
+    if (!this._positionIsSetted) return this._responseFail("The position isn't setted.");
+    if (this._result.value) return this._responseFail("The result is already reached.");
     this._checkPositionIsLegal();
-    if (!this._positionIsLegal) return this._response("The position isn't legal.", false);
+    if (!this._positionIsLegal) return this._responseFail("The position isn't legal.");
 
     let fromSquare = this._squares[from];
     let toSquare = this._squares[to];
     let piece = fromSquare.piece;
 
-    if (!piece) return this._response("There isn't a piece to replace.", false);
-    if (!piece.hasColor(this._colors.current)) return this._response("Wrong color piece.", false);
-    if (!piece.canBeReplacedTo(toSquare)) return this._response("Illegal move.", false);
+    if (!piece) return this._responseFail("There isn't a piece to replace.");
+    if (!piece.hasColor(this._colors.current)) return this._responseFail("Wrong color piece.");
+    if (!piece.canBeReplacedTo(toSquare)) return this._responseFail("Illegal move.");
 
     this._refreshState();
     if (piece.isKing) {
@@ -659,6 +614,63 @@ class Board {
     }
 
     if (refresh) return this._moveEnd();
+  }
+
+  /**
+   * Response by result.
+   * @param {Object} result - Action response.
+   * @param {string} result.description - Result description.
+   * @param {boolean} result.success - Whether result is successfull or not.
+   * @return {Object} Board response.
+   */
+  _responseByResult(result) {
+    return this._response(result.description, result.success);
+  }
+
+  /**
+   * Response fail.
+   * @param {string} description - Description.
+   * @return {Object} Board response.
+   */
+  _responseFail(description) {
+    return this._response(description, false);
+  }
+
+  /**
+   * Response.
+   * @param {string} [description=""] - Description.
+   * @param {boolean} [success=true] - Whether responce is successfull or not.
+   * @return {Object} Board response.
+   */
+  _response(description="", success=true) {
+    return Object.assign(this.state, this._responseAction(description, success));
+  }
+
+  /**
+   * Response position already setted.
+   * @return {Object} Action response.
+   */
+  _responsePositionAlreadySetted() {
+    this._responseFailAction("Position has been already setted.");
+  }
+
+  /**
+   * Response fail action.
+   * @param {string} description - Description.
+   * @return {Object} Action response.
+   */
+  _responseFailAction(description) {
+    return this._responseAction(description, false);
+  }
+
+  /**
+   * Response action.
+   * @param {string} [description=""] - Description.
+   * @param {boolean} [success=true] - Whether responce is successfull or not.
+   * @return {Object} Action response.
+   */
+  _responseAction(description="", success=true) {
+    return {success: success, description: description};
   }
 }
 
