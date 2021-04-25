@@ -102,7 +102,14 @@ describe('Test board', function () {
 
   describe('Test MovesCounter', function () {
     it('should check update', function () {
-      let counter = new MovesCounter(5);
+      let counter = new MovesCounter();
+
+      assert.throws(() => {counter.update();});
+      assert.throws(() => {counter.value = '5';});
+      assert.throws(() => {counter.value = -5;});
+
+      counter.value = 5;
+
       assert.equal(counter.value, 5);
       counter.update();
       assert.equal(counter.value, 6);
@@ -113,7 +120,12 @@ describe('Test board', function () {
 
   describe('Test FiftyMovesRuleCounter', function () {
     it('should check update', function () {
-      let counter = new FiftyMovesRuleCounter(15);
+      let counter = new FiftyMovesRuleCounter();
+
+      assert.throws(() => {counter.switch();});
+
+      counter.value = 15;
+
       assert.equal(counter.value, 15);
       assert.ok(!counter._turnedOn);
       assert.ok(!counter._needToRefresh);

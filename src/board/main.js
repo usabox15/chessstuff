@@ -58,8 +58,8 @@ class Board {
     this._colors = new BoardColors;
     this._initialCastleRights = null;
     this._enPassantSquare = null;
-    this._fiftyMovesRuleCounter = null;
-    this._movesCounter = null;
+    this._fiftyMovesRuleCounter = new FiftyMovesRuleCounter;
+    this._movesCounter = new MovesCounter;
     this._latestFEN = FEN;
     this._init(FEN);
   }
@@ -223,13 +223,6 @@ class Board {
     };
   }
 
-  _responseCounterCountNotNumber() {
-    return {
-      success: false,
-      description: 'Count need to be an number.'
-    };
-  }
-
   /**
    * Set position.
    * @param {BoardInitialPosition} positionData - Board position data.
@@ -311,28 +304,38 @@ class Board {
     return {success: true};
   }
 
-  _setFiftyMovesRuleCounter(count) {
-    /*
-    Params:
-      count {number}.
-    */
-
+  /**
+   * Set counter value.
+   * @param {Object} counter - Counter instance.
+   * @param {integer} count - Moves count.
+   * @return {Object} Action response.
+   */
+  _setCounterValue(counter, count) {
     if (this._positionIsSetted) return this._responsePositionAlreadySetted();
-    if (typeof count != 'number') return this._responseCounterCountNotNumber();
-    this._fiftyMovesRuleCounter = new FiftyMovesRuleCounter(count);
+    try {
+      counter.value = count;
+    } catch (err) {
+      return {success: false, description: err.message};
+    }
     return {success: true};
   }
 
-  _setMovesCounter(count) {
-    /*
-    Params:
-      count {number}.
-    */
+  /**
+   * Set fifty moves rule counter.
+   * @param {integer} count - Fifty moves rule count.
+   * @return {Object} Action response.
+   */
+  _setFiftyMovesRuleCounter(count) {
+    return this._setCounterValue(this._fiftyMovesRuleCounter, count);
+  }
 
-    if (this._positionIsSetted) return this._responsePositionAlreadySetted();
-    if (typeof count != 'number') return this._responseCounterCountNotNumber();
-    this._movesCounter = new MovesCounter(count);
-    return {success: true};
+  /**
+   * Set moves counter.
+   * @param {integer} count - Moves count.
+   * @return {Object} Action response.
+   */
+  _setMovesCounter(count) {
+    return this._setCounterValue(this._movesCounter, count);
   }
 
   _enPassantMatter(fromSquare, toSquare, pawn) {

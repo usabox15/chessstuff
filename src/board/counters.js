@@ -18,12 +18,9 @@ limitations under the License.
 /** Board moves counter class. */
 class MovesCounter {
 
-  /**
-   * Creation.
-   * @param {integer} initialCount - Initial count number.
-   */
+  /** Creation. */
   constructor(initialCount) {
-    this._value = initialCount;
+    this._value = null;
   }
 
   /**
@@ -34,9 +31,30 @@ class MovesCounter {
     return this._value;
   }
 
+  /**
+   * Set current value.
+   * @param {integer} count - Moves count.
+   */
+  set value(count) {
+    if (typeof count != 'number') {
+      throw Error('Count need to be an number.');
+    }
+    if (count < 0) {
+      throw Error('Count need to be positive number.');
+    }
+    this._value = count;
+  }
+
   /** Update value. */
   update() {
+    this._checkValueWasSetted();
     this._value++;
+  }
+
+  _checkValueWasSetted() {
+    if (this._value === null) {
+      throw Error('Value need to be setted.');
+    }
   }
 }
 
@@ -44,24 +62,23 @@ class MovesCounter {
 /** Board fifty moves rule counter class. */
 class FiftyMovesRuleCounter extends MovesCounter {
 
-  /**
-   * Creation.
-   * @param {integer} initialCount - Initial count number.
-   */
-  constructor(initialCount) {
-    super(initialCount);
+  /** Creation. */
+  constructor() {
+    super();
     this._turnedOn = false;
     this._needToRefresh = false;
   }
 
   /** Switch. */
   switch() {
+    this._checkValueWasSetted();
     this._turnedOn = true;
     this._needToRefresh = true;
   }
 
   /** Update value. */
   update() {
+    this._checkValueWasSetted();
     if (!this._turnedOn) return;
     if (this._needToRefresh) {
       this._value = 0;
