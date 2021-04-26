@@ -293,6 +293,27 @@ class Board {
   }
 
   /**
+   * Handle en passant case.
+   * @param {Square} fromSquare - Square that pawn jump from.
+   * @param {Square} toSquare - Square that pawn jump to.
+   * @param {Pawn} pawn - Pawn that jumped through one square.
+   */
+  _handleEnPassant(fromSquare, toSquare, pawn) {
+    if (toSquare.getBetweenSquaresCount(fromSquare) == 1) {
+      // jump through one square
+      this._enPassantSquare = this._squares.getFromCoordinates(
+        toSquare.coordinates.x,
+        toSquare.coordinates.y - pawn.direction
+      );
+    } else if (pawn.squares.includes(Relation.ATTACK, toSquare) && !toSquare.piece) {
+      // catch other pawn en passant
+      let x = toSquare.coordinates.x;
+      let y = fromSquare.coordinates.y;
+      this._removePiece(this._squares.getFromCoordinates(x, y).name.value);
+    }
+  }
+
+  /**
    * Set counter value.
    * @param {Object} counter - Counter instance.
    * @param {integer} count - Moves count.
@@ -334,38 +355,14 @@ class Board {
     }
   }
 
-  _enPassantMatter(fromSquare, toSquare, pawn) {
-    /*
-    En passant cases handler.
-    Params:
-      fromSquare {Square};
-      toSquare {Square};
-      pawn {Pawn}.
-    */
-
-    // jump through one square
-    if (toSquare.getBetweenSquaresCount(fromSquare) == 1) {
-      this._enPassantSquare = this._squares.getFromCoordinates(
-        toSquare.coordinates.x,
-        toSquare.coordinates.y - pawn.direction
-      );
-    }
-    // catch other pawn en passant
-    else if (pawn.squares.includes(Relation.ATTACK, toSquare) && !toSquare.piece) {
-      let x = toSquare.coordinates.x;
-      let y = fromSquare.coordinates.y;
-      this._removePiece(this._squares.getFromCoordinates(x, y).name.value);
-    }
-  }
-
+  /** Roll position back to latest setted position. */
   _rollBack() {
-    // Roll position back to latest setted position
-
     this._positionIsSetted = false;
     this._kings = new BoardKings;
     this._init(this._latestFEN);
   }
 
+  /** Handle move end. */
   _moveEnd() {
     this.refreshAllSquares(true);
     if (!this._positionIsLegal) {
@@ -468,30 +465,6 @@ class Board {
     return this._responseByResult(this._markPositionAsSetted());
   }
 
-  placePiece(color, kind, squareName) {
-    /*
-    Params:
-      color {string} one of Piece.ALL_COLORS;
-      kind {string} one of Piece.ALL_KINDS;
-      squareName {string}.
-    */
-
-    if (this._positionIsSetted) return this._responsePositionAlreadySetted();
-    this._placePiece(color, kind, squareName);
-    return this._response();
-  }
-
-  removePiece(squareName) {
-    /*
-    Params:
-      squareName {string}.
-    */
-
-    if (this._positionIsSetted) return this._responsePositionAlreadySetted();
-    this._removePiece(squareName);
-    return this._response();
-  }
-
   /**
    * Set position.
    * @param {BoardInitialPosition} positionData - Board position data.
@@ -565,6 +538,30 @@ class Board {
     return this._moveEnd();
   }
 
+  /**
+   * Place piece.
+   * @param {string} color - One of Piece.ALL_COLORS.
+   * @param {string} kind - One of Piece.ALL_KINDS.
+   * @param {string} squareName - Name of a square piece place to.
+   * @return {Object} Board response.
+   */
+  placePiece(color, kind, squareName) {
+    if (this._positionIsSetted) return this._responsePositionAlreadySetted();
+    this._placePiece(color, kind, squareName);
+    return this._response();
+  }
+
+  /**
+   * Remove piece.
+   * @param {string} squareName - Name of a square piece remove from.
+   * @return {Object} Board response.
+   */
+  removePiece(squareName) {
+    if (this._positionIsSetted) return this._responsePositionAlreadySetted();
+    this._removePiece(squareName);
+    return this._response();
+  }
+
   movePiece(from, to, refresh=true) {
     /*
     Params:
@@ -604,7 +601,7 @@ class Board {
         this._transformation.setSquaresNames(from, to);
         return this._response(`Pawn is ready to transform on ${to} square.`);
       }
-      this._enPassantMatter(fromSquare, toSquare, piece);
+      this._handleEnPassant(fromSquare, toSquare, piece);
     }
 
     this._replacePiece(fromSquare, toSquare, piece, false);
