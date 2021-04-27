@@ -407,54 +407,61 @@ class Board {
     }
 
     this._checkPositionIsLegal(afterMove);
-
-    let oppColor;
-    let firstPriority;
-    let secondPriority;
-    if (this._positionIsSetted) {
-      oppColor = this._colors.opponent;
-      firstPriority = this._colors.firstPriority;
-      secondPriority = this._colors.secondPriority;
-    } else {
-      oppColor = this._colors.current;
-      firstPriority = this._colors.secondPriority;
-      secondPriority = this._colors.firstPriority;
-    }
-
-    let oppKing = this._kings[oppColor];
-    if (oppKing) {
-      if (oppKing.checkers.single) {
-        let noMoves = true;
-        let checker = oppKing.checkers.first;
-        let betweenSquares = checker.isLinear ? checker.square.getBetweenSquaresNames(oppKing.square) : [];
-        for (let piece of this.allPieces.filter(p => p.sameColor(oppKing))) {
-          piece.getCheck(checker, betweenSquares);
-          if (!piece.stuck) noMoves = false;
-        }
-        if (noMoves) this._result.setValue(secondPriority, firstPriority);
-      }
-      else if (oppKing.checkers.several) {
-        for (let piece of this.allPieces.filter(p => p.sameColor(oppKing) && !p.isKing)) {
-          piece.getTotalImmobilize();
-        }
-        if (oppKing.stuck) this._result.setValue(secondPriority, firstPriority);
-      }
-      else if (this.insufficientMaterial) {
-        this._result.setValue(0.5, 0.5);
-      }
-      else {
-        let noMoves = true;
-        for (let piece of this.allPieces.filter(p => p.sameColor(oppKing))) {
-          if (!piece.stuck) {
-            noMoves = false;
-            break;
-          }
-        }
-        if (noMoves) this._result.setValue(0.5, 0.5);
-      }
-    }
+    this._setResultIfNeeded();
 
     return this._response();
+  }
+
+  /** Set result if needed. */
+  _setResultIfNeeded() {
+    let oppColor = this._positionIsSetted ? this._colors.opponent : this._colors.current;
+    let oppKing = this._kings[oppColor];
+    if (!oppKing) return;
+    if (this._checkFinalKingAttack(oppKing) || this._checkFinalKingDoubleAttack(oppKing)) {
+      let firstPriority = this._positionIsSetted ? this._colors.firstPriority : this._colors.secondPriority;
+      let secondPriority = this._positionIsSetted ? this._colors.secondPriority : this._colors.firstPriority;
+      this._result.setValue(secondPriority, firstPriority);
+    } else if (this.insufficientMaterial || this._checkPiecesHaveNoMoves(oppColor)) {
+      this._result.setValue(0.5, 0.5);
+    }
+  }
+
+  /**
+   * Check whether there is final king attack or not.
+   * @param {King} king - King.
+   * @return {boolean} Check result.
+   */
+  _checkFinalKingAttack(king) {
+    if (!king.checkers.single) return false;
+    let checker = king.checkers.first;
+    let betweenSquares = checker.isLinear ? checker.square.getBetweenSquaresNames(king.square) : [];
+    for (let piece of this.allPieces.filter(p => p.sameColor(king))) {
+      piece.getCheck(checker, betweenSquares);
+      if (!piece.stuck) return false;
+    }
+    return true;
+  }
+
+  /**
+   * Check whether there is final king double attack or not.
+   * @param {King} king - King.
+   * @return {boolean} Check result.
+   */
+  _checkFinalKingDoubleAttack(king) {
+    if (!king.checkers.several) return false;
+    for (let piece of this.allPieces.filter(p => p.sameColor(king) && !p.isKing)) {
+      piece.getTotalImmobilize();
+    }
+    return king.stuck;
+  }
+
+  /**
+   * Check whether particular color pieces have no moves or not.
+   * @param {string} color - Pieces color.
+   * @return {boolean} Check result.
+   */
+  _checkPiecesHaveNoMoves(color) {
+    return this.allPieces.filter(p => p.hasColor(color) && !p.stuck).length == 0;
   }
 
   /**
