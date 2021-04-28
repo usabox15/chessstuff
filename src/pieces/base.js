@@ -34,6 +34,7 @@ class Piece {
   static KING = 'king';
   static ALL_KINDS = [Piece.PAWN, Piece.KNIGHT, Piece.BISHOP, Piece.ROOK, Piece.QUEEN, Piece.KING];
   static ALL_LINEARS = [Piece.BISHOP, Piece.ROOK, Piece.QUEEN];
+  static ALL_PAWN_TRANSFORM = [Piece.KNIGHT, Piece.BISHOP, Piece.ROOK, Piece.QUEEN];
 
   /**
    * Creation.

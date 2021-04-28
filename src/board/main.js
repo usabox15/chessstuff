@@ -390,7 +390,7 @@ class Board {
   /**
    * Refresh all squares.
    * @param {boolean} [afterMove=false] - whether refresh after move or not.
-   * @return {Object} Response.
+   * @return {Object} Board response.
    */
   refreshAllSquares(afterMove=false) {
     for (let piece of this.allPieces) {
@@ -526,12 +526,13 @@ class Board {
     return this._responseByResult(this._setMovesCounter(count));
   }
 
+  /**
+   * Pawn transformation.
+   * @param {string} kind - Piece kind.
+   * @return {Object} Board response.
+   */
   pawnTransformation(kind) {
-    /*
-    Params:
-      kind {string} one of Piece.ALL_KINDS.
-    */
-
+    if (!Piece.ALL_PAWN_TRANSFORM.includes(kind)) return this._responseFail("Wrong piece kind.");
     if (!this._positionIsSetted) return this._responseFail("The position isn't setted.");
     if (this._result.value) return this._responseFail("The result is already reached.");
     this._checkPositionIsLegal();
