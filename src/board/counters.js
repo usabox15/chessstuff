@@ -51,6 +51,7 @@ class MovesCounter {
     this._value++;
   }
 
+  /** Check whather value was setted or not. */
   _checkValueWasSetted() {
     if (this._value === null) {
       throw Error('Value need to be setted.');

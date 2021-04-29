@@ -202,7 +202,10 @@ class Board {
     piece.getPlace(toSquare, refresh);
   }
 
-  /** Mark position as setted. */
+  /**
+   * Mark position as setted.
+   * @return {Object} Action response.
+   */
   _markPositionAsSetted() {
     this.refreshAllSquares();
     if (!this._positionIsLegal) {
@@ -216,6 +219,7 @@ class Board {
   /**
    * Set position.
    * @param {BoardInitialPosition} positionData - Board position data.
+   * @return {Object} Action response.
    */
   _setPosition(positionData) {
     if (this._positionIsSetted) return this._responsePositionAlreadySetted();
@@ -238,6 +242,7 @@ class Board {
   /**
    * Set current color.
    * @param {string} color - one of Piece.ALL_COLORS.
+   * @return {Object} Action response.
    */
   _setCurrentColor(color) {
     if (this._positionIsSetted) return this._responsePositionAlreadySetted();
@@ -362,7 +367,10 @@ class Board {
     this._init(this._latestFEN);
   }
 
-  /** Handle move end. */
+  /**
+   * Handle move end.
+   * @return {Object} Board response.
+   */
   _moveEnd() {
     this.refreshAllSquares(true);
     if (!this._positionIsLegal) {
@@ -378,6 +386,7 @@ class Board {
   /**
    * Place King.
    * @param {King} king - King instance.
+   * @return {Object} Board response.
    */
   placeKing(king) {
     this._kings.setItem(king);
@@ -570,14 +579,14 @@ class Board {
     return this._response();
   }
 
+  /**
+   * Move piece.
+   * @param {string} from - From square name.
+   * @param {string} to - To square name.
+   * @param {boolean} refresh - Whether need to refresh board after piece has been placed or not.
+   * @return {Object|undefined} Board response or undefined.
+   */
   movePiece(from, to, refresh=true) {
-    /*
-    Params:
-      from {string} from square name;
-      to {string} to square name;
-      refresh {boolean} - whether need to refresh board after piece has been placed or not.
-    */
-
     if (!this._positionIsSetted) return this._responseFail("The position isn't setted.");
     if (this._result.value) return this._responseFail("The result is already reached.");
     this._checkPositionIsLegal();
@@ -598,13 +607,11 @@ class Board {
         this._rookCastleMove(castleRoad);
       }
       piece.castle.stop();
-    }
-    else if (piece.isRook) {
+    } else if (piece.isRook) {
       if (piece.castleRoad) {
         this._kings[piece.color].castle.stop(piece.castleRoad.side);
       }
-    }
-    else if (piece.isPawn) {
+    } else if (piece.isPawn) {
       if (toSquare.onEdge.up || toSquare.onEdge.down) {
         this._transformation.setSquaresNames(from, to);
         return this._response(`Pawn is ready to transform on ${to} square.`);
