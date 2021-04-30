@@ -178,7 +178,7 @@ class BoardInitialCastle {
  */
 class BoardInitial {
 
-  #colors = {'w': Piece.WHITE, 'b': Piece.BLACK};
+  static COLORS = {'w': Piece.WHITE, 'b': Piece.BLACK};
 
   /**
    * Creation.
@@ -186,7 +186,7 @@ class BoardInitial {
    */
   constructor(data) {
     this.position = new BoardInitialPosition(data.positionData);
-    this.currentColor = this.#colors[data.currentColorData];
+    this.currentColor = BoardInitial.COLORS[data.currentColorData];
     this.castleRights = new BoardInitialCastle(data.castleRightsData);
     this.enPassantSquareName = data.enPassantData == '-' ? null : data.enPassantData;
     this.fiftyMovesRuleCounter = parseInt(data.fiftyMovesRuleData);

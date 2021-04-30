@@ -34,8 +34,7 @@ class Board {
 
   static EMPTY_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
   static INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-
-  #piecesBox = {
+  static PIECES_BOX = {
     [Piece.PAWN]: Pawn,
     [Piece.KNIGHT]: Knight,
     [Piece.BISHOP]: Bishop,
@@ -179,7 +178,7 @@ class Board {
    * @param {string} squareName - Name of a square piece place to.
    */
   _placePiece(color, kind, squareName) {
-    new this.#piecesBox[kind](color, this._squares[squareName], false);
+    new Board.PIECES_BOX[kind](color, this._squares[squareName], false);
   }
 
   /**

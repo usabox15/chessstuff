@@ -21,11 +21,11 @@ const { Piece } = require('../pieces/main');
 /** Board colors class. */
 class BoardColors {
 
-  #priorities = {
+  static PRIORITIES = {
     [Piece.WHITE]: [0, 1],
     [Piece.BLACK]: [1, 0],
-  }
-  #all = [Piece.WHITE, Piece.BLACK];
+  };
+  static ALL = [Piece.WHITE, Piece.BLACK];
 
   /** Creation. */
   constructor() {
@@ -56,7 +56,7 @@ class BoardColors {
    */
   get current() {
     
-    return this.#all[this.firstPriority];
+    return BoardColors.ALL[this.firstPriority];
   }
 
   /**
@@ -64,7 +64,7 @@ class BoardColors {
    * @return {string|null} Color.
    */
   get opponent() {
-    return this.#all[this.secondPriority];
+    return BoardColors.ALL[this.secondPriority];
   }
 
   /** Check whether color was setted or not. */
@@ -82,7 +82,7 @@ class BoardColors {
     if (!Piece.ALL_COLORS.includes(color)) {
       throw Error(`'${color}' is wrong color value. Use any of ${Piece.ALL_COLORS}.`);
     }
-    this._priority = this.#priorities[color];
+    this._priority = BoardColors.PRIORITIES[color];
   }
 
   /** Change colors priority. */

@@ -55,7 +55,7 @@ class FENData {
 /** FEN string data creator class. */
 class FENDataCreator {
 
-  #pieces = {
+  static PIECES = {
     [Piece.WHITE]: {
       [Piece.PAWN]: 'P',
       [Piece.KNIGHT]: 'N',
@@ -73,8 +73,8 @@ class FENDataCreator {
       [Piece.KING]: 'k',
     },
   };
-  #colors = {[Piece.WHITE]: 'w', [Piece.BLACK]: 'b'};
-  #castleRights = {
+  static COLORS = {[Piece.WHITE]: 'w', [Piece.BLACK]: 'b'};
+  static CASTLE_RIGHTS = {
     [Piece.WHITE]: {
       [KingCastleRoad.SHORT]: 'K',
       [KingCastleRoad.LONG]: 'Q',
@@ -93,7 +93,7 @@ class FENDataCreator {
     this._board = board;
     this.value = [
       this._getPositionData(),
-      this.#colors[board.colors.current],
+      FENDataCreator.COLORS[board.colors.current],
       this._getCastleRightsData(),
       board.enPassantSquare ? board.enPassantSquare.name.value : '-',
       board.fiftyMovesRuleCounter.value.toString(),
@@ -112,7 +112,7 @@ class FENDataCreator {
       for (let symbol of SquareName.symbols) {
         let square = this._board.squares[`${symbol}${number}`];
         if (square.piece) {
-          rowData.push(this.#pieces[square.piece.color][square.piece.kind]);
+          rowData.push(FENDataCreator.PIECES[square.piece.color][square.piece.kind]);
         } else {
           rowData.push('0');
         }
@@ -135,7 +135,7 @@ class FENDataCreator {
     for (let king of this._board.kings) {
       for (let side of KingCastleRoad.ALL_SIDES) {
         if (!king.castle[side]) continue;
-        data.push(this.#castleRights[king.color][side]);
+        data.push(FENDataCreator.CASTLE_RIGHTS[king.color][side]);
       }
     }
     return data.join('') || '-';

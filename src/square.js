@@ -305,7 +305,7 @@ class SquareNeighbors {
   static DOWN_LEFT = 'downLeft';
   static LEFT = 'left';
 
-  #validate = {
+  static VALIDATE = {
     [SquareNeighbors.UP_LEFT]: (square) => {return !square.onEdge.up && !square.onEdge.left;},
     [SquareNeighbors.UP]: (square) => {return !square.onEdge.up;},
     [SquareNeighbors.UP_RIGHT]: (square) => {return !square.onEdge.up && !square.onEdge.right;},
@@ -315,7 +315,7 @@ class SquareNeighbors {
     [SquareNeighbors.DOWN_LEFT]: (square) => {return !square.onEdge.down && !square.onEdge.left;},
     [SquareNeighbors.LEFT]: (square) => {return !square.onEdge.left;},
   };
-  #delta = {
+  static DELTA = {
     [SquareNeighbors.UP_LEFT]: {x: -1, y: 1},
     [SquareNeighbors.UP]: {x: 0, y: 1},
     [SquareNeighbors.UP_RIGHT]: {x: 1, y: 1},
@@ -372,9 +372,9 @@ class SquareNeighbors {
    * @return {Square} Neighbor square.
    */
   _getSquare(kind) {
-    if (!this._square.board || !this.#validate[kind](this._square)) return null;
-    let x = this._square.coordinates.x + this.#delta[kind].x;
-    let y = this._square.coordinates.y + this.#delta[kind].y;
+    if (!this._square.board || !SquareNeighbors.VALIDATE[kind](this._square)) return null;
+    let x = this._square.coordinates.x + SquareNeighbors.DELTA[kind].x;
+    let y = this._square.coordinates.y + SquareNeighbors.DELTA[kind].y;
     let squareName = Square.coordinatesToName(x, y);
     return this._square.board.squares[squareName];
   }

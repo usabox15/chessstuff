@@ -26,8 +26,7 @@ class Relation {
   static XRAY = 'xray';
   static COVER = 'cover';     // protect piece
   static CONTROL = 'control'; // prevent opponent king move to
-
-  #allKinds = [
+  static ALL_KINDS = [
     Relation.MOVE,
     Relation.ATTACK,
     Relation.XRAY,
@@ -52,7 +51,7 @@ class Relation {
    * @param {string} except - Additional valid value.
    */
   _checkKind(kind, except=null) {
-    if (!this.#allKinds.includes(kind) && except != kind) {
+    if (!Relation.ALL_KINDS.includes(kind) && except != kind) {
       throw Error(`Wrong relation kind (${kind}) passed`);
     }
   }
@@ -63,7 +62,7 @@ class Relation {
    */
   refresh(kind='all') {
     this._checkKind(kind, 'all');
-    let kinds = kind === 'all' ? this.#allKinds : [kind];
+    let kinds = kind === 'all' ? Relation.ALL_KINDS : [kind];
     for (let kind of kinds) {
       if (this[kind]) {
         for (let item of this[kind]) {
