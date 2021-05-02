@@ -63,9 +63,9 @@ undefined
 undefined
 > var board = new chessstuff.board.Board();
 undefined
-> new chessstuff.pieces.King('white', board.squares.e3);
+> new chessstuff.pieces.King(chessstuff.pieces.Piece.WHITE, board.squares.e3);
 King {...}
-> new chessstuff.pieces.King('black', board.squares.b5);
+> new chessstuff.pieces.King(chessstuff.pieces.Piece.BLACK, board.squares.b5);
 King {...}
 > board.state;
 {
@@ -103,7 +103,7 @@ Move rook to d5
   FEN: '8/8/5N2/3r4/6K1/1k6/8/8 w - - 0 2',
   insufficientMaterial: false,
   result: null,
-  description: 'Success!',
+  description: '',
   success: true,
   transformation: false
 }
@@ -133,7 +133,7 @@ Take rook by knight
   FEN: '8/8/8/3N4/6K1/1k6/8/8 b - - 0 2',
   insufficientMaterial: true,
   result: [ 0.5, 0.5 ],
-  description: 'Success!',
+  description: '',
   success: true,
   transformation: false
 }
@@ -157,7 +157,7 @@ Black king short castle
   FEN: '5rk1/8/8/8/6b1/8/8/R3K3 w Q - 0 2',
   insufficientMaterial: false,
   result: null,
-  description: 'Success!',
+  description: '',
   success: true,
   transformation: false
 }
@@ -194,7 +194,7 @@ undefined
   FEN: '4k3/8/8/pP6/8/8/8/4K3 w - a6 0 2',
   insufficientMaterial: false,
   result: null,
-  description: 'Success!',
+  description: '',
   success: true,
   transformation: false
 }
@@ -206,7 +206,7 @@ undefined
   FEN: '4k3/8/P7/8/8/8/8/4K3 b - - 0 2',
   insufficientMaterial: false,
   result: null,
-  description: 'Success!',
+  description: '',
   success: true,
   transformation: false
 }
@@ -231,13 +231,13 @@ undefined
 }
 > board.transformation;
 { fromSquareName: 'f2', toSquareName: 'f1' }
-> board.pawnTransformation('queen');
+> board.pawnTransformation(chessstuff.pieces.Piece.QUEEN);
 {
   positionIsLegal: true,
   FEN: '8/8/3k4/8/8/6K1/8/5q2 w - - 0 2',
   insufficientMaterial: false,
   result: null,
-  description: 'Success!',
+  description: '',
   success: true,
   transformation: false
 }
@@ -256,7 +256,7 @@ undefined
   FEN: 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1',
   insufficientMaterial: false,
   result: null,
-  description: 'Success!',
+  description: '',
   success: true,
   transformation: false
 }
@@ -266,7 +266,7 @@ undefined
   FEN: 'rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2',
   insufficientMaterial: false,
   result: null,
-  description: 'Success!',
+  description: '',
   success: true,
   transformation: false
 }
@@ -276,7 +276,7 @@ undefined
   FEN: 'rnbqkbnr/pppp1ppp/8/4p3/2B1P3/8/PPPP1PPP/RNBQK1NR b KQkq - 1 2',
   insufficientMaterial: false,
   result: null,
-  description: 'Success!',
+  description: '',
   success: true,
   transformation: false
 }
@@ -286,7 +286,7 @@ undefined
   FEN: 'rnbqkbnr/ppp2ppp/3p4/4p3/2B1P3/8/PPPP1PPP/RNBQK1NR w KQkq - 0 3',
   insufficientMaterial: false,
   result: null,
-  description: 'Success!',
+  description: '',
   success: true,
   transformation: false
 }
@@ -296,7 +296,7 @@ undefined
   FEN: 'rnbqkbnr/ppp2ppp/3p4/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR b KQkq - 1 3',
   insufficientMaterial: false,
   result: null,
-  description: 'Success!',
+  description: '',
   success: true,
   transformation: false
 }
@@ -306,7 +306,7 @@ undefined
   FEN: 'rnbqkbnr/ppp2pp1/3p3p/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 0 4',
   insufficientMaterial: false,
   result: null,
-  description: 'Success!',
+  description: '',
   success: true,
   transformation: false
 }
@@ -316,7 +316,7 @@ undefined
   FEN: 'rnbqkbnr/ppp2Qp1/3p3p/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4',
   insufficientMaterial: false,
   result: [ 1, 0 ],
-  description: 'Success!',
+  description: '',
   success: true,
   transformation: false
 }
@@ -465,17 +465,17 @@ undefined
 undefined
 >
 >
-> board.squares.e5.pieces.includes('move', queen);
+> board.squares.e5.pieces.includes(chessstuff.relations.Relation.MOVE, queen);
 false
-> board.squares.e5.pieces.includes('move', bishop);
+> board.squares.e5.pieces.includes(chessstuff.relations.Relation.MOVE, bishop);
 false
 > board.squares.e5.pieces.move;
 null
 >
 >
-> board.squares.e5.pieces.includes('attack', queen);
+> board.squares.e5.pieces.includes(chessstuff.relations.Relation.ATTACK, queen);
 true
-> board.squares.e5.pieces.includes('attack', bishop);
+> board.squares.e5.pieces.includes(chessstuff.relations.Relation.ATTACK, bishop);
 false
 > for (let piece of board.squares.e5.pieces.attack) {
 ... console.log(piece.color, piece.kind);
@@ -484,9 +484,9 @@ black queen
 undefined
 >
 >
-> board.squares.e5.pieces.includes('cover', queen);
+> board.squares.e5.pieces.includes(chessstuff.relations.Relation.COVER, queen);
 false
-> board.squares.e5.pieces.includes('cover', bishop);
+> board.squares.e5.pieces.includes(chessstuff.relations.Relation.COVER, bishop);
 true
 > for (let piece of board.squares.e5.pieces.cover) {
 ... console.log(piece.color, piece.kind);
@@ -496,9 +496,9 @@ white bishop
 undefined
 >
 >
-> board.squares.e5.pieces.includes('control', queen);
+> board.squares.e5.pieces.includes(chessstuff.relations.Relation.CONTROL, queen);
 true
-> board.squares.e5.pieces.includes('control', bishop);
+> board.squares.e5.pieces.includes(chessstuff.relations.Relation.CONTROL, bishop);
 true
 > for (let piece of board.squares.e5.pieces.control) {
 ... console.log(piece.color, piece.kind);
@@ -508,9 +508,9 @@ black queen
 undefined
 >
 >
-> board.squares.e5.pieces.includes('xray', queen);
+> board.squares.e5.pieces.includes(chessstuff.relations.Relation.XRAY, queen);
 false
-> board.squares.e5.pieces.includes('xray', bishop);
+> board.squares.e5.pieces.includes(chessstuff.relations.Relation.XRAY, bishop);
 false
 > board.squares.e5.pieces.xray
 null
@@ -595,9 +595,9 @@ Check piece color
 true
 > queen.sameColor(board.squares.d7.piece);
 false
-> queen.hasColor('white');
+> queen.hasColor(chessstuff.pieces.Piece.WHITE);
 true
-> queen.hasColor('black');
+> queen.hasColor(chessstuff.pieces.Piece.BLACK);
 false
 ```
 
@@ -613,9 +613,9 @@ false
 Piece related squares by piece action
 
 ```javascript
-> queen.squares.includes('move', board.squares.c3);
+> queen.squares.includes(chessstuff.relations.Relation.MOVE, board.squares.c3);
 true
-> queen.squares.includes('move', board.squares.f3);
+> queen.squares.includes(chessstuff.relations.Relation.MOVE, board.squares.f3);
 false
 > for (let square of queen.squares.move) {
 ... console.log(square.name.value);
@@ -642,9 +642,9 @@ a4
 undefined
 >
 >
-> queen.squares.includes('attack', board.squares.g7);
+> queen.squares.includes(chessstuff.relations.Relation.ATTACK, board.squares.g7);
 true
-> queen.squares.includes('attack', board.squares.e2);
+> queen.squares.includes(chessstuff.relations.Relation.ATTACK, board.squares.e2);
 false
 > for (let square of queen.squares.attack) {
 ... console.log(square.name.value);
@@ -654,9 +654,9 @@ d5
 undefined
 >
 >
-> queen.squares.includes('cover', board.squares.b2);
+> queen.squares.includes(chessstuff.relations.Relation.COVER, board.squares.b2);
 true
-> queen.squares.includes('cover', board.squares.b3);
+> queen.squares.includes(chessstuff.relations.Relation.COVER, board.squares.b3);
 false
 > for (let square of queen.squares.cover) {
 ... console.log(square.name.value);
@@ -665,9 +665,9 @@ b2
 undefined
 >
 >
-> queen.squares.includes('control', board.squares.f4);
+> queen.squares.includes(chessstuff.relations.Relation.CONTROL, board.squares.f4);
 true
-> queen.squares.includes('control', board.squares.g2);
+> queen.squares.includes(chessstuff.relations.Relation.CONTROL, board.squares.g2);
 false
 > for (let square of queen.squares.control) {
 ... console.log(square.name.value);
@@ -697,9 +697,9 @@ a4
 undefined
 >
 >
-> queen.squares.includes('xray', board.squares.a1);
+> queen.squares.includes(chessstuff.relations.Relation.XRAY, board.squares.a1);
 true
-> queen.squares.includes('xray', board.squares.a2);
+> queen.squares.includes(chessstuff.relations.Relation.XRAY, board.squares.a2);
 false
 > for (let square of queen.squares.xray) {
 ... console.log(square.name.value);
