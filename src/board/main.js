@@ -15,18 +15,18 @@ limitations under the License.
 */
 
 
-const { BoardTransformation, BoardKings, BoardResult } = require('./base');
-const { BoardColors } = require('./colors');
-const { MovesCounter, FiftyMovesRuleCounter } = require('./counters');
-const { FENData, FENDataCreator } = require('./fen');
-const { BoardInitialPosition, BoardInitialCastle, BoardInitial } = require('./initial');
-const { BoardSquares } = require('./squares');
-const {
+import { BoardTransformation, BoardKings, BoardResult } from './base.js';
+import { BoardColors } from './colors.js';
+import { MovesCounter, FiftyMovesRuleCounter } from './counters.js';
+import { FENData, FENDataCreator } from './fen.js';
+import { BoardInitialPosition, BoardInitialCastle, BoardInitial } from './initial.js';
+import { BoardSquares } from './squares.js';
+import {
   BoardEnPassantSquareValidator, BoardPiecesCountValidator, BoardPawnsPlacementValidator,
   BoardKingPlacementValidator, BoardInsufficientMaterialPiecesValidator,
-} = require('./validators');
-const { Piece, Pawn, Knight, Bishop, Rook, Queen, King } = require('../pieces/main');
-const { Relation } = require('../relations');
+} from './validators.js';
+import { Piece, Pawn, Knight, Bishop, Rook, Queen, King } from '../pieces/main.js';
+import { Relation } from '../relations.js';
 
 
 /** Chess board class. */
@@ -686,15 +686,7 @@ class Board {
 }
 
 
-module.exports = {
-  Board: Board,
-  BoardColors: BoardColors,
-  BoardInitial,
-  BoardInitialCastle: BoardInitialCastle,
-  BoardInitialPosition: BoardInitialPosition,
-  BoardSquares: BoardSquares,
-  FENData: FENData,
-  FENDataCreator: FENDataCreator,
-  FiftyMovesRuleCounter: FiftyMovesRuleCounter,
-  MovesCounter: MovesCounter
+export {
+  Board, BoardColors, BoardInitial, BoardInitialCastle, BoardInitialPosition,
+  BoardSquares, FENData, FENDataCreator, FiftyMovesRuleCounter, MovesCounter,
 };

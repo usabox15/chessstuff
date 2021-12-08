@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 
-const { Piece, StepPiece } = require('./base');
+import { Piece, StepPiece } from './base.js';
 
 
 /** Knight class. */
@@ -69,6 +69,4 @@ class Knight extends StepPiece {
 }
 
 
-module.exports = {
-  Knight: Knight,
-};
+export { Knight };

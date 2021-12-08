@@ -15,8 +15,8 @@ limitations under the License.
 */
 
 
-const { Piece } = require('./base');
-const { Relation } = require('../relations');
+import { Piece } from './base.js';
+import { Relation } from '../relations.js';
 
 
 /** Pawn class. */
@@ -141,6 +141,4 @@ class Pawn extends Piece {
 }
 
 
-module.exports = {
-  Pawn: Pawn,
-};
+export { Pawn };

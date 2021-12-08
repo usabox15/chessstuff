@@ -15,10 +15,10 @@ limitations under the License.
 */
 
 
-const { KingCastleRoad, KingCastleInitial, KingCastle } = require('./castle');
-const { KingCheckers } = require('./checkers');
-const { Piece, StepPiece } = require('../base');
-const { Relation } = require('../../relations');
+import { KingCastleRoad, KingCastleInitial, KingCastle } from './castle.js';
+import { KingCheckers } from './checkers.js';
+import { Piece, StepPiece } from '../base.js';
+import { Relation } from '../../relations.js';
 
 
 /** King class. */
@@ -127,10 +127,4 @@ class King extends StepPiece {
 }
 
 
-module.exports = {
-  KingCastleRoad: KingCastleRoad,
-  KingCastleInitial: KingCastleInitial,
-  KingCastle: KingCastle,
-  KingCheckers: KingCheckers,
-  King: King,
-};
+export { KingCastleRoad, KingCastleInitial, KingCastle, KingCheckers, King };

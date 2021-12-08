@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Yegor Bitensky
+Copyright 2020-2021 Yegor Bitensky
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@ limitations under the License.
 */
 
 
-module.exports = {
-  board: require('./board/main'),
-  pieces: require('./pieces/main'),
-  relations: require('./relations'),
-  square: require('./square')
-};
+export * from './relations.js';
+export * from './square.js';
+export * from './pieces/main.js';
+export * from './board/main.js';

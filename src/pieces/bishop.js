@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 
-const { Piece, LinearPiece } = require('./base');
+import { Piece, LinearPiece } from './base.js';
 
 
 /** Bishop class. */
@@ -56,6 +56,4 @@ class Bishop extends LinearPiece {
 }
 
 
-module.exports = {
-  Bishop: Bishop,
-};
+export { Bishop };

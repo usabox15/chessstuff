@@ -92,7 +92,4 @@ class FiftyMovesRuleCounter extends MovesCounter {
 }
 
 
-module.exports = {
-  MovesCounter: MovesCounter,
-  FiftyMovesRuleCounter: FiftyMovesRuleCounter,
-};
+export { MovesCounter, FiftyMovesRuleCounter };

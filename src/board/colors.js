@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 
-const { Piece } = require('../pieces/main');
+import { Piece } from '../pieces/main.js';
 
 
 /** Board colors class. */
@@ -92,6 +92,4 @@ class BoardColors {
 }
 
 
-module.exports = {
-  BoardColors: BoardColors,
-};
+export { BoardColors };

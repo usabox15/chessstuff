@@ -15,8 +15,8 @@ limitations under the License.
 */
 
 
-const { Piece } = require('../base');
-const { Relation } = require('../../relations');
+import { Piece } from '../base.js';
+import { Relation } from '../../relations.js';
 
 
 /** King castle road class. */
@@ -248,8 +248,4 @@ class KingCastle {
 }
 
 
-module.exports = {
-  KingCastleRoad: KingCastleRoad,
-  KingCastleInitial: KingCastleInitial,
-  KingCastle: KingCastle,
-};
+export { KingCastleRoad, KingCastleInitial, KingCastle };

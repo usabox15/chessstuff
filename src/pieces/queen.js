@@ -15,9 +15,9 @@ limitations under the License.
 */
 
 
-const { Piece, LinearPiece } = require('./base');
-const { Bishop } = require('./bishop');
-const { Rook } = require('./rook');
+import { Piece, LinearPiece } from './base.js';
+import { Bishop } from './bishop.js';
+import { Rook } from './rook.js';
 
 
 /** Queen class. */
@@ -53,6 +53,4 @@ class Queen extends LinearPiece {
 }
 
 
-module.exports = {
-  Queen: Queen,
-};
+export { Queen };

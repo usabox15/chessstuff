@@ -15,29 +15,12 @@ limitations under the License.
 */
 
 
-const { Piece, StepPiece, LinearPiece } = require('./base');
-const { Pawn } = require('./pawn');
-const { Knight } = require('./knight');
-const { Bishop } = require('./bishop');
-const { Rook } = require('./rook');
-const { Queen } = require('./queen');
-const {
+export { Piece, StepPiece, LinearPiece } from './base.js';
+export { Pawn } from './pawn.js';
+export { Knight } from './knight.js';
+export { Bishop } from './bishop.js';
+export { Rook } from './rook.js';
+export { Queen } from './queen.js';
+export {
   KingCastleRoad, KingCastleInitial, KingCastle, KingCheckers, King,
-} = require('./king/main');
-
-
-module.exports = {
-  Piece: Piece,
-  StepPiece: StepPiece,
-  LinearPiece: LinearPiece,
-  Pawn: Pawn,
-  Knight: Knight,
-  Bishop: Bishop,
-  Rook: Rook,
-  Queen: Queen,
-  KingCastleRoad: KingCastleRoad,
-  KingCastleInitial: KingCastleInitial,
-  KingCastle: KingCastle,
-  KingCheckers: KingCheckers,
-  King: King,
-};
+} from './king/main.js';

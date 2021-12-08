@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 
-const { SquarePieces } = require('./relations');
+import { SquarePieces } from './relations.js';
 
 
 /**
@@ -550,11 +550,7 @@ class Square {
 }
 
 
-module.exports = {
-  Square: Square,
-  SquareCoordinates: SquareCoordinates,
-  SquareNeighbors: SquareNeighbors,
-  SquareName: SquareName,
-  SquareOnEdge: SquareOnEdge,
-  SquaresLine: SquaresLine
+export {
+  Square, SquareCoordinates, SquareNeighbors,
+  SquareName, SquareOnEdge, SquaresLine
 };

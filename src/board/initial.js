@@ -15,8 +15,8 @@ limitations under the License.
 */
 
 
-const { Piece, KingCastleRoad, KingCastleInitial } = require('../pieces/main');
-const { Square } = require('../square');
+import { Piece, KingCastleRoad, KingCastleInitial } from '../pieces/main.js';
+import { Square } from '../square.js';
 
 
 /**
@@ -195,8 +195,4 @@ class BoardInitial {
 }
 
 
-module.exports = {
-  BoardInitialPosition: BoardInitialPosition,
-  BoardInitialCastle: BoardInitialCastle,
-  BoardInitial: BoardInitial,
-};
+export { BoardInitialPosition, BoardInitialCastle, BoardInitial };

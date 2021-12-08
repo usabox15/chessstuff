@@ -15,9 +15,9 @@ limitations under the License.
 */
 
 
-const { Piece, KingCastleRoad } = require('../pieces/main');
-const { Relation } = require('../relations');
-const { SquareName } = require('../square');
+import { Piece, KingCastleRoad } from '../pieces/main.js';
+import { Relation } from '../relations.js';
+import { SquareName } from '../square.js';
 
 
 /**
@@ -143,7 +143,4 @@ class FENDataCreator {
 }
 
 
-module.exports = {
-  FENData: FENData,
-  FENDataCreator: FENDataCreator,
-};
+export { FENData, FENDataCreator };

@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 
-const { Relation } = require('../../relations');
+import { Relation } from '../../relations.js';
 
 
 /** King checkers class. */
@@ -126,6 +126,4 @@ class KingCheckers extends Array {
 }
 
 
-module.exports = {
-    KingCheckers: KingCheckers,
-};
+export { KingCheckers };

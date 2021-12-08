@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 
-const { Piece, King } = require('../pieces/main');
+import { Piece, King } from '../pieces/main.js';
 
 
 /** Board transformation class. */
@@ -137,8 +137,4 @@ class BoardResult {
 }
 
 
-module.exports = {
-  BoardTransformation: BoardTransformation,
-  BoardKings: BoardKings,
-  BoardResult: BoardResult,
-};
+export { BoardTransformation, BoardKings, BoardResult };

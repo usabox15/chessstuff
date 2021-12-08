@@ -15,8 +15,9 @@ limitations under the License.
 */
 
 
-const { Piece } = require('../pieces/main');
-const { Relation } = require('../relations');
+import { Piece } from '../pieces/main.js';
+import { Relation } from '../relations.js';
+
 
 /** En passant square placement validator. */
 class BoardEnPassantSquareValidator {
@@ -191,10 +192,8 @@ class BoardInsufficientMaterialPiecesValidator {
 }
 
 
-module.exports = {
-  BoardEnPassantSquareValidator: BoardEnPassantSquareValidator,
-  BoardPiecesCountValidator: BoardPiecesCountValidator,
-  BoardPawnsPlacementValidator: BoardPawnsPlacementValidator,
-  BoardKingPlacementValidator: BoardKingPlacementValidator,
-  BoardInsufficientMaterialPiecesValidator: BoardInsufficientMaterialPiecesValidator,
+export {
+  BoardEnPassantSquareValidator, BoardPiecesCountValidator,
+  BoardPawnsPlacementValidator, BoardKingPlacementValidator,
+  BoardInsufficientMaterialPiecesValidator,
 };

@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 
-const { Piece, LinearPiece } = require('./base');
+import { Piece, LinearPiece } from './base.js';
 
 
 /** Rook class. */
@@ -75,6 +75,4 @@ class Rook extends LinearPiece {
 }
 
 
-module.exports = {
-  Rook: Rook,
-};
+export { Rook };

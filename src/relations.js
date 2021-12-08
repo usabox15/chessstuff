@@ -173,8 +173,4 @@ class PieceSquares extends Relation {
 }
 
 
-module.exports = {
-  Relation: Relation,
-  SquarePieces: SquarePieces,
-  PieceSquares: PieceSquares
-};
+export { Relation, SquarePieces, PieceSquares };

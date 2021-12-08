@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 
-const { Square, SquareName } = require('../square');
+import { Square, SquareName } from '../square.js';
 
 
 /** Board squares class. */
@@ -68,6 +68,4 @@ class BoardSquares {
 }
 
 
-module.exports = {
-  BoardSquares: BoardSquares,
-};
+export { BoardSquares };

@@ -15,8 +15,8 @@ limitations under the License.
 */
 
 
-const { Relation, PieceSquares } = require('../relations');
-const { SquareCoordinates } = require('../square');
+import { Relation, PieceSquares } from '../relations.js';
+import { SquareCoordinates } from '../square.js';
 
 
 /** Base piece class. */
@@ -340,8 +340,4 @@ class LinearPiece extends Piece {
 }
 
 
-module.exports = {
-  Piece: Piece,
-  StepPiece: StepPiece,
-  LinearPiece: LinearPiece,
-};
+export { Piece, StepPiece, LinearPiece };

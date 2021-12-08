@@ -22,6 +22,7 @@
   "scripts": {
     "test": "mocha"
   },
+  "type": "module",
   "devDependencies": {
     "mocha": "^9.1.3",
     "webpack": "^5.65.0",
