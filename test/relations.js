@@ -15,12 +15,9 @@ limitations under the License.
 */
 
 
-const assert = require('assert');
-const {
-  pieces: { Piece },
-  relations: { Relation },
-  square: { Square },
-} = require('../');
+import { strict as assert } from 'assert';
+import { Piece, Relation, Square } from '../src/main.js'
+
 
 var a1 = new Square('a1');
 var b4 = new Square('b4');

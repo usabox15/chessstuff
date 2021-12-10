@@ -15,16 +15,14 @@ limitations under the License.
 */
 
 
-const assert = require('assert');
-const {
-  board: { Board, BoardInitialCastle },
-  pieces: {
-    Piece, Pawn, Knight, Bishop, Rook, Queen, King,
-    KingCastleRoad, KingCastleInitial, KingCastle, KingCheckers
-  },
-  relations: { Relation },
-  square: { Square },
-} = require('../');
+import { strict as assert } from 'assert';
+import {
+  Board, BoardInitialCastle,
+  Piece, Pawn, Knight, Bishop, Rook, Queen, King,
+  KingCastleRoad, KingCastleInitial, KingCastle, KingCheckers,
+  Relation,
+  Square,
+} from '../src/main.js'
 
 
 describe('Test pieces', function () {
@@ -765,7 +763,7 @@ describe('Test pieces', function () {
       assert.ok(king.castle[KingCastleRoad.SHORT].isSafe);
       assert.ok(king.castle[KingCastleRoad.LONG].isSafe);
 
-      roadController = new Bishop(Piece.BLACK, board.squares.e2);
+      let roadController = new Bishop(Piece.BLACK, board.squares.e2);
       board._kings[Piece.WHITE] = null;
       king = new King(Piece.WHITE, board.squares.e1);
 
@@ -933,7 +931,7 @@ describe('Test pieces', function () {
       assert.ok(!king.checkers.single);
       assert.ok(!king.checkers.several);
 
-      knight = new Knight(Piece.BLACK, board.squares.h5);
+      let knight = new Knight(Piece.BLACK, board.squares.h5);
 
       assert.equal(king.checkers.first, knight);
       assert.ok(!king.checkers.second);
@@ -941,7 +939,7 @@ describe('Test pieces', function () {
       assert.ok(king.checkers.single);
       assert.ok(!king.checkers.several);
 
-      queen = new Queen(Piece.BLACK, board.squares.d6);
+      let queen = new Queen(Piece.BLACK, board.squares.d6);
 
       assert.equal(king.checkers.first, queen);
       assert.equal(king.checkers.second, knight);

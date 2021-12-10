@@ -15,18 +15,16 @@ limitations under the License.
 */
 
 
-const assert = require('assert');
-const {
-  board: {
-    Board,
-    BoardColors, BoardSquares,
-    BoardInitial, BoardInitialCastle, BoardInitialPosition,
-    FENData, FENDataCreator,
-    MovesCounter, FiftyMovesRuleCounter,
-  },
-  pieces: { Piece, Pawn, Knight, Bishop, Rook, Queen, King, KingCastleRoad },
-  square: { SquareName },
-} = require('../');
+import { strict as assert } from 'assert';
+import {
+  Board,
+  BoardColors, BoardSquares,
+  BoardInitial, BoardInitialCastle, BoardInitialPosition,
+  FENData, FENDataCreator,
+  MovesCounter, FiftyMovesRuleCounter,
+  Piece, Pawn, Knight, Bishop, Rook, Queen, King, KingCastleRoad,
+  SquareName,
+} from '../src/main.js'
 
 
 describe('Test board', function () {
@@ -457,7 +455,7 @@ describe('Test board', function () {
     });
 
     it('should check init board by parts', function () {
-      board = new Board();
+      let board = new Board();
       assert.ok(board.setCurrentColor(Piece.BLACK).success);
       assert.ok(board.setCastleRights(new BoardInitialCastle('Q')).success);
       assert.ok(board.setEnPassantSquare('e3').success);

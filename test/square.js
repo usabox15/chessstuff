@@ -15,11 +15,12 @@ limitations under the License.
 */
 
 
-const assert = require('assert');
-const {
-  board: { Board },
-  square: { Square, SquareCoordinates, SquaresLine, SquareName, SquareNeighbors, SquareOnEdge },
-} = require('../');
+import { strict as assert } from 'assert';
+import {
+  Board,
+  Square, SquareCoordinates, SquaresLine,
+  SquareName, SquareNeighbors, SquareOnEdge,
+} from '../src/main.js'
 
 
 describe('Test square', function () {
