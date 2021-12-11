@@ -12,4 +12,7 @@ limitations under the License.
 */
 
 
-window.chessstuff = require('./main');
+import * as chessstuff from './main.js';
+
+
+window.chessstuff = chessstuff;

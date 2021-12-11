@@ -125,7 +125,8 @@ function refreshBoard(brd) {
 
 // TEST GAME
 
-var board = new chessstuff.board.Board(chessstuff.board.Board.INITIAL_FEN);
+// var board = new chessstuff.board.Board(chessstuff.board.Board.INITIAL_FEN);
+var board = new chessstuff.Board(chessstuff.Board.INITIAL_FEN);
 var aimedSquare = null;
 
 refreshBoard(board);

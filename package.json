@@ -20,7 +20,8 @@
     "url": "https://github.com/YegorDB/chessstuff/issues"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "build": "webpack"
   },
   "type": "module",
   "devDependencies": {
