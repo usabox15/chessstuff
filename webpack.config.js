@@ -6,6 +6,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 
 export default {
+  mode: 'production',
   entry: './src/browser.js',
   output: {
     filename: 'chessstuff.min.js',

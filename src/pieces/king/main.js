@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 
-import { KingCastleRoad, KingCastleInitial, KingCastle } from './castle.js';
+import { KingCastleRoad, KingCastleInitial, KingCastle } from './castle/main.js';
 import { KingCheckers } from './checkers.js';
 import { Piece, StepPiece } from '../base.js';
 import { Relation } from '../../relations.js';

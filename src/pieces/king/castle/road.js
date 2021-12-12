@@ -15,8 +15,7 @@ limitations under the License.
 */
 
 
-import { Piece } from '../base.js';
-import { Relation } from '../../relations.js';
+import { Relation } from '../../../relations.js';
 
 
 /** King castle road class. */
@@ -138,114 +137,4 @@ class KingCastleRoad {
 }
 
 
-/**
- * King castle initial class.
- *
- * Scheme:
- *   {
- *     kindOfCastleRoad: Boolean,
- *     ...
- *   }
- *
- * Example:
- *   {
- *     [KingCastleRoad.SHORT]: true,
- *     [KingCastleRoad.LONG]: false
- *   }
- */
-class KingCastleInitial {
-
-  /**
-   * Creation.
-   * @param {string[]|null} [acceptedSides=null] - One of `KingCastleRoad.ALL_SIDES`.
-   */
-  constructor(acceptedSides=null) {
-    acceptedSides = (acceptedSides || []).slice(0, 2);
-    this._checkAcceptedSides(acceptedSides);
-    for (let side of KingCastleRoad.ALL_SIDES) {
-      this[side] = acceptedSides.includes(side);
-    }
-  }
-
-  /**
-   * Check accepted sides.
-   * @param {string[]} acceptedSides - One of `KingCastleRoad.ALL_SIDES`.
-   */
-  _checkAcceptedSides(acceptedSides) {
-    for (let side of acceptedSides) {
-      if (!KingCastleRoad.ALL_SIDES.includes(side)) {
-        throw Error(`${side} is not a correct castle side name. Use one of ${KingCastleRoad.ALL_SIDES}.`);
-      }
-    }
-  }
-}
-
-
-/** King castle class. */
-class KingCastle {
-
-  static RANKS = {[Piece.WHITE]: "1", [Piece.BLACK]: "8"};
-
-  /**
-   * Creation.
-   * @param {King} king - King instance.
-   * @param {KingCastleInitial|null} [initial=null] - KingCastleInitial instance.
-   */
-  constructor(king, initial=null) {
-    this._king = king;
-    let accepted;
-    if (king.onInitialSquare && initial) {
-      if (!initial instanceof KingCastleInitial) {
-        throw Error("Castle initial data has to be an instance of KingCastleInitial.");
-      }
-      accepted = initial;
-    } else {
-      accepted = new KingCastleInitial();
-    }
-    for (let side of KingCastleRoad.ALL_SIDES) {
-      if (accepted[side]) {
-        this[side] = new KingCastleRoad(this, KingCastle.RANKS[king.color], side);
-      } else {
-        this[side] = null;
-      }
-    }
-  }
-
-  /**
-   * King.
-   * @return {King} King instance.
-   */
-  get king() {
-    return this._king;
-  }
-
-  /**
-   * Stop castle rights.
-   * @param {string} [side="all"] - One of `KingCastleRoad.ALL_SIDES`.
-   */
-  stop(side='all') {
-    let sides = side == 'all' ? KingCastleRoad.ALL_SIDES : [side];
-    for (let s of sides) {
-      if (this[s]) {
-        this[s].rook.removeCastleRoad();
-        this[s] = null;
-      }
-    }
-  }
-
-  /**
-   * Get castle road by square king move to.
-   * @param {Square} toSquare - Square king move to.
-   */
-  getRoad(toSquare) {
-    for (let side of KingCastleRoad.ALL_SIDES) {
-      if (this[side] && this[side].toSquare.theSame(toSquare)) {
-        return this[side];
-      }
-    }
-    return null;
-  }
-}
-
-
-export { KingCastleRoad, KingCastleInitial, KingCastle };
+export { KingCastleRoad };
