@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 
-export { Piece, StepPiece, LinearPiece } from './base.js';
+export { Piece, StepPiece, LinearPiece } from './piece/main.js';
 export { Pawn } from './pawn.js';
 export { Knight } from './knight.js';
 export { Bishop } from './bishop.js';

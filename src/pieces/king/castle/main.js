@@ -17,7 +17,7 @@ limitations under the License.
 
 import { KingCastleInitial } from './initial.js';
 import { KingCastleRoad } from './road.js';
-import { Piece } from '../../base.js';
+import { Piece } from '../../piece/main.js';
 
 
 /** King castle class. */

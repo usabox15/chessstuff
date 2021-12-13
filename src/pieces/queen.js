@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 
-import { Piece, LinearPiece } from './base.js';
+import { Piece, LinearPiece } from './piece/main.js';
 import { Bishop } from './bishop.js';
 import { Rook } from './rook.js';
 

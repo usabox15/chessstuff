@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 
-import { Piece, StepPiece } from './base.js';
+import { Piece, StepPiece } from './piece/main.js';
 
 
 /** Knight class. */

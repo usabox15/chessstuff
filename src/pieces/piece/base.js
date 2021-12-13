@@ -15,8 +15,7 @@ limitations under the License.
 */
 
 
-import { Relation, PieceSquares } from '../relations.js';
-import { SquareCoordinates } from '../square.js';
+import { Relation, PieceSquares } from '../../relations.js';
 
 
 /** Base piece class. */
@@ -271,73 +270,4 @@ class Piece {
 }
 
 
-/** Base step piece class. */
-class StepPiece extends Piece {
-
-  /**
-   * Creation.
-   * @param {string} color - Either white or black.
-   * @param {Square} square - Square piece place to.
-   * @param {string} kind - One of `Piece.ALL_KINDS`.
-   * @param {boolean} [refresh=true] - Whether refresh board or not.
-   */
-  constructor(color, square, kind, refresh=true) {
-    super(color, square, kind, refresh);
-  }
-
-  /**
-   * Get step piece squares by piece action.
-   * @param {Object[]} stepPoints - Squares points.
-   * @param {integer} stepPoints.x - X square coordinate.
-   * @param {integer} stepPoints.y - Y square coordinate.
-   */
-  _getStepSquares(stepPoints) {
-    this._refreshSquareFinder();
-    for (let stepPoint of stepPoints) {
-      let x = this.square.coordinates.x + stepPoint.x;
-      let y = this.square.coordinates.y + stepPoint.y;
-      if (!SquareCoordinates.correctCoordinates(x, y)) continue;
-
-      this._nextSquareAction(this.board.squares.getFromCoordinates(x, y));
-    }
-  }
-}
-
-
-/** Base linear piece class. */
-class LinearPiece extends Piece {
-
-  /**
-   * Creation.
-   * @param {string} color - Either white or black.
-   * @param {Square} square - Square piece place to.
-   * @param {string} kind - One of `Piece.ALL_KINDS`.
-   * @param {boolean} [refresh=true] - Whether refresh board or not.
-   */
-  constructor(color, square, kind, refresh=true) {
-    super(color, square, kind, refresh);
-  }
-
-  /**
-   * Get step piece squares by piece action.
-   * @param {Object[]} directions - Squares directions.
-   * @param {integer} directions.x - X direction delta.
-   * @param {integer} directions.y - Y direction delta.
-   */
-  _getLinearSquares(directions) {
-    for (let direction of directions) {
-      this._refreshSquareFinder();
-      let x = this.square.coordinates.x + direction.x;
-      let y = this.square.coordinates.y + direction.y;
-      while (SquareCoordinates.correctCoordinates(x, y)) {
-        this._nextSquareAction(this.board.squares.getFromCoordinates(x, y));
-        if (this.endOfALine) break;
-        x += direction.x;
-        y += direction.y;
-      }
-    }
-  }
-}
-
-
-export { Piece, StepPiece, LinearPiece };
+export { Piece };

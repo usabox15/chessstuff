@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 
-import { Piece } from './base.js';
+import { Piece } from './piece/main.js';
 import { Relation } from '../relations.js';
 
 
