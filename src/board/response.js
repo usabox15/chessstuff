@@ -18,33 +18,70 @@ limitations under the License.
 /** Board response handler. */
 class BoardResponse {
 
+  constructor(board) {
+    this._board = board;
+  }
+
   /**
-   * Handle fail.
-   * @param {Object} state - Board state.
+   * Handle position is illegal.
+   * @return {Object} Board response object.
+   */
+  positionIsIllegal() {
+    return this.fail('Board position is illegal.');
+  }
+
+  /**
+   * Handle position already setted.
+   * @return {Object} Board response object.
+   */
+  positionAlreadySetted() {
+    return this.fail('Board position has been already setted.');
+  }
+
+  /**
+   * Handle position not setted.
+   * @return {Object} Board response object.
+   */
+  positionNotSetted() {
+    return this.fail('Board position isn\'t setted.');
+  }
+
+  /**
+   * Handle result already reached.
+   * @return {Object} Board response object.
+   */
+  resultAlreadyReached() {
+    return this.fail('Result is already reached.');
+  }
+
+  /**
+   * Handle fail response.
    * @param {string} description - Description.
    * @return {Object} Board response object.
    */
-  handleFail(state, description) {
-    return this.handle(state, {
-      description: description
+  fail(description) {
+    return this.success({
+      description: description,
       success: false,
     });
   }
 
   /**
-   * Handle.
-   * @param {Object} state - Board state.
+   * Handle success response.
    * @param {Object} [options] - response options.
-   * @param {string} [description=""] - Description.
-   * @param {boolean} [success=true] - Whether responce is successful or not.
+   * @param {string} [options.description=""] - Description.
+   * @param {boolean} [options.success=true] - Whether responce is successful or not.
    * @return {Object} Board response object.
    */
-  handle(state, options) {
+  success(options) {
     return {
-      ...state,
-      description: "",
+      ...this._board.state,
+      description: '',
       success: true,
       ...(options || {}),
     };
   }
 }
+
+
+export { BoardResponse };
