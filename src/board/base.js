@@ -105,36 +105,4 @@ class BoardKings {
 }
 
 
-/** Board result class. */
-class BoardResult {
-
-  static VALUES_CHOICES = [0, 0.5, 1];
-
-  /** Creation. */
-  constructor() {
-    this._value = null;
-  }
-
-  /**
-   * Value.
-   * @return {null|float[]|integer[]} Value.
-   */
-  get value() {
-    return this._value;
-  }
-
-  /**
-   * Set value.
-   * @param {float|integer} whitePoints - White side points.
-   * @param {float|integer} blackPoints - Black side points.
-   */
-  setValue(whitePoints, blackPoints) {
-    if (!BoardResult.VALUES_CHOICES.includes(whitePoints) || !BoardResult.VALUES_CHOICES.includes(blackPoints)) {
-      throw Error(`Wrong points value. Try one of ${BoardResult.VALUES_CHOICES}.`);
-    }
-    this._value = [whitePoints, blackPoints];
-  }
-}
-
-
-export { BoardTransformation, BoardKings, BoardResult };
+export { BoardTransformation, BoardKings };

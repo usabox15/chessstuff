@@ -15,12 +15,13 @@ limitations under the License.
 */
 
 
-import { BoardResponse } from './response.js';
-import { BoardTransformation, BoardKings, BoardResult } from './base.js';
+import { BoardTransformation, BoardKings } from './base.js';
 import { BoardColors } from './colors.js';
 import { MovesCounter, FiftyMovesRuleCounter } from './counters.js';
 import { FENData, FENDataCreator } from './fen.js';
 import { BoardInitialPosition, BoardInitialCastle, BoardInitial } from './initial.js';
+import { BoardResponse } from './response.js';
+import { BoardResult } from './result.js';
 import { BoardSquares } from './squares.js';
 import {
   BoardEnPassantSquareValidator, BoardPiecesCountValidator, BoardPawnsPlacementValidator,
@@ -53,7 +54,7 @@ class Board {
 
     this._response = new BoardResponse(this);
     this._squares = new BoardSquares(this);
-    this._result = new BoardResult;
+    this._result = new BoardResult(this);
     this._transformation = new BoardTransformation;
     this._kings = new BoardKings;
     this._positionIsLegal = false;
@@ -395,67 +396,9 @@ class Board {
     }
 
     this._checkPositionIsLegal(afterMove);
-    this._setResultIfNeeded();
+    this._result.trySetValue();
 
     return this._response.success();
-  }
-
-  /** Set result if needed. */
-  _setResultIfNeeded() {
-    let oppColor = this._positionIsSetted ? this._colors.opponent : this._colors.current;
-    let oppKing = this._kings[oppColor];
-    if (!oppKing) return;
-    if (this._checkFinalKingAttack(oppKing) || this._checkFinalKingDoubleAttack(oppKing)) {
-      if (this._positionIsSetted) {
-        this._result.setValue(this._colors.secondPriority, this._colors.firstPriority);
-      } else {
-        this._result.setValue(this._colors.firstPriority, this._colors.secondPriority);
-      }
-    } else if (this.insufficientMaterial || this._checkPiecesHaveNoMoves(oppColor)) {
-      this._result.setValue(0.5, 0.5);
-    }
-  }
-
-  /**
-   * Check whether there is final king attack or not.
-   * @param {King} king - King.
-   * @return {boolean} Check result.
-   */
-  _checkFinalKingAttack(king) {
-    if (!king.checkers.single) return false;
-    let checker = king.checkers.first;
-    let betweenSquares = [];
-    if (checker.isLinear) {
-      betweenSquares = checker.square.getBetweenSquaresNames(king.square);
-    }
-    for (let piece of this.allPieces.filter(p => p.sameColor(king))) {
-      piece.getCheck(checker, betweenSquares);
-      if (!piece.stuck) return false;
-    }
-    return true;
-  }
-
-  /**
-   * Check whether there is final king double attack or not.
-   * @param {King} king - King.
-   * @return {boolean} Check result.
-   */
-  _checkFinalKingDoubleAttack(king) {
-    if (!king.checkers.several) return false;
-    let pieces = this.allPieces.filter(p => p.sameColor(king) && !p.isKing);
-    for (let piece of pieces) {
-      piece.getTotalImmobilize();
-    }
-    return king.stuck;
-  }
-
-  /**
-   * Check whether particular color pieces have no moves or not.
-   * @param {string} color - Pieces color.
-   * @return {boolean} Check result.
-   */
-  _checkPiecesHaveNoMoves(color) {
-    return this.allPieces.filter(p => p.hasColor(color) && !p.stuck).length == 0;
   }
 
   /**

@@ -55,7 +55,6 @@ class BoardColors {
    * @return {string} Color.
    */
   get current() {
-    
     return BoardColors.ALL[this.firstPriority];
   }
 
