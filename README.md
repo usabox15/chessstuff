@@ -13,18 +13,15 @@ Chess utility to handle whole game or particular positions. Provides work with b
 
 1. Copy lib file (`chessstuff.min.js`).
 2. Add to html file link to copied file.
-
-> Now you can use `window.chessstuff` or just `chessstuff` object.
+3. Now you can use `window.chessstuff` or just `chessstuff` object.
 
 
 ## Usage
 
 ```javascript
-> const chessstuff = require('chessstuff'); // skip this line if you use client version
-undefined
-> chessstuff.board.Board.INITIAL_FEN;
+> chessstuff.Board.INITIAL_FEN;
 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
-> var board = new chessstuff.board.Board(chessstuff.board.Board.INITIAL_FEN);
+> var board = new chessstuff.Board(chessstuff.Board.INITIAL_FEN);
 undefined
 > board.movePiece('g2', 'g4');
 {
