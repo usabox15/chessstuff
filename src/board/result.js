@@ -35,62 +35,24 @@ class BoardResult {
   }
 
   /** Try set value. */
-  trySetValue() {
-    let oppColor;
-    if (this._board.positionIsSetted) {
-      oppColor = this._board.colors.opponent;
-    } else {
-      oppColor = this._board.colors.current;
-    }
+  trySetValue(afterMove) {
+    if (!this._board.positionIsSetted || !this._board.positionIsLegal) return;
 
-    let oppKing = this._board.kings[oppColor];
-    if (!oppKing) return;
+    let activeColor = afterMove ? this._board._colors.opponent : this._board._colors.current;
+    let oppKing = this._board.kings[activeColor];
+    let oppPiecesHaveNoMoves = this._checkPiecesHaveNoMoves(activeColor)
 
-    if (this._checkFinalKingAttack(oppKing) || this._checkFinalKingDoubleAttack(oppKing)) {
+    if (oppPiecesHaveNoMoves && oppKing.checkers.exist) {
       let value;
-      if (this._board.positionIsSetted) {
+      if (afterMove) {
         value = [this._board.colors.secondPriority, this._board.colors.firstPriority];
       } else {
         value = [this._board.colors.firstPriority, this._board.colors.secondPriority];
       }
       this._setValue(...value);
-    } else if (this._board.insufficientMaterial || this._checkPiecesHaveNoMoves(oppColor)) {
+    } else if (oppPiecesHaveNoMoves || this._board.insufficientMaterial) {
       this._setValue(0.5, 0.5);
     }
-  }
-
-  /**
-   * Check whether there is final king attack or not.
-   * @param {King} king - King.
-   * @return {boolean} Check result.
-   */
-  _checkFinalKingAttack(king) {
-    if (!king.checkers.single) return false;
-    let checker = king.checkers.first;
-    let betweenSquares = [];
-    if (checker.isLinear) {
-      betweenSquares = checker.square.getBetweenSquaresNames(king.square);
-    }
-    let pieces = this._board.allPieces.filter(p => p.sameColor(king));
-    for (let piece of pieces) {
-      piece.getCheck(checker, betweenSquares);
-      if (!piece.stuck) return false;
-    }
-    return true;
-  }
-
-  /**
-   * Check whether there is final king double attack or not.
-   * @param {King} king - King.
-   * @return {boolean} Check result.
-   */
-  _checkFinalKingDoubleAttack(king) {
-    if (!king.checkers.several) return false;
-    let pieces = this._board.allPieces.filter(p => p.sameColor(king) && !p.isKing);
-    for (let piece of pieces) {
-      piece.getTotalImmobilize();
-    }
-    return king.stuck;
   }
 
   /**

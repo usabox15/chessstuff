@@ -627,7 +627,7 @@ describe('Test board', function () {
       assert.ok(!response.success);
     });
 
-    it('should check caltle', function () {
+    it('should check castle', function () {
       let board = new Board('4k3/8/8/8/8/8/8/4K2R w K - 0 1');
       let response = board.movePiece('e1', 'g1');
       assert.ok(response.success);

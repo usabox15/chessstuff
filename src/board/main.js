@@ -76,6 +76,10 @@ class Board {
     return this._positionIsSetted;
   }
 
+  get positionIsLegal() {
+    return this._positionIsLegal;
+  }
+
   get transformation() {
     return this._transformation;
   }
@@ -382,6 +386,8 @@ class Board {
    * @return {Object} Board response.
    */
   refreshAllSquares(afterMove=false) {
+    let activeColor = afterMove ? this._colors.opponent : this._colors.current;
+
     for (let piece of this.allPieces) {
       piece.setInitState();
     }
@@ -396,9 +402,35 @@ class Board {
     }
 
     this._checkPositionIsLegal(afterMove);
-    this._result.trySetValue();
+    this._handleKingChecks(this._kings[activeColor]);
+    this._result.trySetValue(afterMove);
 
     return this._response.success();
+  }
+
+  /**
+   * Handle king checks.
+   * @param {King} king - King.
+   */
+  _handleKingChecks(king) {
+    if (!king || !king.checkers.exist || !king.checkers.isLegal) return;
+
+    if (king.checkers.single) {
+      let checker = king.checkers.first;
+      let betweenSquares = [];
+      if (checker.isLinear) {
+        betweenSquares = checker.square.getBetweenSquaresNames(king.square);
+      }
+      let pieces = this.allPieces.filter(p => p.sameColor(king));
+      for (let piece of pieces) {
+        piece.getCheck(checker, betweenSquares);
+      }
+    } else {
+      let pieces = this.allPieces.filter(p => p.sameColor(king) && !p.isKing);
+      for (let piece of pieces) {
+        piece.getTotalImmobilize();
+      }
+    }
   }
 
   /**
@@ -599,6 +631,7 @@ class Board {
   _markPositionAsSetted() {
     this.refreshAllSquares();
     this._positionIsSetted = this._positionIsLegal;
+    this._result.trySetValue(false);
   }
 }
 
