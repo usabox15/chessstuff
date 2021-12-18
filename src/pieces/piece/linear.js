@@ -16,6 +16,7 @@ limitations under the License.
 
 
 import { Piece } from './base.js';
+import { Relation } from '../../relations.js';
 import { SquareCoordinates } from '../../square.js';
 
 
@@ -33,6 +34,55 @@ class LinearPiece extends Piece {
     super(color, square, kind, refresh);
   }
 
+  /** Refresh square finder states. */
+  _refreshSquareFinder() {
+    this.sqrBeforeXray = null; // square before xray (always occupied by piece)
+    this.xrayControl = false; // control square behind checked king (inline of piece attack)
+    this.endOfALine = false;
+  }
+
+  /**
+   * Handle square actions.
+   * @param {Square} square - Square instance.
+   */
+  _handleSquareActions(square) {
+    if (this.sqrBeforeXray) {
+      this.squares.add(Relation.XRAY, square);
+      if (this.xrayControl) {
+        this.squares.add(Relation.CONTROL, square);
+        this.xrayControl = false;
+      }
+      if (square.piece) {
+        let isOppKingSquare = square.piece.isKing && !this.sameColor(square.piece);
+        let isOppPieceBeforeXray = !this.sameColor(this.sqrBeforeXray.piece);
+        if (isOppKingSquare && isOppPieceBeforeXray) {
+          this.sqrBeforeXray.piece.binder = this;
+        }
+        this.endOfALine = true;
+      }
+    } else {
+      super._handleSquareActions(square);
+    }
+  }
+
+  /**
+   * Handle square actions with piece.
+   * @param {Square} square - Square instance.
+   */
+  _handleSquareActionsWithPiece(square) {
+    super._handleSquareActionsWithPiece(square);
+    this.sqrBeforeXray = square;
+  }
+
+  /**
+   * Handle square actions attack king.
+   * @param {Square} square - Square instance.
+   */
+  _handleSquareActionsAttackKing(square) {
+    super._handleSquareActionsAttackKing(square)
+    this.xrayControl = true;
+  }
+
   /**
    * Get step piece squares by piece action.
    * @param {Object[]} directions - Squares directions.
@@ -45,7 +95,7 @@ class LinearPiece extends Piece {
       let x = this.square.coordinates.x + direction.x;
       let y = this.square.coordinates.y + direction.y;
       while (SquareCoordinates.correctCoordinates(x, y)) {
-        this._nextSquareAction(this.board.squares.getFromCoordinates(x, y));
+        this._handleSquareActions(this.board.squares.getFromCoordinates(x, y));
         if (this.endOfALine) break;
         x += direction.x;
         y += direction.y;

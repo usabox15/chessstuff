@@ -18,7 +18,7 @@ limitations under the License.
 import { strict as assert } from 'assert';
 import {
   Board, BoardInitialCastle,
-  Piece, Pawn, Knight, Bishop, Rook, Queen, King,
+  Piece, LinearPiece, Pawn, Knight, Bishop, Rook, Queen, King,
   KingCastleRoad, KingCastleInitial, KingCastle, KingCheckers,
   Relation,
   Square,
@@ -39,11 +39,8 @@ describe('Test pieces', function () {
       let piece = new Piece(Piece.BLACK, new Square('f5'));
       assert.equal(piece.color, Piece.BLACK);
       assert.equal(piece.square.name.value, 'f5');
-      assert.equal(piece.sqrBeforeXray, null);
       assert.equal(piece.binder, null);
       assert.equal(piece.kind, null);
-      assert.ok(!piece.xrayControl);
-      assert.ok(!piece.endOfALine);
       assert.ok(!piece.isPawn);
       assert.ok(!piece.isKnight);
       assert.ok(!piece.isBishop);
@@ -52,6 +49,11 @@ describe('Test pieces', function () {
       assert.ok(!piece.isKing);
       assert.ok(piece.stuck);
       assert.ok(!piece.isLinear);
+
+      piece = new LinearPiece(Piece.WHITE, new Square('d3'));
+      assert.equal(piece.sqrBeforeXray, null);
+      assert.ok(!piece.xrayControl);
+      assert.ok(!piece.endOfALine);
     });
 
     it('should check pieces are the same', function () {
@@ -102,7 +104,7 @@ describe('Test pieces', function () {
       let piece = new Piece(Piece.BLACK, pieceSquare);
       assert.equal(piece.squares[Relation.MOVE], null);
       assert.equal(piece.squares[Relation.CONTROL], null);
-      piece._nextSquareAction(nextSquare);
+      piece._handleSquareActions(nextSquare);
       assert.ok(piece.squares.includes(Relation.MOVE, nextSquare));
       assert.ok(piece.squares.includes(Relation.CONTROL, nextSquare));
     });
@@ -114,7 +116,7 @@ describe('Test pieces', function () {
       let piece2 = new Piece(Piece.WHITE, nextSquare);
       assert.equal(piece1.squares[Relation.COVER], null);
       assert.equal(piece1.squares[Relation.CONTROL], null);
-      piece1._nextSquareAction(nextSquare);
+      piece1._handleSquareActions(nextSquare);
       assert.ok(piece1.squares.includes(Relation.COVER, nextSquare));
       assert.ok(piece1.squares.includes(Relation.CONTROL, nextSquare));
     });
@@ -126,7 +128,7 @@ describe('Test pieces', function () {
       let piece2 = new Piece(Piece.WHITE, nextSquare);
       assert.equal(piece1.squares[Relation.ATTACK], null);
       assert.equal(piece1.squares[Relation.CONTROL], null);
-      piece1._nextSquareAction(nextSquare);
+      piece1._handleSquareActions(nextSquare);
       assert.ok(piece1.squares.includes(Relation.ATTACK, nextSquare));
       assert.ok(piece1.squares.includes(Relation.CONTROL, nextSquare));
     });
@@ -135,38 +137,35 @@ describe('Test pieces', function () {
       let pieceSquare = new Square('e5');
       let nextSquare = new Square('e4');
       let afterNextSquare = new Square('e3');
-      let piece1 = new Piece(Piece.BLACK, pieceSquare);
-      piece1._isLinear = true;
+      let piece1 = new LinearPiece(Piece.BLACK, pieceSquare);
       let piece2 = new Piece(Piece.BLACK, nextSquare);
       assert.equal(piece1.squares[Relation.XRAY], null);
-      piece1._nextSquareAction(nextSquare);
+      piece1._handleSquareActions(nextSquare);
       assert.equal(piece1.squares[Relation.XRAY], null);
-      piece1._nextSquareAction(afterNextSquare);
+      piece1._handleSquareActions(afterNextSquare);
       assert.ok(piece1.squares.includes(Relation.XRAY, afterNextSquare));
     });
 
     it('should add next square after other color King to controll action if linear', function () {
       let board = new Board();
-      let piece1 = new Piece(Piece.WHITE, board.squares.g1);
-      piece1._isLinear = true;
+      let piece1 = new LinearPiece(Piece.WHITE, board.squares.g1);
       let piece2 = new King(Piece.BLACK, board.squares.d4);
       assert.ok(!piece1.squares.includes(Relation.CONTROL, board.squares.c5));
-      piece1._nextSquareAction(board.squares.d4);
+      piece1._handleSquareActions(board.squares.d4);
       assert.ok(!piece1.squares.includes(Relation.CONTROL, board.squares.c5));
-      piece1._nextSquareAction(board.squares.c5);
+      piece1._handleSquareActions(board.squares.c5);
       assert.ok(piece1.squares.includes(Relation.CONTROL, board.squares.c5));
     });
 
     it('should make a piece as binder to next square piece before King', function () {
       let board = new Board();
-      let piece1 = new Piece(Piece.WHITE, board.squares.h8);
-      piece1._isLinear = true;
+      let piece1 = new LinearPiece(Piece.WHITE, board.squares.h8);
       let piece2 = new Piece(Piece.BLACK, board.squares.f6);
       let piece3 = new King(Piece.BLACK, board.squares.a1);
       assert.ok(!piece2.binder);
-      piece1._nextSquareAction(board.squares.f6);
+      piece1._handleSquareActions(board.squares.f6);
       assert.ok(!piece2.binder);
-      piece1._nextSquareAction(board.squares.a1);
+      piece1._handleSquareActions(board.squares.a1);
       assert.ok(piece2.binder);
       assert.ok(piece2.binder.theSame(piece1));
     });
@@ -175,8 +174,7 @@ describe('Test pieces', function () {
       let binderSquare = new Square('b5');
       let pieceSquare = new Square('b3');
       let kingSquare = new Square('b1');
-      let piece1 = new Piece(Piece.WHITE, binderSquare);
-      piece1._isLinear = true;
+      let piece1 = new LinearPiece(Piece.WHITE, binderSquare);
       let piece2 = new Piece(Piece.BLACK, pieceSquare);
       let b5 = new Square('b5');
       piece2.squares.add(Relation.ATTACK, b5);

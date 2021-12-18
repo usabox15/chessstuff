@@ -46,7 +46,7 @@ class StepPiece extends Piece {
       let y = this.square.coordinates.y + stepPoint.y;
       if (!SquareCoordinates.correctCoordinates(x, y)) continue;
 
-      this._nextSquareAction(this.board.squares.getFromCoordinates(x, y));
+      this._handleSquareActions(this.board.squares.getFromCoordinates(x, y));
     }
   }
 }

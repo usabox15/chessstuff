@@ -118,57 +118,58 @@ class Piece {
     return this.kind == Piece.KING;
   }
 
-  /** Refresh square finder states. */
-  _refreshSquareFinder() {
-    this.sqrBeforeXray = null; // square before xray (always occupied by piece)
-    this.xrayControl = false; // control square behind checked king (inline of piece attack)
-    this.endOfALine = false;
-  }
-
   /** Refresh piece squares data. */
   _refreshSquares() {
     this.squares.refresh();
     this._refreshSquareFinder();
   }
 
+  /** Refresh square finder states. */
+  _refreshSquareFinder() {}
+
   /**
-   * Handle action with next square.
-   * @param {Square} nextSquare - Next square instance.
+   * Handle square actions.
+   * @param {Square} square - Square instance.
    */
-  _nextSquareAction(nextSquare) {
-    if (this.sqrBeforeXray) {
-      this.squares.add(Relation.XRAY, nextSquare);
-      if (this.xrayControl) {
-        this.squares.add(Relation.CONTROL, nextSquare);
-        this.xrayControl = false;
-      }
-      if (nextSquare.piece) {
-        let isOppKingSquare = nextSquare.piece.isKing && !this.sameColor(nextSquare.piece);
-        let isOppPieceBeforeXray = !this.sameColor(this.sqrBeforeXray.piece);
-        if (isOppKingSquare && isOppPieceBeforeXray) {
-          this.sqrBeforeXray.piece.binder = this;
-        }
-        this.endOfALine = true;
+  _handleSquareActions(square) {
+    if (square.piece) {
+      this._handleSquareActionsWithPiece(square);
+    } else {
+      this._handleSquareActionsWithoutPiece(square);
+    }
+  }
+
+  /**
+   * Handle square actions with piece.
+   * @param {Square} square - Square instance.
+   */
+  _handleSquareActionsWithPiece(square) {
+    if (this.sameColor(square.piece)) {
+      this.squares.add(Relation.COVER, square);
+    } else {
+      this.squares.add(Relation.ATTACK, square);
+      if (square.piece.isKing) {
+        this._handleSquareActionsAttackKing(square);
       }
     }
-    else if (nextSquare.piece) {
-      if (this.sameColor(nextSquare.piece)) {
-        this.squares.add(Relation.COVER, nextSquare);
-      }
-      else {
-        this.squares.add(Relation.ATTACK, nextSquare);
-        if (nextSquare.piece.isKing) {
-          nextSquare.piece.checkers.add(this.square.piece);
-          this.xrayControl = true;
-        }
-      }
-      this.squares.add(Relation.CONTROL, nextSquare);
-      if (this.isLinear) this.sqrBeforeXray = nextSquare;
-    }
-    else {
-      this.squares.add(Relation.MOVE, nextSquare);
-      this.squares.add(Relation.CONTROL, nextSquare);
-    }
+    this.squares.add(Relation.CONTROL, square);
+  }
+
+  /**
+   * Handle square actions attack king.
+   * @param {Square} square - Square instance.
+   */
+  _handleSquareActionsAttackKing(square) {
+    square.piece.checkers.add(this.square.piece);
+  }
+
+  /**
+   * Handle square actions without piece.
+   * @param {Square} square - Square instance.
+   */
+  _handleSquareActionsWithoutPiece(square) {
+    this.squares.add(Relation.MOVE, square);
+    this.squares.add(Relation.CONTROL, square);
   }
 
   /** Get piece squares by piece action. */

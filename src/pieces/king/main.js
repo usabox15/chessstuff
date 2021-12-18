@@ -101,7 +101,11 @@ class King extends StepPiece {
 
   /** Set initial state. */
   setInitState() {
-    this.checkers = new KingCheckers(this);
+    if (this.checkers) {
+      this.checkers.empty();
+    } else {
+      this.checkers = new KingCheckers(this);
+    }
   }
 
   /** Get king squares by piece action. */

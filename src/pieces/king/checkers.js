@@ -78,6 +78,11 @@ class KingCheckers extends Array {
     return !this.exist || this._isPiecesLegal() && (this.single || this.several && this._isSeveralLegal());
   }
 
+  /** Remove all items. */
+  empty() {
+    this.splice(0, this.length);
+  }
+
   /**
    * Check whether king checkers pieces are legal or not.
    * @return {boolean} Whether king checkers pieces are legal or not.
