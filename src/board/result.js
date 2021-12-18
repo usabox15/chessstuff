@@ -35,16 +35,16 @@ class BoardResult {
   }
 
   /** Try set value. */
-  trySetValue(afterMove) {
+  trySetValue() {
     if (!this._board.positionIsSetted || !this._board.positionIsLegal) return;
 
-    let activeColor = afterMove ? this._board._colors.opponent : this._board._colors.current;
+    let activeColor = this._board.activeColor;
     let oppKing = this._board.kings[activeColor];
     let oppPiecesHaveNoMoves = this._checkPiecesHaveNoMoves(activeColor)
 
     if (oppPiecesHaveNoMoves && oppKing.checkers.exist) {
       let value;
-      if (afterMove) {
+      if (this._board.afterMove) {
         value = [this._board.colors.secondPriority, this._board.colors.firstPriority];
       } else {
         value = [this._board.colors.firstPriority, this._board.colors.secondPriority];

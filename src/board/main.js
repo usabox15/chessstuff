@@ -57,6 +57,7 @@ class Board {
     this._result = new BoardResult(this);
     this._transformation = new BoardTransformation;
     this._kings = new BoardKings;
+    this._afterMove = false;
     this._positionIsLegal = false;
     this._positionIsSetted = false;
     this._colors = new BoardColors;
@@ -70,6 +71,14 @@ class Board {
 
   get squares() {
     return this._squares;
+  }
+
+  get afterMove() {
+    return this._afterMove;
+  }
+
+  get activeColor() {
+    return (this.afterMove ? this._colors.opponent : this._colors.current);
   }
 
   get positionIsSetted() {
@@ -357,9 +366,8 @@ class Board {
 
   /**
    * Check position is legal.
-   * @param {boolean} [afterMove=false] - Whether check after move or not.
    */
-  _checkPositionIsLegal(afterMove=false) {
+  _checkPositionIsLegal() {
     this._positionIsLegal = true;
     let allPieces = this.allPieces;
     for (let color of Piece.ALL_COLORS) {
@@ -369,7 +377,7 @@ class Board {
       &&
         (new BoardKingPlacementValidator(king)).isLegal
       &&
-        this._checkCheckersIsLegal(king, afterMove)
+        this._checkCheckersIsLegal(king)
       );
       if (!this._positionIsLegal) return;
     }
@@ -382,12 +390,9 @@ class Board {
 
   /**
    * Refresh all squares.
-   * @param {boolean} [afterMove=false] - whether refresh after move or not.
    * @return {Object} Board response.
    */
-  refreshAllSquares(afterMove=false) {
-    let activeColor = afterMove ? this._colors.opponent : this._colors.current;
-
+  refreshAllSquares() {
     for (let piece of this.allPieces) {
       piece.setInitState();
     }
@@ -401,9 +406,9 @@ class Board {
       piece.getSquares();
     }
 
-    this._checkPositionIsLegal(afterMove);
-    this._handleKingChecks(this._kings[activeColor]);
-    this._result.trySetValue(afterMove);
+    this._checkPositionIsLegal();
+    this._handleKingChecks(this._kings[this.activeColor]);
+    this._result.trySetValue();
 
     return this._response.success();
   }
@@ -436,13 +441,10 @@ class Board {
   /**
    * Check king checkers is legal.
    * @param {King} king - King.
-   * @param {boolean} afterMove - Whether check after move or not.
    * @return {boolean} Whether king checkers legal or not.
    */
-  _checkCheckersIsLegal(king, afterMove) {
-    return king.checkers.isLegal && (!king.checkers.exist || king.hasColor(
-      afterMove ? this._colors.opponent : this._colors.current
-    ));
+  _checkCheckersIsLegal(king) {
+    return king.checkers.isLegal && (!king.checkers.exist || king.hasColor(this.activeColor));
   }
 
   /** Refresh state. */
@@ -514,7 +516,8 @@ class Board {
    * @return {Object} Board response.
    */
   _moveEnd() {
-    this.refreshAllSquares(true);
+    this._afterMove = true;
+    this.refreshAllSquares();
     if (!this._positionIsLegal) {
       this._rollBack();
       return this._response.fail('Illegal position has been prevented.');
@@ -522,6 +525,7 @@ class Board {
     this._colors.changePriority();
     this._updateCounters();
     this._latestFEN = this.FEN;
+    this._afterMove = false;
     return this._response.success();
   }
 
@@ -631,7 +635,7 @@ class Board {
   _markPositionAsSetted() {
     this.refreshAllSquares();
     this._positionIsSetted = this._positionIsLegal;
-    this._result.trySetValue(false);
+    this._result.trySetValue();
   }
 }
 
