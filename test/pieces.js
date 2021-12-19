@@ -104,7 +104,7 @@ describe('Test pieces', function () {
       let piece = new Piece(Piece.BLACK, pieceSquare);
       assert.equal(piece.squares[Relation.MOVE], null);
       assert.equal(piece.squares[Relation.CONTROL], null);
-      piece._handleSquareActions(nextSquare);
+      piece._handleSquareActions(nextSquare, true);
       assert.ok(piece.squares.includes(Relation.MOVE, nextSquare));
       assert.ok(piece.squares.includes(Relation.CONTROL, nextSquare));
     });
@@ -116,7 +116,7 @@ describe('Test pieces', function () {
       let piece2 = new Piece(Piece.WHITE, nextSquare);
       assert.equal(piece1.squares[Relation.COVER], null);
       assert.equal(piece1.squares[Relation.CONTROL], null);
-      piece1._handleSquareActions(nextSquare);
+      piece1._handleSquareActions(nextSquare, true);
       assert.ok(piece1.squares.includes(Relation.COVER, nextSquare));
       assert.ok(piece1.squares.includes(Relation.CONTROL, nextSquare));
     });
@@ -128,7 +128,7 @@ describe('Test pieces', function () {
       let piece2 = new Piece(Piece.WHITE, nextSquare);
       assert.equal(piece1.squares[Relation.ATTACK], null);
       assert.equal(piece1.squares[Relation.CONTROL], null);
-      piece1._handleSquareActions(nextSquare);
+      piece1._handleSquareActions(nextSquare, true);
       assert.ok(piece1.squares.includes(Relation.ATTACK, nextSquare));
       assert.ok(piece1.squares.includes(Relation.CONTROL, nextSquare));
     });
@@ -140,9 +140,9 @@ describe('Test pieces', function () {
       let piece1 = new LinearPiece(Piece.BLACK, pieceSquare);
       let piece2 = new Piece(Piece.BLACK, nextSquare);
       assert.equal(piece1.squares[Relation.XRAY], null);
-      piece1._handleSquareActions(nextSquare);
+      piece1._handleSquareActions(nextSquare, true);
       assert.equal(piece1.squares[Relation.XRAY], null);
-      piece1._handleSquareActions(afterNextSquare);
+      piece1._handleSquareActions(afterNextSquare, true);
       assert.ok(piece1.squares.includes(Relation.XRAY, afterNextSquare));
     });
 
@@ -151,9 +151,9 @@ describe('Test pieces', function () {
       let piece1 = new LinearPiece(Piece.WHITE, board.squares.g1);
       let piece2 = new King(Piece.BLACK, board.squares.d4);
       assert.ok(!piece1.squares.includes(Relation.CONTROL, board.squares.c5));
-      piece1._handleSquareActions(board.squares.d4);
+      piece1._handleSquareActions(board.squares.d4, true);
       assert.ok(!piece1.squares.includes(Relation.CONTROL, board.squares.c5));
-      piece1._handleSquareActions(board.squares.c5);
+      piece1._handleSquareActions(board.squares.c5, true);
       assert.ok(piece1.squares.includes(Relation.CONTROL, board.squares.c5));
     });
 
@@ -276,7 +276,7 @@ describe('Test pieces', function () {
       assert.equal(pawn1MoveCoordinates.length, 1);
       assert.equal(pawn1MoveCoordinates[0][0], 4);
       assert.equal(pawn1MoveCoordinates[0][1], 3);
-      pawn1._getMoveSquares();
+      pawn1._getMoveSquares(true);
       assert.ok(pawn1.squares.includes(Relation.MOVE, board.squares.e4));
 
       let pawn2 = new Pawn(Piece.WHITE, board.squares.a2);
@@ -286,7 +286,7 @@ describe('Test pieces', function () {
       assert.equal(pawn2MoveCoordinates[0][1], 2);
       assert.equal(pawn2MoveCoordinates[1][0], 0);
       assert.equal(pawn2MoveCoordinates[1][1], 3);
-      pawn2._getMoveSquares();
+      pawn2._getMoveSquares(true);
       assert.ok(pawn2.squares.includes(Relation.MOVE, board.squares.a3));
       assert.ok(pawn2.squares.includes(Relation.MOVE, board.squares.a4));
 
@@ -298,7 +298,7 @@ describe('Test pieces', function () {
       assert.equal(pawn3MoveCoordinates[0][1], 5);
       assert.equal(pawn3MoveCoordinates[1][0], 6);
       assert.equal(pawn3MoveCoordinates[1][1], 4);
-      pawn3._getMoveSquares();
+      pawn3._getMoveSquares(true);
       assert.ok(pawn3.squares.includes(Relation.MOVE, board.squares.g6));
       assert.ok(!pawn3.squares.includes(Relation.MOVE, board.squares.g5));
 
@@ -308,7 +308,7 @@ describe('Test pieces', function () {
       assert.equal(pawn4MoveCoordinates.length, 1);
       assert.equal(pawn4MoveCoordinates[0][0], 5);
       assert.equal(pawn4MoveCoordinates[0][1], 4);
-      pawn4._getMoveSquares();
+      pawn4._getMoveSquares(true);
       assert.ok(!pawn4.squares.includes(Relation.MOVE, board.squares.f5));
     });
 
@@ -323,7 +323,7 @@ describe('Test pieces', function () {
       assert.equal(pawn1AttackCoordinates[0][1], 4);
       assert.equal(pawn1AttackCoordinates[1][0], 0);
       assert.equal(pawn1AttackCoordinates[1][1], 4);
-      pawn1._getAttackSquares();
+      pawn1._getAttackSquares(true);
       assert.ok(pawn1.squares.includes(Relation.CONTROL, board.squares.a5));
       assert.ok(pawn1.squares.includes(Relation.CONTROL, board.squares.c5));
       assert.ok(!pawn1.squares.includes(Relation.ATTACK, board.squares.a5));
@@ -340,7 +340,7 @@ describe('Test pieces', function () {
       assert.equal(pawn2AttackCoordinates[0][1], 2);
       assert.equal(pawn2AttackCoordinates[1][0], 4);
       assert.equal(pawn2AttackCoordinates[1][1], 2);
-      pawn2._getAttackSquares();
+      pawn2._getAttackSquares(true);
       assert.ok(pawn2.squares.includes(Relation.CONTROL, board.squares.e3));
       assert.ok(pawn2.squares.includes(Relation.CONTROL, board.squares.g3));
       assert.ok(pawn2.squares.includes(Relation.ATTACK, board.squares.e3));
@@ -353,7 +353,7 @@ describe('Test pieces', function () {
       assert.equal(pawn3AttackCoordinates.length, 1);
       assert.equal(pawn3AttackCoordinates[0][0], 1);
       assert.equal(pawn3AttackCoordinates[0][1], 1);
-      pawn3._getAttackSquares();
+      pawn3._getAttackSquares(true);
       assert.ok(pawn3.squares.includes(Relation.CONTROL, board.squares.b2));
       assert.ok(!pawn3.squares.includes(Relation.ATTACK, board.squares.b2));
       assert.ok(!pawn3.squares.includes(Relation.COVER, board.squares.b2));
@@ -365,7 +365,7 @@ describe('Test pieces', function () {
       assert.equal(pawn4AttackCoordinates.length, 1);
       assert.equal(pawn4AttackCoordinates[0][0], 6);
       assert.equal(pawn4AttackCoordinates[0][1], 5);
-      pawn4._getAttackSquares();
+      pawn4._getAttackSquares(true);
       assert.ok(pawn4.squares.includes(Relation.CONTROL, board.squares.g6));
       assert.ok(pawn4.squares.includes(Relation.ATTACK, board.squares.g6));
       assert.ok(!pawn4.squares.includes(Relation.COVER, board.squares.g6));
@@ -419,6 +419,8 @@ describe('Test pieces', function () {
 
     it('should check knight get bind', function () {
       let board = new Board();
+      board.colors.setCurrent(Piece.BLACK);
+
       let knight = new Knight(Piece.BLACK, board.squares.f6);
 
       assert.equal(knight.squares[Relation.MOVE].length, 8);
@@ -446,6 +448,8 @@ describe('Test pieces', function () {
 
     it('should check bishop squares', function () {
       let board = new Board();
+      board.colors.setCurrent(Piece.BLACK);
+
       let bishop = new Bishop(Piece.BLACK, board.squares.f4);
 
       new Piece(Piece.WHITE, board.squares.g5);
@@ -494,6 +498,8 @@ describe('Test pieces', function () {
 
     it('should check rook squares', function () {
       let board = new Board();
+      board.colors.setCurrent(Piece.BLACK);
+
       let rook = new Rook(Piece.BLACK, board.squares.c5);
 
       new Piece(Piece.WHITE, board.squares.f5);
@@ -546,6 +552,8 @@ describe('Test pieces', function () {
 
     it('should check queen squares', function () {
       let board = new Board();
+      board.colors.setCurrent(Piece.BLACK);
+
       let queen = new Queen(Piece.BLACK, board.squares.e2);
 
       new Piece(Piece.WHITE, board.squares.g4);
@@ -1003,6 +1011,8 @@ describe('Test pieces', function () {
 
     it('should check remove enemy controlled squares', function () {
       let board = new Board();
+      board.colors.setCurrent(Piece.BLACK);
+
       let king = new King(Piece.BLACK, board.squares.d4);
       let knight = new Knight(Piece.WHITE, board.squares.e4);
       let pawn = new Pawn(Piece.WHITE, board.squares.d5);

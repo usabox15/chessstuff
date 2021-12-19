@@ -38,15 +38,17 @@ class StepPiece extends Piece {
    * @param {Object[]} stepPoints - Squares points.
    * @param {integer} stepPoints.x - X square coordinate.
    * @param {integer} stepPoints.y - Y square coordinate.
+   * @param {boolean} isActive - Whether piece is active or not.
    */
-  _getStepSquares(stepPoints) {
+  _getStepSquares(stepPoints, isActive) {
     this._refreshSquareFinder();
     for (let stepPoint of stepPoints) {
       let x = this.square.coordinates.x + stepPoint.x;
       let y = this.square.coordinates.y + stepPoint.y;
       if (!SquareCoordinates.correctCoordinates(x, y)) continue;
 
-      this._handleSquareActions(this.board.squares.getFromCoordinates(x, y));
+      let square = this.board.squares.getFromCoordinates(x, y);
+      this._handleSquareActions(square, isActive);
     }
   }
 }

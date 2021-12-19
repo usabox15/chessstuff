@@ -130,29 +130,33 @@ class Piece {
   /**
    * Handle square actions.
    * @param {Square} square - Square instance.
+   * @param {boolean} isActive - Whether piece is active or not.
    */
-  _handleSquareActions(square) {
+  _handleSquareActions(square, isActive) {
     if (square.piece) {
-      this._handleSquareActionsWithPiece(square);
+      this._handleSquareActionsWithPiece(square, isActive);
     } else {
-      this._handleSquareActionsWithoutPiece(square);
+      this._handleSquareActionsWithoutPiece(square, isActive);
     }
+    this.squares.add(Relation.CONTROL, square);
   }
 
   /**
    * Handle square actions with piece.
    * @param {Square} square - Square instance.
+   * @param {boolean} isActive - Whether piece is active or not.
    */
-  _handleSquareActionsWithPiece(square) {
+  _handleSquareActionsWithPiece(square, isActive) {
     if (this.sameColor(square.piece)) {
       this.squares.add(Relation.COVER, square);
     } else {
-      this.squares.add(Relation.ATTACK, square);
+      if (isActive) {
+        this.squares.add(Relation.ATTACK, square);
+      }
       if (square.piece.isKing) {
         this._handleSquareActionsAttackKing(square);
       }
     }
-    this.squares.add(Relation.CONTROL, square);
   }
 
   /**
@@ -166,14 +170,19 @@ class Piece {
   /**
    * Handle square actions without piece.
    * @param {Square} square - Square instance.
+   * @param {boolean} isActive - Whether piece is active or not.
    */
-  _handleSquareActionsWithoutPiece(square) {
-    this.squares.add(Relation.MOVE, square);
-    this.squares.add(Relation.CONTROL, square);
+  _handleSquareActionsWithoutPiece(square, isActive) {
+    if (isActive) {
+      this.squares.add(Relation.MOVE, square);
+    }
   }
 
-  /** Get piece squares by piece action. */
-  getSquares() {}
+  /**
+   * Get piece squares by piece action.
+   * @param {boolean} isActive - Whether piece is active or not.
+   */
+  getSquares(isActive) {}
 
   /** Set piece initial state. */
   setInitState() {

@@ -78,7 +78,7 @@ class Board {
   }
 
   get activeColor() {
-    return (this.afterMove ? this._colors.opponent : this._colors.current);
+    return (this._afterMove ? this._colors.opponent : this._colors.current);
   }
 
   get positionIsSetted() {
@@ -397,13 +397,15 @@ class Board {
       piece.setInitState();
     }
     for (let piece of this.allPieces.filter(p => !p.isKing)) {
-      piece.getSquares();
+      let isActive = piece.hasColor(this.activeColor);
+      piece.getSquares(isActive);
     }
     for (let piece of this.allPieces.filter(p => p.binder)) {
       piece.getBind(this._kings[piece.color].square);
     }
     for (let piece of this.allPieces.filter(p => p.isKing)) {
-      piece.getSquares();
+      let isActive = piece.hasColor(this.activeColor);
+      piece.getSquares(isActive);
     }
 
     this._checkPositionIsLegal();

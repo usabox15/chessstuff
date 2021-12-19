@@ -44,8 +44,9 @@ class LinearPiece extends Piece {
   /**
    * Handle square actions.
    * @param {Square} square - Square instance.
+   * @param {boolean} isActive - Whether piece is active or not.
    */
-  _handleSquareActions(square) {
+  _handleSquareActions(square, isActive) {
     if (this.sqrBeforeXray) {
       this.squares.add(Relation.XRAY, square);
       if (this.xrayControl) {
@@ -61,16 +62,17 @@ class LinearPiece extends Piece {
         this.endOfALine = true;
       }
     } else {
-      super._handleSquareActions(square);
+      super._handleSquareActions(square, isActive);
     }
   }
 
   /**
    * Handle square actions with piece.
    * @param {Square} square - Square instance.
+   * @param {boolean} isActive - Whether piece is active or not.
    */
-  _handleSquareActionsWithPiece(square) {
-    super._handleSquareActionsWithPiece(square);
+  _handleSquareActionsWithPiece(square, isActive) {
+    super._handleSquareActionsWithPiece(square, isActive);
     this.sqrBeforeXray = square;
   }
 
@@ -88,14 +90,16 @@ class LinearPiece extends Piece {
    * @param {Object[]} directions - Squares directions.
    * @param {integer} directions.x - X direction delta.
    * @param {integer} directions.y - Y direction delta.
+   * @param {boolean} isActive - Whether piece is active or not.
    */
-  _getLinearSquares(directions) {
+  _getLinearSquares(directions, isActive) {
     for (let direction of directions) {
       this._refreshSquareFinder();
       let x = this.square.coordinates.x + direction.x;
       let y = this.square.coordinates.y + direction.y;
       while (SquareCoordinates.correctCoordinates(x, y)) {
-        this._handleSquareActions(this.board.squares.getFromCoordinates(x, y));
+        let square = this.board.squares.getFromCoordinates(x, y);
+        this._handleSquareActions(square, isActive);
         if (this.endOfALine) break;
         x += direction.x;
         y += direction.y;

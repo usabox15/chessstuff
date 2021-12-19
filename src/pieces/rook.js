@@ -54,10 +54,13 @@ class Rook extends LinearPiece {
     return this._castleRoad;
   }
 
-  /** Get rook squares by piece action. */
-  getSquares() {
+  /**
+   * Get rook squares by piece action.
+   * @param {boolean} isActive - Whether piece is active or not.
+   */
+  getSquares(isActive) {
     this._refreshSquares();
-    this._getLinearSquares(Rook.directions);
+    this._getLinearSquares(Rook.directions, isActive);
   }
 
   /**

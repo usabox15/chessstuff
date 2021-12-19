@@ -71,7 +71,7 @@ class King extends StepPiece {
       if (!this.squares[kingAction]) continue;
       let squaresToRemove = [];
       for (let square of this.squares[kingAction]) {
-        if (square.pieces[Relation.CONTROL].filter(p => !this.sameColor(p)).length > 0) {
+        if (square.pieces[Relation.CONTROL].some(p => !this.sameColor(p))) {
           squaresToRemove.push(square);
         }
       }
@@ -108,10 +108,13 @@ class King extends StepPiece {
     }
   }
 
-  /** Get king squares by piece action. */
-  getSquares() {
+  /**
+   * Get king squares by piece action.
+   * @param {boolean} isActive - Whether piece is active or not.
+   */
+  getSquares(isActive) {
     this._refreshSquares();
-    this._getStepSquares(King.stepPoints);
+    this._getStepSquares(King.stepPoints, isActive);
     this._removeEnemyControlledSquares();
     this._addCastleMoves();
   }

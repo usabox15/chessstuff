@@ -46,15 +46,22 @@ class Pawn extends Piece {
     return this.square.onRank(Pawn.INITIAL_RANKS[this.color]);
   }
 
-  /** Get pawn squares by piece action. */
-  getSquares() {
+  /**
+   * Get pawn squares by piece action.
+   * @param {boolean} isActive - Whether piece is active or not.
+   */
+  getSquares(isActive) {
     this._refreshSquares();
-    this._getMoveSquares();
-    this._getAttackSquares();
+    this._getMoveSquares(isActive);
+    this._getAttackSquares(isActive);
   }
 
-  /** Get pawn move squares. */
-  _getMoveSquares() {
+  /**
+   * Get pawn move squares.
+   * @param {boolean} isActive - Whether piece is active or not.
+   */
+  _getMoveSquares(isActive) {
+    if (!isActive) return;
     for (let [x, y] of this._getMoveCoordinates()) {
       let square = this.board.squares.getFromCoordinates(x, y);
       if (square.piece) break;
@@ -81,8 +88,11 @@ class Pawn extends Piece {
     return moveSquaresCoordinates;
   }
 
-  /** Get pawn attack squares. */
-  _getAttackSquares() {
+  /**
+   * Get pawn attack squares.
+   * @param {boolean} isActive - Whether piece is active or not.
+   */
+  _getAttackSquares(isActive) {
     for (let [x, y] of this._getAttackCoordinates()) {
       let square = this.board.squares.getFromCoordinates(x, y);
       this.squares.add(Relation.CONTROL, square);
@@ -91,12 +101,14 @@ class Pawn extends Piece {
           this.squares.add(Relation.COVER, square);
         }
         else {
-          this.squares.add(Relation.ATTACK, square);
+          if (isActive) {
+            this.squares.add(Relation.ATTACK, square);
+          }
           if (square.piece.isKing) {
-            square.piece.checkers.add(this.square.piece);
+            this._handleSquareActionsAttackKing(square);
           }
         }
-      } else if (this._checkEnPassantSquare(square)) {
+      } else if (isActive && this._checkEnPassantSquare(square)) {
         this.squares.add(Relation.ATTACK, square);
         this.squares.add(Relation.MOVE, square);
       }

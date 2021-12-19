@@ -44,11 +44,14 @@ class Queen extends LinearPiece {
     super(color, square, Piece.QUEEN, refresh);
   }
 
-  /** Get queen squares by piece action. */
-  getSquares() {
+  /**
+   * Get queen squares by piece action.
+   * @param {boolean} isActive - Whether piece is active or not.
+   */
+  getSquares(isActive) {
     this._refreshSquares();
-    this._getLinearSquares(Bishop.directions);
-    this._getLinearSquares(Rook.directions);
+    this._getLinearSquares(Bishop.directions, isActive);
+    this._getLinearSquares(Rook.directions, isActive);
   }
 }
 

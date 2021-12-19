@@ -48,10 +48,13 @@ class Bishop extends LinearPiece {
     super(color, square, Piece.BISHOP, refresh);
   }
 
-  /** Get bishop squares by piece action. */
-  getSquares() {
+  /**
+   * Get bishop squares by piece action.
+   * @param {boolean} isActive - Whether piece is active or not.
+   */
+  getSquares(isActive) {
     this._refreshSquares();
-    this._getLinearSquares(Bishop.directions);
+    this._getLinearSquares(Bishop.directions, isActive);
   }
 }
 

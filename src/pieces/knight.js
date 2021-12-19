@@ -56,10 +56,13 @@ class Knight extends StepPiece {
     super(color, square, Piece.KNIGHT, refresh);
   }
 
-  /** Get knight squares by piece action. */
-  getSquares() {
+  /**
+   * Get knight squares by piece action.
+   * @param {boolean} isActive - Whether piece is active or not.
+   */
+  getSquares(isActive) {
     this._refreshSquares();
-    this._getStepSquares(Knight.stepPoints);
+    this._getStepSquares(Knight.stepPoints, isActive);
   }
 
   /** Bind knight. */
