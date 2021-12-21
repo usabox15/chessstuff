@@ -118,8 +118,11 @@ class Board {
   }
 
   get insufficientMaterial() {
-    let validator = new BoardInsufficientMaterialPiecesValidator(this.squares.pieces);
-    return this._positionIsLegal && validator.isLegal;
+    return (
+      this._positionIsLegal
+    &&
+      (new BoardInsufficientMaterialPiecesValidator(this)).isLegal
+    );
   }
 
   get state() {
@@ -365,11 +368,10 @@ class Board {
    */
   _checkPositionIsLegal() {
     this._positionIsLegal = true;
-    let allPieces = this.squares.pieces;
     for (let color of Piece.ALL_COLORS) {
       let king = this._kings[color];
       this._positionIsLegal = (
-        (new BoardPiecesCountValidator(allPieces, color)).isLegal
+        (new BoardPiecesCountValidator(this, color)).isLegal
       &&
         (new BoardKingPlacementValidator(king)).isLegal
       &&
@@ -378,7 +380,7 @@ class Board {
       if (!this._positionIsLegal) return;
     }
     this._positionIsLegal = (
-      (new BoardPawnsPlacementValidator(allPieces)).isLegal
+      (new BoardPawnsPlacementValidator(this)).isLegal
     &&
       (new BoardEnPassantSquareValidator(this._enPassantSquare)).isLegal
     );
@@ -389,18 +391,17 @@ class Board {
    * @return {Object} Board response.
    */
   refreshAllSquares() {
-    let allPieces = this.squares.pieces
-    for (let piece of allPieces) {
+    for (let piece of this.squares.allPieces) {
       piece.setInitState();
     }
-    for (let piece of allPieces.filter(p => !p.isKing)) {
+    for (let piece of this.squares.pieces(p => !p.isKing)) {
       let isActive = piece.hasColor(this.activeColor);
       piece.getSquares(isActive);
     }
-    for (let piece of allPieces.filter(p => p.binder)) {
+    for (let piece of this.squares.pieces(p => p.binder)) {
       piece.getBind(this._kings[piece.color].square);
     }
-    for (let piece of allPieces.filter(p => p.isKing)) {
+    for (let piece of this.squares.pieces(p => p.isKing)) {
       let isActive = piece.hasColor(this.activeColor);
       piece.getSquares(isActive);
     }
@@ -419,19 +420,18 @@ class Board {
   _handleKingChecks(king) {
     if (!king || !king.checkers.exist || !king.checkers.isLegal) return;
 
-    let allPieces = this.squares.pieces;
     if (king.checkers.single) {
       let checker = king.checkers.first;
       let betweenSquares = [];
       if (checker.isLinear) {
         betweenSquares = checker.square.getBetweenSquaresNames(king.square);
       }
-      let pieces = allPieces.filter(p => p.sameColor(king));
+      let pieces = this.squares.pieces(p => p.sameColor(king));
       for (let piece of pieces) {
         piece.getCheck(checker, betweenSquares);
       }
     } else {
-      let pieces = allPieces.filter(p => p.sameColor(king) && !p.isKing);
+      let pieces = this.squares.pieces(p => p.sameColor(king) && !p.isKing);
       for (let piece of pieces) {
         piece.getTotalImmobilize();
       }

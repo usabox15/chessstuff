@@ -61,10 +61,8 @@ class BoardResult {
    * @return {boolean} Check result.
    */
   _checkPiecesHaveNoMoves(color) {
-    return (
-      this._board.squares.pieces
-      .filter(p => p.hasColor(color) && !p.stuck)
-    ).length == 0;
+    let filter = p => p.hasColor(color) && !p.stuck;
+    return [...this._board.squares.pieces(filter)].length == 0;
   }
 
   /**

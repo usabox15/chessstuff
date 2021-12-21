@@ -74,11 +74,11 @@ class BoardPiecesCountValidator {
 
   /**
    * Creation.
-   * @param {Piece[]} pieces - Board pieces.
+   * @param {Board} board - Board.
    * @param {string} color - Pieces color.
    */
-  constructor(pieces, color) {
-    this._pieces = pieces;
+  constructor(board, color) {
+    this._board = board;
     this._color = color;
     this.isLegal = (
       this._checkKingsCount()
@@ -97,32 +97,38 @@ class BoardPiecesCountValidator {
 
   /** Check kings count. */
   _checkKingsCount() {
-    return this._pieces.filter(p => p.isKing && p.hasColor(this._color)).length == 1;
+    let filter = p => p.isKing && p.hasColor(this._color);
+    return [...this._board.squares.pieces(filter)].length == 1;
   }
 
   /** Check queens count. */
   _checkQueensCount() {
-    return this._pieces.filter(p => p.isQueen && p.hasColor(this._color)).length <= 9;
+    let filter = p => p.isQueen && p.hasColor(this._color);
+    return [...this._board.squares.pieces(filter)].length <= 9;
   }
 
   /** Check rooks count. */
   _checkRooksCount() {
-    return this._pieces.filter(p => p.isRook && p.hasColor(this._color)).length <= 10;
+    let filter = p => p.isRook && p.hasColor(this._color);
+    return [...this._board.squares.pieces(filter)].length <= 10;
   }
 
   /** Check bishops count. */
   _checkBishopsCount() {
-    return this._pieces.filter(p => p.isBishop && p.hasColor(this._color)).length <= 10;
+    let filter = p => p.isBishop && p.hasColor(this._color);
+    return [...this._board.squares.pieces(filter)].length <= 10;
   }
 
   /** Check knights count. */
   _checkKnightsCount() {
-    return this._pieces.filter(p => p.isKnight && p.hasColor(this._color)).length <= 10;
+    let filter = p => p.isKnight && p.hasColor(this._color);
+    return [...this._board.squares.pieces(filter)].length <= 10;
   }
 
   /** Check pawns count. */
   _checkPawnsCount() {
-    return this._pieces.filter(p => p.isPawn && p.hasColor(this._color)).length <= 8;
+    let filter = p => p.isPawn && p.hasColor(this._color);
+    return [...this._board.squares.pieces(filter)].length <= 8;
   }
 }
 
@@ -132,10 +138,11 @@ class BoardPawnsPlacementValidator {
 
   /**
    * Creation.
-   * @param {Piece[]} pieces - Board pieces.
+   * @param {Board} board - Board.
    */
-  constructor(pieces) {
-    this.isLegal = pieces.filter(p => p.isPawn && (p.square.onEdge.up || p.square.onEdge.down)).length == 0;
+  constructor(board) {
+    let filter = p => p.isPawn && (p.square.onEdge.up || p.square.onEdge.down);
+    this.isLegal = [...board.squares.pieces(filter)].length == 0;
   }
 }
 
@@ -162,10 +169,10 @@ class BoardInsufficientMaterialPiecesValidator {
 
   /**
    * Creation.
-   * @param {Piece[]} pieces - Board pieces.
+   * @param {Board} board - Board.
    */
-  constructor(pieces) {
-    this._pieces = pieces;
+  constructor(board) {
+    this._board = board;
     this.isLegal = (
       this._checkPawnsAndRooksAndQueensCount()
     &&
@@ -175,12 +182,14 @@ class BoardInsufficientMaterialPiecesValidator {
 
   /** Check pawns and rooks and queens count. */
   _checkPawnsAndRooksAndQueensCount() {
-    return this._pieces.filter(p => p.isPawn || p.isRook || p.isQueen).length == 0;
+    let filter = p => p.isPawn || p.isRook || p.isQueen;
+    return [...this._board.squares.pieces(filter)].length == 0;
   }
 
   /** Check bishop and knights count. */
   _checkBishopsAndKnightsCount() {
-    let minorPieces = this._pieces.filter(p => p.isBishop || p.isKnight);
+    let filter = p => p.isBishop || p.isKnight;
+    let minorPieces = [...this._board.squares.pieces(filter)];
     return minorPieces.length < 2 || (
       minorPieces.filter(p => p.isKnight) == 0
     && (

@@ -47,7 +47,7 @@ describe('Test board', function () {
       new Piece(Piece.BLACK, board.squares.c2);
       new Piece(Piece.WHITE, board.squares.h4);
       new Piece(Piece.BLACK, board.squares.f1);
-      assert.equal(board.squares.pieces.length, 6);
+      assert.equal(board.squares.allPieces.length, 6);
       for (let name of ['b3', 'e8', 'g5', 'c2', 'h4', 'f1']) {
         assert.ok(board.squares.hasOwnProperty(name));
       }
@@ -367,7 +367,7 @@ describe('Test board', function () {
     it('should check initial state without initial data', function () {
       let board = new Board();
 
-      assert.equal(board.squares.pieces.length, 0);
+      assert.equal(board.squares.allPieces.length, 0);
       assert.equal(board.colors.current, Piece.WHITE);
       assert.equal(board._result.value, null);
       assert.equal(board.enPassantSquare, null);
@@ -388,7 +388,7 @@ describe('Test board', function () {
     it('should check initial state with initial position', function () {
       let board = new Board(Board.INITIAL_FEN);
 
-      assert.equal(board.squares.pieces.length, 32);
+      assert.equal(board.squares.allPieces.length, 32);
       assert.equal(board.colors.current, Piece.WHITE);
       assert.equal(board._result.value, null);
       assert.equal(board.enPassantSquare, null);
@@ -410,7 +410,7 @@ describe('Test board', function () {
       let fenString = 'r3k2r/p2n1pbp/1p2p1p1/2p5/3pP1P1/1P1N2P1/P1P5/R2QK1Nb b Qkq e3 0 37';
       let board = new Board(fenString);
 
-      assert.equal(board.squares.pieces.length, 25);
+      assert.equal(board.squares.allPieces.length, 25);
       assert.equal(board.colors.current, Piece.BLACK);
       assert.equal(board._result.value, null);
       assert.ok(board.enPassantSquare.theSame(board.squares.e3));

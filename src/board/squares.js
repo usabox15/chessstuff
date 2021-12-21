@@ -41,11 +41,21 @@ class BoardSquares {
    * All pieces on squares.
    * @return {Piece[]} Pieces.
    */
-  get pieces() {
-    return this._items.reduce((pieces, item) => {
-      if (!item.piece) return pieces;
-      return pieces.concat(item.piece);
-    }, []);
+  get allPieces() {
+    return [...this.pieces(p => true)];
+  }
+
+  /**
+   * Pieces iterator.
+   * Iterate by filter function.
+   * @param {function} filter - Piece filter function.
+   * @yield {Piece} Piece instance.
+   */
+  *pieces(filter) {
+    for (let square of this._items) {
+      if (!square.piece || !filter(square.piece)) continue;
+      yield square.piece;
+    }
   }
 
   /**
