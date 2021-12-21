@@ -38,13 +38,14 @@ class BoardSquares {
   }
 
   /**
-   * Squares with placed pieces.
-   * @return {Square[]} Squares.
+   * All pieces on squares.
+   * @return {Piece[]} Pieces.
    */
-  get occupied() {
-    return Object.fromEntries(
-      Object.entries(this).filter(data => data[1].piece)
-    );
+  get pieces() {
+    return this._items.reduce((pieces, item) => {
+      if (!item.piece) return pieces;
+      return pieces.concat(item.piece);
+    }, []);
   }
 
   /**

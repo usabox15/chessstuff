@@ -117,12 +117,8 @@ class Board {
     return (new FENDataCreator(this)).value;
   }
 
-  get allPieces() {
-    return Object.values(this._squares.occupied).map(s => s.piece);
-  }
-
   get insufficientMaterial() {
-    let validator = new BoardInsufficientMaterialPiecesValidator(this.allPieces);
+    let validator = new BoardInsufficientMaterialPiecesValidator(this.squares.pieces);
     return this._positionIsLegal && validator.isLegal;
   }
 
@@ -369,7 +365,7 @@ class Board {
    */
   _checkPositionIsLegal() {
     this._positionIsLegal = true;
-    let allPieces = this.allPieces;
+    let allPieces = this.squares.pieces;
     for (let color of Piece.ALL_COLORS) {
       let king = this._kings[color];
       this._positionIsLegal = (
@@ -393,17 +389,18 @@ class Board {
    * @return {Object} Board response.
    */
   refreshAllSquares() {
-    for (let piece of this.allPieces) {
+    let allPieces = this.squares.pieces
+    for (let piece of allPieces) {
       piece.setInitState();
     }
-    for (let piece of this.allPieces.filter(p => !p.isKing)) {
+    for (let piece of allPieces.filter(p => !p.isKing)) {
       let isActive = piece.hasColor(this.activeColor);
       piece.getSquares(isActive);
     }
-    for (let piece of this.allPieces.filter(p => p.binder)) {
+    for (let piece of allPieces.filter(p => p.binder)) {
       piece.getBind(this._kings[piece.color].square);
     }
-    for (let piece of this.allPieces.filter(p => p.isKing)) {
+    for (let piece of allPieces.filter(p => p.isKing)) {
       let isActive = piece.hasColor(this.activeColor);
       piece.getSquares(isActive);
     }
@@ -422,18 +419,19 @@ class Board {
   _handleKingChecks(king) {
     if (!king || !king.checkers.exist || !king.checkers.isLegal) return;
 
+    let allPieces = this.squares.pieces;
     if (king.checkers.single) {
       let checker = king.checkers.first;
       let betweenSquares = [];
       if (checker.isLinear) {
         betweenSquares = checker.square.getBetweenSquaresNames(king.square);
       }
-      let pieces = this.allPieces.filter(p => p.sameColor(king));
+      let pieces = allPieces.filter(p => p.sameColor(king));
       for (let piece of pieces) {
         piece.getCheck(checker, betweenSquares);
       }
     } else {
-      let pieces = this.allPieces.filter(p => p.sameColor(king) && !p.isKing);
+      let pieces = allPieces.filter(p => p.sameColor(king) && !p.isKing);
       for (let piece of pieces) {
         piece.getTotalImmobilize();
       }

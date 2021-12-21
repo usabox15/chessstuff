@@ -62,7 +62,7 @@ class BoardResult {
    */
   _checkPiecesHaveNoMoves(color) {
     return (
-      this._board.allPieces
+      this._board.squares.pieces
       .filter(p => p.hasColor(color) && !p.stuck)
     ).length == 0;
   }

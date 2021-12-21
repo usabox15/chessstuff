@@ -44,7 +44,7 @@ function createPiece(color, kind) {
 
 function refreshBoard(brd) {
     $(".square").empty();
-    for (let piece of brd.allPieces) {
+    for (let piece of brd.squares.pieces) {
         $(`.square[x=${piece.square.name.symbol}][y=${piece.square.name.number}]`)
         .append(createPiece(piece.color, piece.kind));
     }
