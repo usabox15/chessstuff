@@ -393,14 +393,15 @@ class Board {
   refreshAllSquares() {
     let activeColor = this.activeColor;
 
-    for (let king of this._kings) {
-      king.checkers.empty();
+    for (let piece of this.squares.allPieces) {
+      piece.setInitState();
     }
-    for (let piece of this.squares.pieces(p => p.hasColor(activeColor) && !p.isKing)) {
-      piece.getSquares(true);
+    for (let piece of this.squares.pieces(p => !p.isKing)) {
+      let isActive = piece.hasColor(activeColor);
+      piece.getSquares(isActive);
     }
-    for (let piece of this.squares.pieces(p => !p.hasColor(activeColor) && !p.isKing)) {
-      piece.getSquares(false);
+    for (let piece of this.squares.pieces(p => p.binder)) {
+      piece.getBind(this._kings[piece.color].square);
     }
     for (let king of this._kings) {
       let isActive = king.hasColor(activeColor);
