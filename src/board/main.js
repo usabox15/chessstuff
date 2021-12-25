@@ -391,23 +391,24 @@ class Board {
    * @return {Object} Board response.
    */
   refreshAllSquares() {
-    for (let piece of this.squares.allPieces) {
-      piece.setInitState();
+    let activeColor = this.activeColor;
+
+    for (let king of this._kings) {
+      king.checkers.empty();
     }
-    for (let piece of this.squares.pieces(p => !p.isKing)) {
-      let isActive = piece.hasColor(this.activeColor);
-      piece.getSquares(isActive);
+    for (let piece of this.squares.pieces(p => p.hasColor(activeColor) && !p.isKing)) {
+      piece.getSquares(true);
     }
-    for (let piece of this.squares.pieces(p => p.binder)) {
-      piece.getBind(this._kings[piece.color].square);
+    for (let piece of this.squares.pieces(p => !p.hasColor(activeColor) && !p.isKing)) {
+      piece.getSquares(false);
     }
-    for (let piece of this.squares.pieces(p => p.isKing)) {
-      let isActive = piece.hasColor(this.activeColor);
-      piece.getSquares(isActive);
+    for (let king of this._kings) {
+      let isActive = king.hasColor(activeColor);
+      king.getSquares(isActive);
     }
 
     this._checkPositionIsLegal();
-    this._handleKingChecks(this._kings[this.activeColor]);
+    this._handleKingChecks(this._kings[activeColor]);
     this._result.trySetValue();
 
     return this._response.success();

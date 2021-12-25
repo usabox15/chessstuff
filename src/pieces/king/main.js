@@ -57,6 +57,11 @@ class King extends StepPiece {
     super(color, square, Piece.KING, refresh);
   }
 
+  /** Set initial state. */
+  setInitState() {
+    this.checkers = new KingCheckers(this);
+  }
+
   /**
    * Check whether kins is on initial square or not.
    * @return {boolean} Whether kins is on initial square or not.
@@ -96,15 +101,6 @@ class King extends StepPiece {
       if (this.castle[side]) {
         this.squares.remove(Relation.MOVE, this.castle[side].toSquare);
       }
-    }
-  }
-
-  /** Set initial state. */
-  setInitState() {
-    if (this.checkers) {
-      this.checkers.empty();
-    } else {
-      this.checkers = new KingCheckers(this);
     }
   }
 

@@ -39,7 +39,6 @@ describe('Test pieces', function () {
       let piece = new Piece(Piece.BLACK, new Square('f5'));
       assert.equal(piece.color, Piece.BLACK);
       assert.equal(piece.square.name.value, 'f5');
-      assert.equal(piece.binder, null);
       assert.equal(piece.kind, null);
       assert.ok(!piece.isPawn);
       assert.ok(!piece.isKnight);
@@ -157,65 +156,24 @@ describe('Test pieces', function () {
       assert.ok(piece1.squares.includes(Relation.CONTROL, board.squares.c5));
     });
 
-    it('should make a piece as binder to next square piece before King', function () {
-      let board = new Board();
-      let piece1 = new LinearPiece(Piece.WHITE, board.squares.h8);
-      let piece2 = new Piece(Piece.BLACK, board.squares.f6);
-      let piece3 = new King(Piece.BLACK, board.squares.a1);
-      assert.ok(!piece2.binder);
-      piece1._handleSquareActions(board.squares.f6);
-      assert.ok(!piece2.binder);
-      piece1._handleSquareActions(board.squares.a1);
-      assert.ok(piece2.binder);
-      assert.ok(piece2.binder.theSame(piece1));
-    });
-
     it('should bind a piece', function () {
-      let binderSquare = new Square('b5');
-      let pieceSquare = new Square('b3');
-      let kingSquare = new Square('b1');
-      let piece1 = new LinearPiece(Piece.WHITE, binderSquare);
-      let piece2 = new Piece(Piece.BLACK, pieceSquare);
-      let b5 = new Square('b5');
-      piece2.squares.add(Relation.ATTACK, b5);
-      piece2.squares.add(Relation.CONTROL, b5);
-      let b4 = new Square('b4');
-      piece2.squares.add(Relation.MOVE, b4);
-      piece2.squares.add(Relation.CONTROL, b4);
-      let a3 = new Square('a3');
-      piece2.squares.add(Relation.ATTACK, a3);
-      piece2.squares.add(Relation.CONTROL, a3);
-      let c3 = new Square('c3');
-      piece2.squares.add(Relation.MOVE, c3);
-      piece2.squares.add(Relation.CONTROL, c3);
-      let d3 = new Square('d3');
-      piece2.squares.add(Relation.COVER, d3);
-      piece2.squares.add(Relation.CONTROL, d3);
-      let d4 = new Square('d4');
-      piece2.squares.add(Relation.XRAY, d4);
-      let b2 = new Square('b2');
-      piece2.squares.add(Relation.MOVE, b2);
-      piece2.squares.add(Relation.CONTROL, b2);
-      let b1 = new Square('b1');
-      piece2.squares.add(Relation.COVER, b1);
-      piece2.squares.add(Relation.CONTROL, b1);
-      piece2.binder = piece1;
-      piece2.getBind(b1);
-      assert.ok(!piece2.squares[Relation.XRAY]);
-      assert.ok(piece2.squares.includes(Relation.MOVE, b4));
-      assert.ok(!piece2.squares.includes(Relation.MOVE, c3));
-      assert.ok(piece2.squares.includes(Relation.MOVE, b2));
-      assert.ok(piece2.squares.includes(Relation.ATTACK, b5));
-      assert.ok(!piece2.squares.includes(Relation.ATTACK, a3));
-      assert.ok(!piece2.squares.includes(Relation.COVER, d3));
-      assert.ok(piece2.squares.includes(Relation.COVER, b1));
-      assert.ok(piece2.squares.includes(Relation.CONTROL, b5));
-      assert.ok(piece2.squares.includes(Relation.CONTROL, b4));
-      assert.ok(piece2.squares.includes(Relation.CONTROL, a3));
-      assert.ok(piece2.squares.includes(Relation.CONTROL, c3));
-      assert.ok(piece2.squares.includes(Relation.CONTROL, d3));
-      assert.ok(piece2.squares.includes(Relation.CONTROL, b2));
-      assert.ok(piece2.squares.includes(Relation.CONTROL, b1));
+      let board = new Board('8/5K2/8/1Q6/8/Nr1r4/8/1k6 b - - 0 1');
+      let piece = board.squares.b3.piece;
+      assert.ok(!piece.squares[Relation.XRAY]);
+      assert.ok(piece.squares.includes(Relation.MOVE, b4));
+      assert.ok(!piece.squares.includes(Relation.MOVE, c3));
+      assert.ok(piece.squares.includes(Relation.MOVE, b2));
+      assert.ok(piece.squares.includes(Relation.ATTACK, b5));
+      assert.ok(!piece.squares.includes(Relation.ATTACK, a3));
+      assert.ok(!piece.squares.includes(Relation.COVER, d3));
+      assert.ok(piece.squares.includes(Relation.COVER, b1));
+      assert.ok(piece.squares.includes(Relation.CONTROL, b5));
+      assert.ok(piece.squares.includes(Relation.CONTROL, b4));
+      assert.ok(piece.squares.includes(Relation.CONTROL, a3));
+      assert.ok(piece.squares.includes(Relation.CONTROL, c3));
+      assert.ok(piece.squares.includes(Relation.CONTROL, d3));
+      assert.ok(piece.squares.includes(Relation.CONTROL, b2));
+      assert.ok(piece.squares.includes(Relation.CONTROL, b1));
     });
 
     it('should handle check logic', function () {
@@ -414,27 +372,6 @@ describe('Test pieces', function () {
       assert.ok(knight.squares.includes(Relation.CONTROL, board.squares.c3));
       assert.ok(knight.squares.includes(Relation.CONTROL, board.squares.b4));
 
-      assert.equal(knight.squares[Relation.XRAY], null);
-    });
-
-    it('should check knight get bind', function () {
-      let board = new Board();
-      board.colors.setCurrent(Piece.BLACK);
-
-      let knight = new Knight(Piece.BLACK, board.squares.f6);
-
-      assert.equal(knight.squares[Relation.MOVE].length, 8);
-      assert.equal(knight.squares[Relation.ATTACK], null);
-      assert.equal(knight.squares[Relation.COVER], null);
-      assert.equal(knight.squares[Relation.CONTROL].length, 8);
-      assert.equal(knight.squares[Relation.XRAY], null);
-
-      knight.getBind();
-
-      assert.equal(knight.squares[Relation.MOVE], null);
-      assert.equal(knight.squares[Relation.ATTACK], null);
-      assert.equal(knight.squares[Relation.COVER], null);
-      assert.equal(knight.squares[Relation.CONTROL].length, 8);
       assert.equal(knight.squares[Relation.XRAY], null);
     });
   });

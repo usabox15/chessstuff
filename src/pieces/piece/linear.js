@@ -54,15 +54,34 @@ class LinearPiece extends Piece {
         this.xrayControl = false;
       }
       if (square.piece) {
-        let isOppKingSquare = square.piece.isKing && !this.sameColor(square.piece);
-        let isOppPieceBeforeXray = !this.sameColor(this.sqrBeforeXray.piece);
-        if (isOppKingSquare && isOppPieceBeforeXray) {
-          this.sqrBeforeXray.piece.binder = this;
-        }
         this.endOfALine = true;
+        if (!isActive) {
+          this._bindPieceOnSquareBeforeXray(square);
+        }
       }
     } else {
       super._handleSquareActions(square, isActive);
+    }
+  }
+
+  /**
+   * Bind piece on square before xray.
+   * @param {Square} square - Square instance.
+   */
+  _bindPieceOnSquareBeforeXray(square) {
+    let isOppKingSquare = square.piece.isKing && !this.sameColor(square.piece);
+    let isOppPieceBeforeXray = !this.sameColor(this.sqrBeforeXray.piece);
+    if (!isOppKingSquare || !isOppPieceBeforeXray) return;
+
+    if (this.sqrBeforeXray.piece.isKnight) {
+      this.sqrBeforeXray.piece.getTotalImmobilize();
+      return;
+    }
+
+    this.sqrBeforeXray.piece.squares.refresh(Relation.XRAY);
+    let betweenSquares = this.square.getBetweenSquaresNames(square, true, true);
+    for (let actonKind of [Relation.MOVE, Relation.ATTACK, Relation.COVER]) {
+      this.sqrBeforeXray.piece.squares.limit(actonKind, betweenSquares);
     }
   }
 

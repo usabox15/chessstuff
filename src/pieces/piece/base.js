@@ -185,9 +185,7 @@ class Piece {
   getSquares(isActive) {}
 
   /** Set piece initial state. */
-  setInitState() {
-    this.binder = null;
-  }
+  setInitState() {}
 
   /**
    * Place piece to square.
@@ -251,18 +249,6 @@ class Piece {
   getTotalImmobilize() {
     for (let kind of [Relation.MOVE, Relation.ATTACK, Relation.COVER]) {
       this.squares.refresh(kind);
-    }
-  }
-
-  /**
-   * Bind piece.
-   * @param {Square} kingSquare - King square.
-   */
-  getBind(kingSquare) {
-    this.squares.refresh(Relation.XRAY);
-    let betweenSquares = this.binder.square.getBetweenSquaresNames(kingSquare, true, true);
-    for (let actonKind of [Relation.MOVE, Relation.ATTACK, Relation.COVER]) {
-      this.squares.limit(actonKind, betweenSquares);
     }
   }
 

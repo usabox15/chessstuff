@@ -64,11 +64,6 @@ class Knight extends StepPiece {
     this._refreshSquares();
     this._getStepSquares(Knight.stepPoints, isActive);
   }
-
-  /** Bind knight. */
-  getBind() {
-    this.getTotalImmobilize();
-  }
 }
 
 
