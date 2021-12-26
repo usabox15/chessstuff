@@ -211,12 +211,10 @@ $(".square:not(.aim)")
     if (!aimedSquare) {
         let piece = board.squares[$(this).attr("x") + $(this).attr("y")].piece;
         if (piece) {
-            if (piece.hasColor(board.colors.current)) {
-                markingAbilitySquares(piece);
-            }
-            else {
+            if (!piece.hasColor(board.colors.current) || !piece.isPawn) {
                 markingSquares(piece, "control");
             }
+            markingAbilitySquares(piece);
         }
     }
 })
