@@ -1,7 +1,55 @@
+:root {
+  --color-square-light: lightgrey;
+  --color-square-dark: lightblue;
+  --color-square-aim: #f4e241;
+
+  --color-action-move: green;
+  --color-action-attack: red;
+  --color-action-cover: blue;
+  --color-action-control: #ff9900;
+  --color-action-xray: #aa42f4;
+}
+
+
+#actions-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 5;
+}
+#actions-panel > h4 {
+  margin: 5 0;
+}
+
+
+.actions-panel-item {
+  margin: 7 0;
+}
+.actions-panel-item > label {
+  padding: 3;
+}
+label[for="actions-move"] {
+  background-color: var(--color-action-move);
+}
+label[for="actions-attack"] {
+  background-color: var(--color-action-attack);
+}
+label[for="actions-cover"] {
+  background-color: var(--color-action-cover);
+}
+label[for="actions-control"] {
+  background-color: var(--color-action-control);
+}
+label[for="actions-xray"] {
+  background-color: var(--color-action-xray);
+}
+
+
 #board {
     width: max-content;
     margin: 0 auto;
 }
+
 
 .row {
     font-size: 0;
@@ -50,35 +98,35 @@
 }
 
 .light.square {
-    background-color: lightgrey !important;
+    background-color: var(--color-square-light) !important;
 }
 
 .dark.square {
-    background-color: lightblue !important;
+    background-color: var(--color-square-dark) !important;
 }
 
 .square.aim.marked {
-    background-color: #f4e241 !important;
+    background-color: var(--color-square-aim) !important;
 }
 
 .square.control.marked {
-    background-color: #ff9900 !important;
+    background-color: var(--color-action-control) !important;
 }
 
 .square.move.marked {
-    background-color: green !important;
+    background-color: var(--color-action-move) !important;
 }
 
 .square.cover.marked {
-    background-color: blue !important;
+    background-color: var(--color-action-cover) !important;
 }
 
 .square.attack.marked {
-    background-color: red !important;
+    background-color: var(--color-action-attack) !important;
 }
 
 .square.xray.marked {
-    background-color: #aa42f4 !important;
+    background-color: var(--color-action-xray) !important;
 }
 
 .piece {
