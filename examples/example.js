@@ -17,7 +17,19 @@ var symbols = {
     },
 };
 
+
+var globalActions = {
+  move: true,
+  attack: true,
+  xray: true,
+  cover: true,
+  control: true,
+}
+
+
 function markingSquares(piece, actionKind, aimed=false) {
+    if (!globalActions[actionKind]) return;
+
     let squares = piece.squares[actionKind] || [];
     let aimClassName = (aimed ? "aim " : "");
     for (let sqr of squares) {
