@@ -18,13 +18,9 @@ var symbols = {
 };
 
 
-var globalActions = {
-  move: true,
-  attack: true,
-  xray: true,
-  cover: true,
-  control: true,
-}
+var globalActions = Object.fromEntries(
+  chessstuff.Relation.ALL_KINDS.map(k => [k, true])
+);
 
 
 function markingSquares(piece, actionKind, aimed=false) {
@@ -234,4 +230,24 @@ $(".square:not(.aim)")
     if (!aimedSquare) {
         unMarkingSquares();
     }
+});
+
+
+function setActionEvents(action) {
+  let input = document.getElementById(`actions-${action}`);
+  input.addEventListener('change', function(e) {
+    globalActions[action] = this.checked;
+  });
+}
+
+
+function setActionsEvents() {
+  for (let action of chessstuff.Relation.ALL_KINDS) {
+    setActionEvents(action);
+  }
+}
+
+
+document.addEventListener('DOMContentLoaded', function(e) {
+  setActionsEvents();
 });
