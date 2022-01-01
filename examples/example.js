@@ -238,6 +238,7 @@ function setActionEvents(action) {
   input.addEventListener('change', function(e) {
     globalActions[action] = this.checked;
   });
+  globalActions[action] = input.checked;
 }
 
 
