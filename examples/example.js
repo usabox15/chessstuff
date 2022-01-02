@@ -1,19 +1,22 @@
-var symbols = {
-    "white": {
-        "pawn": "&#9817;",
-        "knight": "&#9816;",
-        "bishop": "&#9815;",
-        "rook": "&#9814;",
-        "queen": "&#9813;",
-        "king": "&#9812;",
+const AIM = 'aim';
+const MARKED = 'marked';
+
+const SYMBOLS = {
+    [chessstuff.Piece.WHITE]: {
+        [chessstuff.Piece.PAWN]: '&#9817;',
+        [chessstuff.Piece.KNIGHT]: '&#9816;',
+        [chessstuff.Piece.BISHOP]: '&#9815;',
+        [chessstuff.Piece.ROOK]: '&#9814;',
+        [chessstuff.Piece.QUEEN]: '&#9813;',
+        [chessstuff.Piece.KING]: '&#9812;',
     },
-    "black": {
-        "pawn": "&#9823;",
-        "knight": "&#9822;",
-        "bishop": "&#9821;",
-        "rook": "&#9820;",
-        "queen": "&#9819;",
-        "king": "&#9818;",
+    [chessstuff.Piece.BLACK]: {
+        [chessstuff.Piece.PAWN]: '&#9823;',
+        [chessstuff.Piece.KNIGHT]: '&#9822;',
+        [chessstuff.Piece.BISHOP]: '&#9821;',
+        [chessstuff.Piece.ROOK]: '&#9820;',
+        [chessstuff.Piece.QUEEN]: '&#9819;',
+        [chessstuff.Piece.KING]: '&#9818;',
     },
 };
 
@@ -21,31 +24,36 @@ var symbols = {
 var globalActions = Object.fromEntries(
   chessstuff.Relation.ALL_KINDS.map(k => [k, true])
 );
+var board = null;
+var aimedSquare = null;
 
 
-function markingSquares(piece, actionKind, aimed=false) {
-    if (!globalActions[actionKind]) return;
+function markingSquares(piece, action, aimed=false) {
+    if (!globalActions[action] || !piece.squares[action]) return;
 
-    let squares = piece.squares[actionKind] || [];
-    let aimClassName = (aimed ? "aim " : "");
-    for (let sqr of squares) {
+    let classes = [action, MARKED];
+    if (aimed) {
+      classes.push(AIM);
+    }
+
+    for (let sqr of piece.squares[action]) {
         $(`.square[x=${sqr.name.symbol}][y=${sqr.name.number}]`)
-        .addClass(`${aimClassName}${actionKind} marked`);
+        .addClass(classes);
     }
 }
 
 function markingAbilitySquares(piece, aimed=false) {
-    for (let actionKind of ["move", "attack", "xray", "cover"]){
-        markingSquares(piece, actionKind, aimed);
+    for (let action of chessstuff.Relation.ALL_KINDS){
+        markingSquares(piece, action, aimed);
     }
 }
 
 function unMarkingSquares() {
-    $(".square").removeClass("aim move attack xray cover control marked");
+    $(".square").removeClass([AIM, MARKED, ...chessstuff.Relation.ALL_KINDS]);
 }
 
 function createPiece(color, kind) {
-    let piece = $("<p>" + symbols[color][kind] + "</p>");
+    let piece = $("<p>" + SYMBOLS[color][kind] + "</p>");
     piece.addClass("piece");
     return piece;
 }
@@ -58,86 +66,6 @@ function refreshBoard(brd) {
     }
 }
 
-
-
-// // TEST ACTION SQUARES
-
-// var board = new Board;
-
-// board.placePiece("black", "pawn", "g2");
-// board.placePiece("black", "knight", "e5");
-// board.placePiece("black", "bishop", "d7");
-// board.placePiece("black", "rook", "c4");
-// board.placePiece("black", "queen", "f6");
-// board.placePiece("black", "king", "b2");
-
-// refreshBoard(board)
-
-// $(".square")
-// .mouseenter(function() {
-//     let square = $(this).attr("x") + $(this).attr("y");
-//     let piece = new Piece("white", "queen", board.getSquare(square));
-//     piece.getSquares(board.occupiedSquares);
-//     markingAbilitySquares(piece);
-// })
-// .mouseleave(function() {
-//     unMarkingSquares();
-// });
-
-
-
-// // TEST PIeCES ACTION
-
-// var board = new Board;
-
-// board.placePiece("black", "rook", "a8");
-// board.placePiece("black", "king", "c8");
-// board.placePiece("black", "rook", "h8");
-// board.placePiece("black", "pawn", "a7");
-// board.placePiece("black", "pawn", "b7");
-// board.placePiece("black", "pawn", "c7");
-// board.placePiece("black", "pawn", "h7");
-// board.placePiece("black", "knight", "e5");
-// board.placePiece("black", "queen", "f5");
-// board.placePiece("black", "bishop", "h3");
-// board.placePiece("black", "pawn", "g2");
-
-// board.placePiece("white", "bishop", "g5");
-// board.placePiece("white", "pawn", "d4");
-// board.placePiece("white", "pawn", "h4");
-// board.placePiece("white", "queen", "c3");
-// board.placePiece("white", "pawn", "a2");
-// board.placePiece("white", "pawn", "b2");
-// board.placePiece("white", "pawn", "c2");
-// board.placePiece("white", "knight", "e2");
-// board.placePiece("white", "king", "b1");
-// board.placePiece("white", "rook", "d1");
-// board.placePiece("white", "rook", "g1");
-
-// board.refreshAllSquares();
-
-// refreshBoard(board)
-
-// $(".square")
-// .mouseenter(function() {
-//     let piece = board.occupiedSquares[$(this).attr("x") + $(this).attr("y")];
-//     if (piece) {
-//         markingAbilitySquares(piece);
-//     }
-// })
-// .mouseleave(function() {
-//     unMarkingSquares();
-// });
-
-
-
-// TEST GAME
-
-// var board = new chessstuff.board.Board(chessstuff.board.Board.INITIAL_FEN);
-var board = new chessstuff.Board(chessstuff.Board.INITIAL_FEN);
-var aimedSquare = null;
-
-refreshBoard(board);
 
 function removeAdditionalInfo() {
     for (let elem of ["#hider", "#choicesBox"]) {
@@ -187,49 +115,61 @@ $("body").on("click", ".choicesBox", function() {
     removeAdditionalInfo();
 })
 
-$(".square").on("click", function() {
-    let newSquare = $(this).attr("x") + $(this).attr("y");
-    if (aimedSquare) {
-        if (aimedSquare != newSquare) {
-            let response = board.movePiece(aimedSquare, newSquare);
-            if (response.success) {
-                if (response.transformation) {
-                    showTransformChoices(board.colors.current);
-                }
-                else {
-                    refreshBoard(board);
-                }
-            }
-        }
-        unMarkingSquares();
-        aimedSquare = null;
+
+function selectPiece(squareElem, squareName) {
+  let piece = board.squares[squareName].piece;
+  if (piece && piece.hasColor(board.colors.current)) {
+    $(squareElem).addClass([AIM, MARKED]);
+    markingAbilitySquares(piece, true);
+    aimedSquare = squareName;
+  } else {
+    aimedSquare = null;
+  }
+}
+
+
+function movePiece(squareElem, squareName) {
+  let response = board.movePiece(aimedSquare, squareName);
+  if (response.success) {
+    if (response.transformation) {
+      showTransformChoices(board.colors.current);
     }
     else {
-        let piece = board.squares[newSquare].piece;
-        if (piece && piece.hasColor(board.colors.current)) {
-            $(this).addClass("aim marked");
-            markingAbilitySquares(piece, true);
-            aimedSquare = newSquare;
-        }
+      refreshBoard(board);
+    }
+    aimedSquare = null;
+  } else {
+    selectPiece(this, squareName);
+  }
+}
+
+
+$(".square").on("click", function() {
+    let newSquare = $(this).attr("x") + $(this).attr("y");
+
+    unMarkingSquares();
+
+    if (!aimedSquare) {
+      selectPiece(this, newSquare);
+    } else if (aimedSquare != newSquare) {
+      movePiece(this, newSquare);
     }
 })
 
+
 $(".square:not(.aim)")
-.mouseenter(function() {
-    if (!aimedSquare) {
-        let piece = board.squares[$(this).attr("x") + $(this).attr("y")].piece;
-        if (piece) {
-            if (!piece.hasColor(board.colors.current) || !piece.isPawn) {
-                markingSquares(piece, "control");
-            }
-            markingAbilitySquares(piece);
-        }
-    }
+.mouseenter(function(e) {
+  if (aimedSquare) return;
+
+  let squareName = $(this).attr("x") + $(this).attr("y");
+  let piece = board.squares[squareName].piece;
+  if (!piece) return;
+
+  markingAbilitySquares(piece);
 })
-.mouseleave(function() {
-    if (!aimedSquare) {
-        unMarkingSquares();
-    }
+.mouseleave(function(e) {
+  if (aimedSquare) return;
+  unMarkingSquares();
 });
 
 
@@ -251,4 +191,7 @@ function setActionsEvents() {
 
 document.addEventListener('DOMContentLoaded', function(e) {
   setActionsEvents();
+
+  board = new chessstuff.Board(chessstuff.Board.INITIAL_FEN);
+  refreshBoard(board);
 });
