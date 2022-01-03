@@ -50,6 +50,7 @@ label[for="actions-xray"] {
 #board {
     width: max-content;
     margin: 0 auto;
+    position: relative;
 }
 
 
@@ -138,16 +139,25 @@ label[for="actions-xray"] {
     cursor: pointer;
 }
 
-#hider {
+#cover {
     position: absolute;
     width: 432;
     height: 432;
-    background-color: pink;
-    opacity: 0.5;
+    background-color: #cccccc;
+    opacity: 0.4;
+    top: 0;
+    left: 24;
 }
 
 #choicesBox {
     position: absolute;
     background-color: gray;
     padding: 2;
+    top: 190;
+    left: 130;
+}
+
+
+.hided {
+  display: none;
 }
