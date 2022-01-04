@@ -224,6 +224,16 @@ function setActionsEvents() {
 }
 
 
+function setBoardFEN(fen) {
+  try {
+    GLOBAL.board = new chessstuff.Board(fen);
+    refreshBoard();
+  } catch(e) {
+    console.log('Wrong FEN');
+  }
+}
+
+
 document.addEventListener('DOMContentLoaded', function(e) {
   setActionsEvents();
 
@@ -231,9 +241,13 @@ document.addEventListener('DOMContentLoaded', function(e) {
 
   let cover = document.querySelector('#cover');
   cover.addEventListener('click', function(e) {
-      removeAdditionalInfo();
+    removeAdditionalInfo();
   });
 
-  GLOBAL.board = new chessstuff.Board(chessstuff.Board.INITIAL_FEN);
-  refreshBoard();
+  let fenInput = document.getElementById('fen-input');
+  fenInput.addEventListener('change', function(e) {
+    setBoardFEN(this.value);
+  });
+
+  setBoardFEN(chessstuff.Board.INITIAL_FEN);
 });
