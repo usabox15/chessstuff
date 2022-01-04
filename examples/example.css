@@ -47,10 +47,17 @@ label[for="actions-xray"] {
 }
 
 
+#board-wrapper {
+  width: max-content;
+  margin: 0 auto;
+}
+
 #board {
-    width: max-content;
-    margin: 0 auto;
-    position: relative;
+  position: relative;
+}
+
+#fen-input {
+  font-size: 12;
 }
 
 

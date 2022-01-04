@@ -84,6 +84,9 @@ function refreshBoard() {
     let square = document.querySelector(`.square[x="${x}"][y="${y}"]`);
     square.appendChild(pieceElement);
   }
+
+  let fenInput = document.getElementById('fen-input');
+  fenInput.value = GLOBAL.board.FEN;
 }
 
 
