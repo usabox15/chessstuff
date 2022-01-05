@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2021 Yegor Bitensky
+Copyright 2020-2022 Yegor Bitensky
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -95,6 +95,10 @@ class Board {
 
   get colors() {
     return this._colors;
+  }
+
+  get result() {
+    return this._result;
   }
 
   get kings() {

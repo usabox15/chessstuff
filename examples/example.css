@@ -47,7 +47,7 @@ label[for="actions-xray"] {
 }
 
 
-#board-wrapper {
+#board-wrapper, #state {
   width: max-content;
   margin: 0 auto;
 }

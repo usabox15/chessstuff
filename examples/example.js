@@ -70,7 +70,6 @@ function createPiece(color, kind) {
 }
 
 
-
 function refreshBoard() {
   let squares = document.querySelectorAll('.square');
   for (let square of squares) {
@@ -85,29 +84,36 @@ function refreshBoard() {
     square.appendChild(pieceElement);
   }
 
+  let stateValue = document.getElementById('state-value');
+  if (GLOBAL.board.result.value) {
+    stateValue.innerText = `result: ${GLOBAL.board.result.value}`;
+  } else {
+    stateValue.innerText = `${GLOBAL.board.colors.current} to move`;
+  }
+
   let fenInput = document.getElementById('fen-input');
   fenInput.value = GLOBAL.board.FEN;
 }
 
 
 function showCover() {
-  let cover = document.querySelector('#cover');
+  let cover = document.getElementById('cover');
   cover.classList.remove('hided');
 }
 
 function hideCover() {
-  let cover = document.querySelector('#cover');
+  let cover = document.getElementById('cover');
   cover.classList.add('hided');
 }
 
 
 function showChoicesBox() {
-  let choicesBox = document.querySelector('#choicesBox');
+  let choicesBox = document.getElementById('choicesBox');
   choicesBox.classList.remove('hided');
 }
 
 function hideChoicesBox() {
-  let choicesBox = document.querySelector('#choicesBox');
+  let choicesBox = document.getElementById('choicesBox');
   choicesBox.classList.add('hided');
   choicesBox.innerHTML = '';
 }
@@ -120,7 +126,7 @@ function removeAdditionalInfo() {
 
 
 function fillChoicesBox() {
-  let choicesBox = document.querySelector('#choicesBox');
+  let choicesBox = document.getElementById('choicesBox');
   for (let kind of chessstuff.Piece.ALL_PAWN_TRANSFORM) {
     let choicesItem = document.createElement('div');
     choicesItem.classList.add('square', 'choicesItem');
@@ -172,6 +178,8 @@ function setSquaresEvents() {
   let squares = document.querySelectorAll('.square');
   for (let square of squares) {
     square.addEventListener('click', function(e) {
+      if (GLOBAL.board.result.value) return;
+
       let x = this.getAttributeNode('x').nodeValue;
       let y = this.getAttributeNode('y').nodeValue;
       let squareName = `${x}${y}`;
@@ -189,7 +197,7 @@ function setSquaresEvents() {
   squares = document.querySelectorAll('.square:not(.aim)');
   for (let square of squares) {
     square.addEventListener('mouseenter', function(e) {
-      if (GLOBAL.aimedSquare) return;
+      if (GLOBAL.aimedSquare || GLOBAL.board.result.value) return;
 
       let x = this.getAttributeNode('x').nodeValue;
       let y = this.getAttributeNode('y').nodeValue;
