@@ -86,7 +86,7 @@ function refreshBoard() {
 
   let stateValue = document.getElementById('state-value');
   if (GLOBAL.board.result.value) {
-    stateValue.innerText = `result: ${GLOBAL.board.result.value}`;
+    stateValue.innerText = `result: ${GLOBAL.board.result.value.join(' | ')}`;
   } else {
     stateValue.innerText = `${GLOBAL.board.colors.current} to move`;
   }
@@ -255,6 +255,11 @@ document.addEventListener('DOMContentLoaded', function(e) {
   let fenInput = document.getElementById('fen-input');
   fenInput.addEventListener('change', function(e) {
     setBoardFEN(this.value);
+  });
+
+  let newGameButton = document.getElementById('new-game-button');
+  newGameButton.addEventListener('click', function(e) {
+    setBoardFEN(chessstuff.Board.INITIAL_FEN);
   });
 
   setBoardFEN(chessstuff.Board.INITIAL_FEN);

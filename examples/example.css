@@ -47,7 +47,7 @@ label[for="actions-xray"] {
 }
 
 
-#board-wrapper, #state {
+#board-wrapper, #state, #buttons {
   width: max-content;
   margin: 0 auto;
 }
@@ -58,6 +58,13 @@ label[for="actions-xray"] {
 
 #fen-input {
   font-size: 12;
+}
+
+#buttons {
+  padding: 15;
+}
+#buttons > button {
+  cursor: pointer;
 }
 
 
