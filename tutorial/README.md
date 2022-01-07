@@ -97,9 +97,7 @@ King {...}
 ### Pieces movement
 
 ```javascript
-> const chessstuff = require('chessstuff');
-undefined
-> var board = new chessstuff.board.Board('8/8/5N2/8/6K1/1k6/3r4/8 b - - 0 1');
+> var board = new chessstuff.Board('8/8/5N2/8/6K1/1k6/3r4/8 b - - 0 1');
 undefined
 ```
 
@@ -111,10 +109,10 @@ Move rook to d5
   positionIsLegal: true,
   FEN: '8/8/5N2/3r4/6K1/1k6/8/8 w - - 0 2',
   insufficientMaterial: false,
+  transformation: false,
   result: null,
   description: '',
-  success: true,
-  transformation: false
+  success: true
 }
 ```
 
@@ -126,10 +124,10 @@ Try to make illegal move by knight
   positionIsLegal: true,
   FEN: '8/8/5N2/3r4/6K1/1k6/8/8 w - - 0 2',
   insufficientMaterial: false,
+  transformation: false,
   result: null,
   description: 'Illegal move.',
-  success: false,
-  transformation: false
+  success: false
 }
 ```
 
@@ -141,19 +139,17 @@ Take rook by knight
   positionIsLegal: true,
   FEN: '8/8/8/3N4/6K1/1k6/8/8 b - - 0 2',
   insufficientMaterial: true,
+  transformation: false,
   result: [ 0.5, 0.5 ],
   description: '',
-  success: true,
-  transformation: false
+  success: true
 }
 ```
 
 ### Castling
 
 ```javascript
-> const chessstuff = require('chessstuff');
-undefined
-> var board = new chessstuff.board.Board('4k2r/8/8/8/6b1/8/8/R3K3 b Qk - 0 1');
+> var board = new chessstuff.Board('4k2r/8/8/8/6b1/8/8/R3K3 b Qk - 0 1');
 undefined
 ```
 
@@ -165,10 +161,10 @@ Black king short castle
   positionIsLegal: true,
   FEN: '5rk1/8/8/8/6b1/8/8/R3K3 w Q - 0 2',
   insufficientMaterial: false,
+  transformation: false,
   result: null,
   description: '',
-  success: true,
-  transformation: false
+  success: true
 }
 
 ```
@@ -181,10 +177,10 @@ Try to castle long by white king
   positionIsLegal: true,
   FEN: '5rk1/8/8/8/6b1/8/8/R3K3 w Q - 0 2',
   insufficientMaterial: false,
+  transformation: false,
   result: null,
   description: 'Illegal move.',
-  success: false,
-  transformation: false
+  success: false
 }
 ```
 
@@ -193,19 +189,17 @@ White king can't castle at that moment (d1 square is controlled by black bishop)
 ### Take pawn en passant
 
 ```javascript
-> const chessstuff = require('chessstuff');
-undefined
-> var board = new chessstuff.board.Board('4k3/p7/8/1P6/8/8/8/4K3 b - - 0 1');
+> var board = new chessstuff.Board('4k3/p7/8/1P6/8/8/8/4K3 b - - 0 1');
 undefined
 > board.movePiece('a7', 'a5');
 {
   positionIsLegal: true,
   FEN: '4k3/8/8/pP6/8/8/8/4K3 w - a6 0 2',
   insufficientMaterial: false,
+  transformation: false,
   result: null,
   description: '',
-  success: true,
-  transformation: false
+  success: true
 }
 > board.enPassantSquare.name.value;
 'a6'
@@ -214,41 +208,39 @@ undefined
   positionIsLegal: true,
   FEN: '4k3/8/P7/8/8/8/8/4K3 b - - 0 2',
   insufficientMaterial: false,
+  transformation: false,
   result: null,
   description: '',
-  success: true,
-  transformation: false
+  success: true
 }
 ```
 
 ### Pawn transformation
 
 ```javascript
-> const chessstuff = require('chessstuff');
-undefined
-> var board = new chessstuff.board.Board('8/8/3k4/8/8/6K1/5p2/8 b - - 0 1');
+> var board = new chessstuff.Board('8/8/3k4/8/8/6K1/5p2/8 b - - 0 1');
 undefined
 > board.movePiece('f2', 'f1');
 {
   positionIsLegal: true,
   FEN: '8/8/3k4/8/8/6K1/5p2/8 b - - 0 1',
   insufficientMaterial: false,
+  transformation: true,
   result: null,
   description: 'Pawn is ready to transform on f1 square.',
-  success: true,
-  transformation: true
+  success: true
 }
 > board.transformation;
-{ fromSquareName: 'f2', toSquareName: 'f1' }
-> board.pawnTransformation(chessstuff.pieces.Piece.QUEEN);
+BoardTransformation { _fromSquareName: 'f2', _toSquareName: 'f1' }
+> board.pawnTransformation(chessstuff.Piece.QUEEN);
 {
   positionIsLegal: true,
   FEN: '8/8/3k4/8/8/6K1/8/5q2 w - - 0 2',
   insufficientMaterial: false,
+  transformation: false,
   result: null,
   description: '',
-  success: true,
-  transformation: false
+  success: true
 }
 ```
 

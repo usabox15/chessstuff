@@ -352,8 +352,9 @@ class Board {
     } else if (piece.isPawn) {
       if (toSquare.onEdge.up || toSquare.onEdge.down) {
         this._transformation.setSquaresNames(from, to);
-        return this._response.success(
-          `Pawn is ready to transform on ${to} square.`);
+        return this._response.success({
+          description: `Pawn is ready to transform on ${to} square.`
+        });
       }
       this._handleEnPassant(fromSquare, toSquare, piece);
     }
