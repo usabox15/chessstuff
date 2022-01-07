@@ -6,34 +6,37 @@
 4. [Square information](#4-square-information)
 5. [Piece information](#5-piece-information)
 
+
 ## 1. Create board
+
+There are three variants:
+a. [Create board from FEN string](#create-board-from-fen-string)
+b. [Create empty board and set it manually up](#create-empty-board-and-set-it-manually-up)
+c. [Create empty board and set position by manually pieces creation](#create-empty-board-and-set-position-by-manually-pieces-creation)
 
 ### Create board from FEN string
 
 ```javascript
-> const chessstuff = require('chessstuff');
-undefined
-> var board = new chessstuff.board.Board('8/8/2k5/4q3/6K1/8/1R3R2/8 w - - 0 1');
+> var board = new chessstuff.Board('8/8/2k5/4q3/6K1/8/1R3R2/8 w - - 0 1');
 undefined
 > board.state;
 {
   positionIsLegal: true,
   FEN: '8/8/2k5/4q3/6K1/8/1R3R2/8 w - - 0 1',
   insufficientMaterial: false,
+  transformation: false,
   result: null
 }
 ```
 
-### Create empty board and set it up
+### Create empty board and set it manually up
 
 ```javascript
-> const chessstuff = require('chessstuff');
+> var board = new chessstuff.Board();
 undefined
-> var board = new chessstuff.board.Board();
-undefined
-> board.setCurrentColor(chessstuff.pieces.Piece.BLACK);
+> board.setCurrentColor(chessstuff.Piece.BLACK);
 { success: true }
-> var castleRights = new chessstuff.board.BoardInitialCastle('Kq');
+> var castleRights = new chessstuff.BoardInitialCastle('Kq');
 undefined
 > board.setCastleRights(castleRights);
 { success: true }
@@ -43,7 +46,7 @@ undefined
 { success: true }
 > board.setMovesCounter(34);
 { success: true }
-> var initialPosition = new chessstuff.board.BoardInitialPosition('r3k3/8/6p1/8/2P5/8/8/4K2R');
+> var initialPosition = new chessstuff.BoardInitialPosition('r3k3/8/6p1/8/2P5/8/8/4K2R');
 undefined
 > board.setPosition(initialPosition);
 { success: true }
@@ -52,36 +55,42 @@ undefined
   positionIsLegal: true,
   FEN: 'r3k3/8/6p1/8/2P5/8/8/4K2R b Kq c3 0 34',
   insufficientMaterial: false,
+  transformation: false,
   result: null
 }
 ```
 
-### Create empty board and set position by pieces creation
+### Create empty board and set position by manually pieces creation
+
+> If position is setted by pieces creation you need to mark position as setted manually to start make moves or to get position result if so.
 
 ```javascript
-> const chessstuff = require('chessstuff');
+> var board = new chessstuff.Board();
 undefined
-> var board = new chessstuff.board.Board();
-undefined
-> new chessstuff.pieces.King(chessstuff.pieces.Piece.WHITE, board.squares.e3);
+> new chessstuff.King(chessstuff.Piece.WHITE, board.squares.e3);
 King {...}
-> new chessstuff.pieces.King(chessstuff.pieces.Piece.BLACK, board.squares.b5);
+> new chessstuff.King(chessstuff.Piece.BLACK, board.squares.b5);
 King {...}
 > board.state;
 {
   positionIsLegal: true,
   FEN: '8/8/8/1k6/8/4K3/8/8 w - - 0 1',
   insufficientMaterial: true,
+  transformation: false,
+  result: null
+}
+> board.markPositionAsSetted();
+{ success: true }
+> board.state;
+{
+  positionIsLegal: true,
+  FEN: '8/8/8/1k6/8/4K3/8/8 w - - 0 1',
+  insufficientMaterial: true,
+  transformation: false,
   result: [ 0.5, 0.5 ]
 }
 ```
 
-> If position is setted by pieces creation you need to mark position as setted manualy to start make moves.
-
-```javascript
-> board.markPositionAsSetted();
-{ success: true }
-```
 
 ## 2. Move pieces
 
@@ -490,7 +499,7 @@ false
 true
 > for (let piece of board.squares.e5.pieces.cover) {
 ... console.log(piece.color, piece.kind);
-... 
+...
 ... }
 white bishop
 undefined
@@ -514,7 +523,7 @@ false
 false
 > board.squares.e5.pieces.xray
 null
-> 
+>
 >
 >
 >
@@ -535,7 +544,7 @@ undefined
 ... }
 white bishop
 undefined
-> 
+>
 >
 >
 >
